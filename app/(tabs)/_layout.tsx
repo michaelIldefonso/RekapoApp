@@ -1,7 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { Image, Platform, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-
+//hehe sorry late
 export default function TabLayout() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -13,7 +13,7 @@ export default function TabLayout() {
 
         {/* ✅ Custom Logo */}
         <View style={styles.brandWrap}>
-          <Image source={require("C:\\Users\\SCAVINDIZH\\rekapo-ui\\assets\\images\\rekapo logo.png")} style={styles.logo} resizeMode="contain" />
+          <Image source={require("C:\\Users\\SCAVINDIZH\\Documents\\GitHub\\RekapoApp\\assets\\images\\rekapo logo.png")} style={styles.logo} resizeMode="contain" />
           <Text style={styles.brandText}>REKAPO.AI</Text>
         </View>
       </View>
