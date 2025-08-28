@@ -13,7 +13,7 @@ export default function TabLayout() {
 
         {/* ✅ Custom Logo */}
         <View style={styles.brandWrap}>
-          <Image source={require("C:\\Users\\SCAVINDIZH\\Documents\\GitHub\\RekapoApp\\assets\\images\\rekapo logo.png")} style={styles.logo} resizeMode="contain" />
+          <Image source={require("../../assets/images/rekapo logo.png")} style={styles.logo} resizeMode="contain" />
           <Text style={styles.brandText}>REKAPO.AI</Text>
         </View>
       </View>
