@@ -1,5 +1,14 @@
 import React from "react";
-import { View, Text, TouchableOpacity, SafeAreaView, Image, Platform, StatusBar } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  SafeAreaView,
+  Image,
+  Platform,
+  StatusBar,
+  StyleSheet,
+} from "react-native";
 import { Ionicons, MaterialIcons, FontAwesome } from "@expo/vector-icons";
 
 export default function HomeScreen() {
@@ -23,7 +32,11 @@ export default function HomeScreen() {
 
         {/* ✅ Custom Logo */}
         <View style={styles.brandWrap}>
-          <Image source={require("../../assets/images/rekapo logo.png")} style={styles.logo} resizeMode="contain" />
+          <Image
+            source={require("../../assets/images/rekapo logo.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <Text style={styles.brandText}>REKAPO.AI</Text>
         </View>
       </View>
@@ -32,7 +45,17 @@ export default function HomeScreen() {
       <View style={{ flex: 1 }} />
 
       {/* Bottom Navigation */}
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 32, paddingVertical: 12, borderTopWidth: 1, borderColor: "#e5e5e5" }}>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          paddingHorizontal: 32,
+          paddingVertical: 12,
+          borderTopWidth: 1,
+          borderColor: "#e5e5e5",
+        }}
+      >
         {/* Notes Button */}
         <TouchableOpacity style={{ alignItems: "center" }}>
           <MaterialIcons name="notes" size={28} color="black" />
@@ -44,7 +67,6 @@ export default function HomeScreen() {
           <View style={{ backgroundColor: "black", padding: 18, borderRadius: 50 }}>
             <FontAwesome name="microphone" size={28} color="white" />
           </View>
-          <Text style={{ textAlign: "center", fontSize: 12, marginTop: 4 }}></Text>
         </TouchableOpacity>
 
         {/* Account Button */}
@@ -56,3 +78,19 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  brandWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  logo: {
+    width: 40,
+    height: 40,
+  },
+  brandText: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+});
