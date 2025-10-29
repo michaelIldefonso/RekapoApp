@@ -20,7 +20,7 @@ const LoginScreen = ({ onLogin }) => {
       <View style={styles.content}>
         <View style={styles.logoContainer}>
           <Text style={styles.logoText}>🎙️</Text>
-          <Text style={styles.title}>Welcome to RekapoApp</Text>
+          <Text style={styles.title}>Welcome to Rekapo</Text>
           <Text style={styles.subtitle}>Your smart meeting companion</Text>
         </View>
 
@@ -35,17 +35,7 @@ const LoginScreen = ({ onLogin }) => {
               <Text style={styles.googleButtonText}>Continue with Google</Text>
             </View>
           </TouchableOpacity>
-
-          <View style={styles.dividerContainer}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          <TouchableOpacity style={styles.emailButton}>
-            <Text style={styles.emailButtonText}>Sign in with Email</Text>
-          </TouchableOpacity>
-        </View>
+            </View>
 
         <View style={styles.footerContainer}>
           <Text style={styles.footerText}>

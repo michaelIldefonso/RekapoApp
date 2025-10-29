@@ -103,6 +103,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#2c3e50',
     marginBottom: 30,
+    marginTop: 20,
   },
   profileCard: {
     backgroundColor: 'white',
