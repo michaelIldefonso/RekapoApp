@@ -8,8 +8,9 @@ import {
   Alert,
 } from 'react-native';
 import ProfileScreenStyles from '../styles/ProfileScreenStyles';
+import ThemeToggleButton from '../components/ThemeToggleButton';
 
-const ProfileScreen = ({ onLogout }) => {
+const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode }) => {
   const [userInfo] = useState({
     name: 'John Doe',
     email: 'john.doe@example.com',
@@ -37,51 +38,118 @@ const ProfileScreen = ({ onLogout }) => {
     { title: 'About', subtitle: 'App version and information' },
   ];
 
-  return (
-    <SafeAreaView style={ProfileScreenStyles.container}>
-      <ScrollView style={ProfileScreenStyles.content}>
-        <Text style={ProfileScreenStyles.title}>Profile</Text>
+  // Dynamic styles for dark mode
+  const containerStyle = [
+    ProfileScreenStyles.container,
+    isDarkMode && { backgroundColor: '#222' },
+  ];
+  const titleStyle = [
+    ProfileScreenStyles.title,
+    isDarkMode && { color: '#fff' },
+  ];
+  const profileCardStyle = [
+    ProfileScreenStyles.profileCard,
+    isDarkMode && { backgroundColor: '#333', shadowOpacity: 0, elevation: 0 },
+  ];
+  const userNameStyle = [
+    ProfileScreenStyles.userName,
+    isDarkMode && { color: '#fff' },
+  ];
+  const userEmailStyle = [
+    ProfileScreenStyles.userEmail,
+    isDarkMode && { color: '#bbb' },
+  ];
+  const joinDateStyle = [
+    ProfileScreenStyles.joinDate,
+    isDarkMode && { color: '#999' },
+  ];
+  const statsCardStyle = [
+    ProfileScreenStyles.statsCard,
+    isDarkMode && { backgroundColor: '#333', shadowOpacity: 0, elevation: 0 },
+  ];
+  const statsTitleStyle = [
+    ProfileScreenStyles.statsTitle,
+    isDarkMode && { color: '#fff' },
+  ];
+  const statNumberStyle = [
+    ProfileScreenStyles.statNumber,
+    isDarkMode && { color: '#fff' },
+  ];
+  const statLabelStyle = [
+    ProfileScreenStyles.statLabel,
+    isDarkMode && { color: '#bbb' },
+  ];
+  const optionCardStyle = [
+    ProfileScreenStyles.optionCard,
+    isDarkMode && { backgroundColor: '#333', shadowOpacity: 0, elevation: 0 },
+  ];
+  const optionTitleStyle = [
+    ProfileScreenStyles.optionTitle,
+    isDarkMode && { color: '#fff' },
+  ];
+  const optionSubtitleStyle = [
+    ProfileScreenStyles.optionSubtitle,
+    isDarkMode && { color: '#bbb' },
+  ];
+  const optionArrowStyle = [
+    ProfileScreenStyles.optionArrow,
+    isDarkMode && { color: '#bbb' },
+  ];
+  const logoutButtonStyle = [
+    ProfileScreenStyles.logoutButton,
+    isDarkMode && { backgroundColor: '#8B0000' },
+  ];
 
-        <View style={ProfileScreenStyles.profileCard}>
+  return (
+    <SafeAreaView style={containerStyle}>
+      <ScrollView style={ProfileScreenStyles.content}>
+        <View style={ProfileScreenStyles.headerRow}>
+          <Text style={[titleStyle, { marginBottom: 0, marginTop: 0, lineHeight: 28 }]}>Profile</Text>
+          <View style={ProfileScreenStyles.themeToggleButtonWrapper}>
+            <ThemeToggleButton isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
+          </View>
+        </View>
+
+        <View style={profileCardStyle}>
           <View style={ProfileScreenStyles.avatar}>
             <Text style={ProfileScreenStyles.avatarText}>{userInfo.name.charAt(0)}</Text>
           </View>
-          <Text style={ProfileScreenStyles.userName}>{userInfo.name}</Text>
-          <Text style={ProfileScreenStyles.userEmail}>{userInfo.email}</Text>
-          <Text style={ProfileScreenStyles.joinDate}>Member since {userInfo.joinDate}</Text>
+          <Text style={userNameStyle}>{userInfo.name}</Text>
+          <Text style={userEmailStyle}>{userInfo.email}</Text>
+          <Text style={joinDateStyle}>Member since {userInfo.joinDate}</Text>
         </View>
 
-        <View style={ProfileScreenStyles.statsCard}>
-          <Text style={ProfileScreenStyles.statsTitle}>Your Stats</Text>
+        <View style={statsCardStyle}>
+          <Text style={statsTitleStyle}>Your Stats</Text>
           <View style={ProfileScreenStyles.statsRow}>
             <View style={ProfileScreenStyles.statItem}>
-              <Text style={ProfileScreenStyles.statNumber}>{userInfo.totalSessions}</Text>
-              <Text style={ProfileScreenStyles.statLabel}>Total Sessions</Text>
+              <Text style={statNumberStyle}>{userInfo.totalSessions}</Text>
+              <Text style={statLabelStyle}>Total Sessions</Text>
             </View>
             <View style={ProfileScreenStyles.statItem}>
-              <Text style={ProfileScreenStyles.statNumber}>45h</Text>
-              <Text style={ProfileScreenStyles.statLabel}>Recording Time</Text>
+              <Text style={statNumberStyle}>45h</Text>
+              <Text style={statLabelStyle}>Recording Time</Text>
             </View>
             <View style={ProfileScreenStyles.statItem}>
-              <Text style={ProfileScreenStyles.statNumber}>124</Text>
-              <Text style={ProfileScreenStyles.statLabel}>Action Items</Text>
+              <Text style={statNumberStyle}>124</Text>
+              <Text style={statLabelStyle}>Action Items</Text>
             </View>
           </View>
         </View>
 
         <View style={ProfileScreenStyles.optionsContainer}>
           {profileOptions.map((option, index) => (
-            <TouchableOpacity key={index} style={ProfileScreenStyles.optionCard}>
+            <TouchableOpacity key={index} style={optionCardStyle}>
               <View>
-                <Text style={ProfileScreenStyles.optionTitle}>{option.title}</Text>
-                <Text style={ProfileScreenStyles.optionSubtitle}>{option.subtitle}</Text>
+                <Text style={optionTitleStyle}>{option.title}</Text>
+                <Text style={optionSubtitleStyle}>{option.subtitle}</Text>
               </View>
-              <Text style={ProfileScreenStyles.optionArrow}>›</Text>
+              <Text style={optionArrowStyle}>›</Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        <TouchableOpacity style={ProfileScreenStyles.logoutButton} onPress={handleLogout}>
+        <TouchableOpacity style={logoutButtonStyle} onPress={handleLogout}>
           <Text style={ProfileScreenStyles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </ScrollView>

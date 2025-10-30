@@ -49,7 +49,7 @@ export default function App() {
       case 'StartMeeting':
         return <StartMeetingScreen />;
       case 'Profile':
-        return <ProfileScreen onLogout={handleLogout} />;
+        return <ProfileScreen onLogout={handleLogout} isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} />;
       default:
         return <MainScreen onNavigate={handleNavigate} isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} />;
     }

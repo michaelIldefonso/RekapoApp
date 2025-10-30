@@ -134,6 +134,16 @@ const ProfileScreenStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 20,
+    marginBottom: 0,
+  },
+  themeToggleButtonWrapper: {
+    marginTop: -28,
+  },
 });
 
 export default ProfileScreenStyles;
