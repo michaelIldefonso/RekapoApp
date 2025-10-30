@@ -7,8 +7,9 @@ import {
   SafeAreaView,
 } from 'react-native';
 import SessionHistoryScreenStyles from '../styles/SessionHistoryScreenStyles';
+import ThemeToggleButton from '../components/ThemeToggleButton';
 
-const SessionHistoryScreen = () => {
+const SessionHistoryScreen = ({ isDarkMode, onToggleDarkMode }) => {
   // Sample data - replace with actual data from your backend
   const sessions = [
     {
@@ -34,24 +35,59 @@ const SessionHistoryScreen = () => {
     },
   ];
 
+  // Dynamic styles for dark mode
+  const containerStyle = [
+    SessionHistoryScreenStyles.container,
+    isDarkMode && { backgroundColor: '#222' },
+  ];
+  const titleStyle = [
+    SessionHistoryScreenStyles.title,
+    isDarkMode && { color: '#fff' },
+  ];
+  const subtitleStyle = [
+    SessionHistoryScreenStyles.subtitle,
+    isDarkMode && { color: '#bbb' },
+  ];
+  const sessionCardStyle = [
+    SessionHistoryScreenStyles.sessionCard,
+    isDarkMode && { backgroundColor: '#333', shadowOpacity: 0, elevation: 0 },
+  ];
+  const sessionTitleStyle = [
+    SessionHistoryScreenStyles.sessionTitle,
+    isDarkMode && { color: '#fff' },
+  ];
+  const sessionDateStyle = [
+    SessionHistoryScreenStyles.sessionDate,
+    isDarkMode && { color: '#bbb' },
+  ];
+  const sessionInfoStyle = [
+    SessionHistoryScreenStyles.sessionInfo,
+    isDarkMode && { color: '#bbb' },
+  ];
+
   const renderSessionItem = ({ item }) => (
-    <TouchableOpacity style={SessionHistoryScreenStyles.sessionCard}>
+    <TouchableOpacity style={sessionCardStyle}>
       <View style={SessionHistoryScreenStyles.sessionHeader}>
-        <Text style={SessionHistoryScreenStyles.sessionTitle}>{item.title}</Text>
-        <Text style={SessionHistoryScreenStyles.sessionDate}>{item.date}</Text>
+        <Text style={sessionTitleStyle}>{item.title}</Text>
+        <Text style={sessionDateStyle}>{item.date}</Text>
       </View>
       <View style={SessionHistoryScreenStyles.sessionDetails}>
-        <Text style={SessionHistoryScreenStyles.sessionInfo}>Duration: {item.duration}</Text>
-        <Text style={SessionHistoryScreenStyles.sessionInfo}>Participants: {item.participants}</Text>
+        <Text style={sessionInfoStyle}>Duration: {item.duration}</Text>
+        <Text style={sessionInfoStyle}>Participants: {item.participants}</Text>
       </View>
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={SessionHistoryScreenStyles.container}>
+    <SafeAreaView style={containerStyle}>
       <View style={SessionHistoryScreenStyles.content}>
-        <Text style={SessionHistoryScreenStyles.title}>Session History</Text>
-        <Text style={SessionHistoryScreenStyles.subtitle}>Your recorded sessions</Text>
+        <View style={SessionHistoryScreenStyles.headerRow}>
+          <Text style={titleStyle}>Session History</Text>
+          <View style={SessionHistoryScreenStyles.themeToggleButtonWrapper}>
+            <ThemeToggleButton isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
+          </View>
+        </View>
+        <Text style={subtitleStyle}>Your recorded sessions</Text>
 
         <FlatList
           data={sessions}
@@ -64,7 +100,5 @@ const SessionHistoryScreen = () => {
     </SafeAreaView>
   );
 };
-
-
 
 export default SessionHistoryScreen;

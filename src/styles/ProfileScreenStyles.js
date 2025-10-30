@@ -142,7 +142,7 @@ const ProfileScreenStyles = StyleSheet.create({
     marginBottom: 0,
   },
   themeToggleButtonWrapper: {
-    marginTop: -28,
+    marginTop: -25,
   },
 });
 

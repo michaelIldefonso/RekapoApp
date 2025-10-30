@@ -35,6 +35,14 @@ const StartMeetingScreenStyles = StyleSheet.create({
     borderRadius: 10,
     padding: 15,
     fontSize: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
     borderWidth: 1,
     borderColor: '#e1e8ed',
   },
@@ -45,12 +53,29 @@ const StartMeetingScreenStyles = StyleSheet.create({
     padding: 15,
     backgroundColor: 'white',
     borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#e1e8ed',
   },
   statusIndicator: {
     width: 12,
     height: 12,
-    borderRadius: 6,
     marginRight: 10,
+  },
+  statusIndicatorRecording: {
+    backgroundColor: '#e74c3c',
+    borderRadius: 6,
+  },
+  statusIndicatorIdle: {
+    backgroundColor: '#9c1515ff',
+    borderRadius: 6,
   },
   statusText: {
     fontSize: 16,
@@ -80,6 +105,16 @@ const StartMeetingScreenStyles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 10,
     padding: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#e1e8ed',
   },
   infoTitle: {
     fontSize: 16,
@@ -91,6 +126,9 @@ const StartMeetingScreenStyles = StyleSheet.create({
     fontSize: 14,
     color: '#7f8c8d',
     marginBottom: 5,
+  },
+  themeToggleButtonWrapper: {
+    marginTop: -7,
   },
 });
 

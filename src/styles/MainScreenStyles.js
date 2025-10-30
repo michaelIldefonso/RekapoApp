@@ -49,6 +49,9 @@ const MainScreenStyles = StyleSheet.create({
     fontSize: 14,
     color: '#7f8c8d',
   },
+  themeToggleButtonWrapper: {
+    marginTop: -7,
+  },
 });
 
 export default MainScreenStyles;

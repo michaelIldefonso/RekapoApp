@@ -45,9 +45,9 @@ export default function App() {
       case 'Main':
         return <MainScreen onNavigate={handleNavigate} isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} />;
       case 'SessionHistory':
-        return <SessionHistoryScreen />;
+        return <SessionHistoryScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} />;
       case 'StartMeeting':
-        return <StartMeetingScreen />;
+        return <StartMeetingScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} />;
       case 'Profile':
         return <ProfileScreen onLogout={handleLogout} isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} />;
       default:

@@ -8,8 +8,10 @@ import {
   Alert,
 } from 'react-native';
 import StartMeetingScreenStyles from '../styles/StartMeetingScreenStyles';
+import ThemeToggleButton from '../components/ThemeToggleButton';
 
-const StartMeetingScreen = () => {
+const StartMeetingScreen = (props) => {
+  const { isDarkMode, onToggleDarkMode } = props;
   const [meetingTitle, setMeetingTitle] = useState('');
   const [isRecording, setIsRecording] = useState(false);
 
@@ -29,26 +31,95 @@ const StartMeetingScreen = () => {
     setMeetingTitle('');
   };
 
+  // Dynamic styles for dark mode
+  const containerStyle = [
+    StartMeetingScreenStyles.container,
+    isDarkMode && { backgroundColor: '#222' },
+  ];
+  const titleStyle = [
+    StartMeetingScreenStyles.title,
+    isDarkMode && { color: '#fff' },
+  ];
+  const subtitleStyle = [
+    StartMeetingScreenStyles.subtitle,
+    isDarkMode && { color: '#fff' },
+  ];
+  const labelStyle = [
+    StartMeetingScreenStyles.label,
+    isDarkMode && { color: '#fff' },
+  ];
+  const inputStyle = [
+    StartMeetingScreenStyles.input,
+    isDarkMode && {
+      backgroundColor: '#333',
+      color: '#fff',
+      borderColor: '#fff',
+    },
+  ];
+  const statusContainerStyle = [
+    StartMeetingScreenStyles.statusContainer,
+    isDarkMode && { backgroundColor: '#333', borderColor: '#fff', shadowOpacity: 0 },
+  ];
+  const statusTextStyle = [
+    StartMeetingScreenStyles.statusText,
+    isDarkMode && { color: '#fff' },
+  ];
+  const buttonStyle = [
+    StartMeetingScreenStyles.button,
+    isDarkMode && { backgroundColor: '#444' },
+  ];
+  const startButtonStyle = [
+    StartMeetingScreenStyles.startButton,
+    isDarkMode && { backgroundColor: '#007e34ff' },
+  ];
+  const stopButtonStyle = [
+    StartMeetingScreenStyles.stopButton,
+    isDarkMode && { backgroundColor: '#e74c3c' },
+  ];
+  const infoContainerStyle = [
+    StartMeetingScreenStyles.infoContainer,
+    isDarkMode && { backgroundColor: '#333' },
+  ];
+  const infoTitleStyle = [
+    StartMeetingScreenStyles.infoTitle,
+    isDarkMode && { color: '#fff' },
+  ];
+  const infoTextStyle = [
+    StartMeetingScreenStyles.infoText,
+    isDarkMode && { color: '#ffffffff' },
+  ];
+
   return (
-    <SafeAreaView style={StartMeetingScreenStyles.container}>
+    <SafeAreaView style={containerStyle}>
       <View style={StartMeetingScreenStyles.content}>
-        <Text style={StartMeetingScreenStyles.title}>Start New Meeting</Text>
-        <Text style={StartMeetingScreenStyles.subtitle}>Set up your recording session</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text style={titleStyle}>Start New Meeting</Text>
+          <View style={StartMeetingScreenStyles.themeToggleButtonWrapper}>
+            <ThemeToggleButton isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
+          </View>
+        </View>
+        <Text style={subtitleStyle}>Set up your recording session</Text>
 
         <View style={StartMeetingScreenStyles.inputContainer}>
-          <Text style={StartMeetingScreenStyles.label}>Meeting Title</Text>
+          <Text style={labelStyle}>Meeting Title</Text>
           <TextInput
-            style={StartMeetingScreenStyles.input}
+            style={inputStyle}
             placeholder="Enter meeting title..."
+            placeholderTextColor={isDarkMode ? '#bbb' : undefined}
             value={meetingTitle}
             onChangeText={setMeetingTitle}
             editable={!isRecording}
           />
         </View>
 
-        <View style={StartMeetingScreenStyles.statusContainer}>
-          <View style={[StartMeetingScreenStyles.statusIndicator, { backgroundColor: isRecording ? '#e74c3c' : '#95a5a6' }]} />
-          <Text style={StartMeetingScreenStyles.statusText}>
+        <View style={statusContainerStyle}>
+          <View style={[
+            StartMeetingScreenStyles.statusIndicator,
+            isRecording
+              ? StartMeetingScreenStyles.statusIndicatorRecording
+              : StartMeetingScreenStyles.statusIndicatorIdle,
+          ]} />
+          <Text style={statusTextStyle}>
             {isRecording ? 'Recording in progress...' : 'Ready to record'}
           </Text>
         </View>
@@ -56,14 +127,14 @@ const StartMeetingScreen = () => {
         <View style={StartMeetingScreenStyles.buttonContainer}>
           {!isRecording ? (
             <TouchableOpacity
-              style={[StartMeetingScreenStyles.button, StartMeetingScreenStyles.startButton]}
+              style={[buttonStyle, startButtonStyle]}
               onPress={handleStartRecording}
             >
               <Text style={StartMeetingScreenStyles.buttonText}>Start Recording</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
-              style={[StartMeetingScreenStyles.button, StartMeetingScreenStyles.stopButton]}
+              style={[buttonStyle, stopButtonStyle]}
               onPress={handleStopRecording}
             >
               <Text style={StartMeetingScreenStyles.buttonText}>Stop Recording</Text>
@@ -71,18 +142,16 @@ const StartMeetingScreen = () => {
           )}
         </View>
 
-        <View style={StartMeetingScreenStyles.infoContainer}>
-          <Text style={StartMeetingScreenStyles.infoTitle}>Recording Features:</Text>
-          <Text style={StartMeetingScreenStyles.infoText}>• Audio transcription</Text>
-          <Text style={StartMeetingScreenStyles.infoText}>• Meeting summary</Text>
-          <Text style={StartMeetingScreenStyles.infoText}>• Action items extraction</Text>
-          <Text style={StartMeetingScreenStyles.infoText}>• Participant tracking</Text>
+        <View style={infoContainerStyle}>
+          <Text style={infoTitleStyle}>Recording Features:</Text>
+          <Text style={infoTextStyle}>• Audio transcription</Text>
+          <Text style={infoTextStyle}>• Meeting summary</Text>
+          <Text style={infoTextStyle}>• Action items extraction</Text>
+          <Text style={infoTextStyle}>• Participant tracking</Text>
         </View>
       </View>
     </SafeAreaView>
   );
 };
-
-
 
 export default StartMeetingScreen;

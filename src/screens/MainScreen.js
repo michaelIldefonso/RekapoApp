@@ -49,7 +49,9 @@ const MainScreen = ({ onNavigate, isDarkMode, onToggleDarkMode }) => {
       <ScrollView style={MainScreenStyles.content}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <Text style={titleStyle}>Dashboard</Text>
-          <ThemeToggleButton isDarkMode={isDarkMode} onToggle={handleToggleTheme} />
+          <View style={MainScreenStyles.themeToggleButtonWrapper}>
+            <ThemeToggleButton isDarkMode={isDarkMode} onToggle={handleToggleTheme} />
+          </View>
         </View>
         <Text style={subtitleStyle}>Welcome back!</Text>
 

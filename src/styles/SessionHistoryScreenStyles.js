@@ -19,7 +19,7 @@ const SessionHistoryScreenStyles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#7f8c8d',
-    marginBottom: 30,
+    marginBottom: 10,
   },
   list: {
     flex: 1,
@@ -61,6 +61,16 @@ const SessionHistoryScreenStyles = StyleSheet.create({
   sessionInfo: {
     fontSize: 14,
     color: '#7f8c8d',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 0,
+    marginBottom: 8,
+  },
+  themeToggleButtonWrapper: {
+    marginTop: -7,
   },
 });
 
