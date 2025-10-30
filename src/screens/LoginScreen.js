@@ -9,10 +9,7 @@ import {
 import LoginScreenStyles from '../styles/LoginScreenStyles';
 import ThemeToggleButton from '../components/ThemeToggleButton';
 
-const LoginScreen = ({ onLogin }) => {
-  // State to track if dark mode is enabled
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
+const LoginScreen = ({ onLogin, isDarkMode, onToggleDarkMode }) => {
   // Handler for Google login button
   const handleGoogleLogin = () => {
     // Google OAuth2 login logic would go here
@@ -20,12 +17,7 @@ const LoginScreen = ({ onLogin }) => {
     onLogin();
   };
 
-  // Handler to toggle theme mode
-  const handleToggleTheme = () => {
-    setIsDarkMode((prev) => !prev);
-  };
-
-  // Choose styles based on theme
+  // Choose styles for dark mode
   const containerStyle = [
     LoginScreenStyles.container,
     isDarkMode && { backgroundColor: '#222' }, //css for darkmode, background color
@@ -58,8 +50,9 @@ const LoginScreen = ({ onLogin }) => {
   return (
     <SafeAreaView style={containerStyle}>
       {/* Theme toggle button at upper right */}
+
       <View style={{ position: 'absolute', top: 10, right: 16, zIndex: 10 }}>
-        <ThemeToggleButton isDarkMode={isDarkMode} onToggle={handleToggleTheme} />
+        <ThemeToggleButton isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
       </View>
       <View style={LoginScreenStyles.content}>
         <View style={LoginScreenStyles.loginContainer}>

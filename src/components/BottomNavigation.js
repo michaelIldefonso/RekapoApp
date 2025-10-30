@@ -2,7 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import BottomNavigationStyles from '../styles/BottomNavigationStyles';
 
-const BottomNavigation = ({ activeScreen, onNavigate }) => {
+const BottomNavigation = ({ activeScreen, onNavigate, isDarkMode }) => {
   const navItems = [
     { key: 'Main', label: 'Home', icon: '🏠' },
     { key: 'SessionHistory', label: 'History', icon: '📋' },
@@ -10,26 +10,56 @@ const BottomNavigation = ({ activeScreen, onNavigate }) => {
     { key: 'Profile', label: 'Profile', icon: '👤' },
   ];
 
+  // Dynamic styles for dark mode
+  const containerStyle = [
+    BottomNavigationStyles.container,
+    isDarkMode && { backgroundColor: '#232323', borderTopColor: '#444', shadowColor: '#000' },
+  ];
+  const navItemStyle = [
+    BottomNavigationStyles.navItem,
+    isDarkMode && { backgroundColor: 'transparent' },
+  ];
+  const activeNavItemStyle = [
+    BottomNavigationStyles.activeNavItem,
+    isDarkMode && { backgroundColor: '#333' },
+  ];
+  const iconStyle = [
+    BottomNavigationStyles.icon,
+    isDarkMode && { color: '#bbb' },
+  ];
+  const activeIconStyle = [
+    BottomNavigationStyles.activeIcon,
+    isDarkMode && { color: '#fff' },
+  ];
+  const labelStyle = [
+    BottomNavigationStyles.label,
+    isDarkMode && { color: '#bbb' },
+  ];
+  const activeLabelStyle = [
+    BottomNavigationStyles.activeLabel,
+    isDarkMode && { color: '#fff' },
+  ];
+
   return (
-    <View style={BottomNavigationStyles.container}>
+    <View style={containerStyle}>
       {navItems.map((item) => (
         <TouchableOpacity
           key={item.key}
           style={[
-            BottomNavigationStyles.navItem,
-            activeScreen === item.key && BottomNavigationStyles.activeNavItem,
+            navItemStyle,
+            activeScreen === item.key && activeNavItemStyle,
           ]}
           onPress={() => onNavigate(item.key)}
         >
           <Text style={[
-            BottomNavigationStyles.icon,
-            activeScreen === item.key && BottomNavigationStyles.activeIcon,
+            iconStyle,
+            activeScreen === item.key && activeIconStyle,
           ]}>
             {item.icon}
           </Text>
           <Text style={[
-            BottomNavigationStyles.label,
-            activeScreen === item.key && BottomNavigationStyles.activeLabel,
+            labelStyle,
+            activeScreen === item.key && activeLabelStyle,
           ]}>
             {item.label}
           </Text>

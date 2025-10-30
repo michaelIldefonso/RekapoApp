@@ -15,6 +15,7 @@ import BottomNavigation from './src/components/BottomNavigation';
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeScreen, setActiveScreen] = useState('Main');
+  const [isDarkMode, setIsDarkMode] = useState(false); // App-level dark mode persists across screens
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -29,10 +30,20 @@ export default function App() {
     setActiveScreen(screen);
   };
 
+  // Handler to update dark mode from any screen
+  const handleDarkModeChange = (value) => {
+    setIsDarkMode(value);
+  };
+
+  // Handler to toggle dark mode
+  const handleToggleDarkMode = () => {
+    setIsDarkMode((prev) => !prev);
+  };
+
   const renderScreen = () => {
     switch (activeScreen) {
       case 'Main':
-        return <MainScreen onNavigate={handleNavigate} />;
+        return <MainScreen onNavigate={handleNavigate} isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} />;
       case 'SessionHistory':
         return <SessionHistoryScreen />;
       case 'StartMeeting':
@@ -40,12 +51,12 @@ export default function App() {
       case 'Profile':
         return <ProfileScreen onLogout={handleLogout} />;
       default:
-        return <MainScreen onNavigate={handleNavigate} />;
+        return <MainScreen onNavigate={handleNavigate} isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} />;
     }
   };
 
   if (!isLoggedIn) {
-    return <LoginScreen onLogin={handleLogin} />;
+    return <LoginScreen onLogin={handleLogin} isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} />;
   }
 
   return (
@@ -57,6 +68,7 @@ export default function App() {
       <BottomNavigation 
         activeScreen={activeScreen} 
         onNavigate={handleNavigate} 
+        isDarkMode={isDarkMode}
       />
     </View>
   );
