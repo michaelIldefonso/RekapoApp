@@ -16,7 +16,9 @@ const LoginScreenStyles = StyleSheet.create({
   },
   logoText: {
     fontSize: 64,
-    marginBottom: 20,
+    marginBottom: 8,
+    alignSelf: 'center',
+    marginTop: 120,
   },
   title: {
     fontSize: 32,
@@ -30,17 +32,18 @@ const LoginScreenStyles = StyleSheet.create({
     textAlign: 'center',
     color: '#7f8c8d',
   },
-  loginContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingVertical: 40,
-  },
   loginTitle: {
     fontSize: 24,
     fontWeight: '600',
     textAlign: 'center',
-    marginBottom: 40,
+    marginBottom: 24,
+    marginTop: 0,
     color: '#2c3e50',
+  },
+  loginContainer: {
+     justifyContent: 'flex-start',
+    paddingVertical: 40,
+    marginTop: 0,
   },
   googleButton: {
     backgroundColor: 'white',
