@@ -144,10 +144,10 @@ const StartMeetingScreen = (props) => {
 
         <View style={infoContainerStyle}>
           <Text style={infoTitleStyle}>Recording Features:</Text>
-          <Text style={infoTextStyle}>• Audio transcription</Text>
+          <Text style={infoTextStyle}>• Audio transcribe</Text>
+          <Text style={infoTextStyle}>• Taglish-To-English Translation</Text>
           <Text style={infoTextStyle}>• Meeting summary</Text>
-          <Text style={infoTextStyle}>• Action items extraction</Text>
-          <Text style={infoTextStyle}>• Participant tracking</Text>
+          <Text style={infoTextStyle}>• Noise suppression</Text>
         </View>
       </View>
     </SafeAreaView>
