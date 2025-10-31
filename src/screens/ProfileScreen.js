@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,25 +6,50 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
 import ProfileScreenStyles from '../styles/ProfileScreenStyles';
 import ThemeToggleButton from '../components/ThemeToggleButton';
+import { getStoredUser, signOut } from '../services/authService';
 
 const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) => {
-  const [userInfo] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    joinDate: 'October 2023',
-    totalSessions: 15,
-  });
+  const [userInfo, setUserInfo] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleLogout = () => {
+  // Load user data from storage
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      const user = await getStoredUser();
+      if (user) {
+        setUserInfo(user);
+        console.log('📱 Loaded user data:', user);
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
     Alert.alert(
       'Logout',
       'Are you sure you want to logout?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Logout', style: 'destructive', onPress: onLogout },
+        { 
+          text: 'Logout', 
+          style: 'destructive', 
+          onPress: async () => {
+            await signOut();
+            onLogout();
+          }
+        },
       ]
     );
   };
@@ -135,32 +160,59 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
           </View>
         </View>
 
-        <View style={profileCardStyle}>
-          <View style={ProfileScreenStyles.avatar}>
-            <Text style={ProfileScreenStyles.avatarText}>{userInfo.name.charAt(0)}</Text>
-          </View>
-          <Text style={userNameStyle}>{userInfo.name}</Text>
-          <Text style={userEmailStyle}>{userInfo.email}</Text>
-          <Text style={joinDateStyle}>Member since {userInfo.joinDate}</Text>
-        </View>
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#007AFF" style={{ marginTop: 50 }} />
+        ) : userInfo ? (
+          <>
+            <View style={profileCardStyle}>
+              {/* Profile Picture from Google */}
+              {userInfo.profile_picture_path ? (
+                <Image 
+                  source={{ uri: userInfo.profile_picture_path }}
+                  style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: 40,
+                    marginBottom: 12,
+                  }}
+                />
+              ) : (
+                <View style={ProfileScreenStyles.avatar}>
+                  <Text style={ProfileScreenStyles.avatarText}>
+                    {userInfo.name?.charAt(0) || userInfo.email?.charAt(0) || '?'}
+                  </Text>
+                </View>
+              )}
+              <Text style={userNameStyle}>{userInfo.username || userInfo.name || 'No username'}</Text>
+              <Text style={userEmailStyle}>{userInfo.email}</Text>
+              <Text style={joinDateStyle}>
+                Member since {new Date(userInfo.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              </Text>
+            </View>
 
-        <View style={statsCardStyle}>
-          <Text style={statsTitleStyle}>Your Stats</Text>
-          <View style={ProfileScreenStyles.statsRow}>
-            <View style={ProfileScreenStyles.statItem}>
-              <Text style={statNumberStyle}>{userInfo.totalSessions}</Text>
-              <Text style={statLabelStyle}>Total Sessions</Text>
+            <View style={statsCardStyle}>
+              <Text style={statsTitleStyle}>Your Stats</Text>
+              <View style={ProfileScreenStyles.statsRow}>
+                <View style={ProfileScreenStyles.statItem}>
+                  <Text style={statNumberStyle}>0</Text>
+                  <Text style={statLabelStyle}>Total Sessions</Text>
+                </View>
+                <View style={ProfileScreenStyles.statItem}>
+                  <Text style={statNumberStyle}>0h</Text>
+                  <Text style={statLabelStyle}>Recording Time</Text>
+                </View>
+                <View style={ProfileScreenStyles.statItem}>
+                  <Text style={statNumberStyle}>0</Text>
+                  <Text style={statLabelStyle}>Action Items</Text>
+                </View>
+              </View>
             </View>
-            <View style={ProfileScreenStyles.statItem}>
-              <Text style={statNumberStyle}>45h</Text>
-              <Text style={statLabelStyle}>Recording Time</Text>
-            </View>
-            <View style={ProfileScreenStyles.statItem}>
-              <Text style={statNumberStyle}>124</Text>
-              <Text style={statLabelStyle}>Action Items</Text>
-            </View>
-          </View>
-        </View>
+          </>
+        ) : (
+          <Text style={{ textAlign: 'center', marginTop: 50, color: isDarkMode ? '#fff' : '#000' }}>
+            No user data found
+          </Text>
+        )}
 
         <View style={ProfileScreenStyles.optionsContainer}>
           {profileOptions.map((option, index) => (

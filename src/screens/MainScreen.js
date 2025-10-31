@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,8 +8,26 @@ import {
 } from 'react-native';
 import MainScreenStyles from '../styles/MainScreenStyles';
 import ThemeToggleButton from '../components/ThemeToggleButton';
+import { getStoredUser } from '../services/authService';
 
 const MainScreen = ({ onNavigate, isDarkMode, onToggleDarkMode }) => {
+  const [userInfo, setUserInfo] = useState(null);
+
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      const user = await getStoredUser();
+      if (user) {
+        setUserInfo(user);
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    }
+  };
+
   // Handler to toggle theme mode
   const handleToggleTheme = () => {
     console.log('Theme toggle pressed'); // Debug log
@@ -48,12 +66,18 @@ const MainScreen = ({ onNavigate, isDarkMode, onToggleDarkMode }) => {
     <SafeAreaView style={containerStyle}>
       <ScrollView style={MainScreenStyles.content}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Text style={titleStyle}>Dashboard</Text>
+          <View>
+            <Text style={titleStyle}>Dashboard</Text>
+            {userInfo && (
+              <Text style={[subtitleStyle, { marginTop: 4 }]}>
+                Welcome back, {userInfo.username || userInfo.name?.split(' ')[0] || 'User'}!
+              </Text>
+            )}
+          </View>
           <View style={MainScreenStyles.themeToggleButtonWrapper}>
             <ThemeToggleButton isDarkMode={isDarkMode} onToggle={handleToggleTheme} />
           </View>
         </View>
-        <Text style={subtitleStyle}>Welcome back!</Text>
 
         <View style={MainScreenStyles.cardContainer}>
           <TouchableOpacity

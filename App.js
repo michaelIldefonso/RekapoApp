@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, ActivityIndicator } from 'react-native';
+import { isAuthenticated } from './src/services/authService';
 
 // Import screens
 import LoginScreen from './src/screens/LoginScreen';
@@ -22,12 +23,42 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeScreen, setActiveScreen] = useState('Main');
   const [isDarkMode, setIsDarkMode] = useState(false); // App-level dark mode persists across screens
+  const [userData, setUserData] = useState(null); // Store user data
+  const [jwtToken, setJwtToken] = useState(null); // Store JWT token
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true); // Check auth state on app load
 
-  const handleLogin = () => {
+  // Check authentication status on app startup
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      const authenticated = await isAuthenticated();
+      if (authenticated) {
+        setIsLoggedIn(true);
+        console.log('✅ User is authenticated');
+      } else {
+        setIsLoggedIn(false);
+        console.log('❌ User is not authenticated or token expired');
+      }
+    } catch (error) {
+      console.error('Error checking auth status:', error);
+      setIsLoggedIn(false);
+    } finally {
+      setIsCheckingAuth(false);
+    }
+  };
+
+  const handleLogin = (user, token) => {
+    setUserData(user);
+    setJwtToken(token);
     setIsLoggedIn(true);
   };
 
   const handleLogout = () => {
+    setUserData(null);
+    setJwtToken(null);
     setIsLoggedIn(false);
     setActiveScreen('Main');
   };
@@ -45,6 +76,15 @@ export default function App() {
   const handleToggleDarkMode = () => {
     setIsDarkMode((prev) => !prev);
   };
+
+  // Show loading screen while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
 
   // This function determines which screen component to render based on the current activeScreen state.
   // It also passes global props (like isDarkMode, onToggleDarkMode, and navigation handlers) to each screen.

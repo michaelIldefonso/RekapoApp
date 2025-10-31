@@ -16,6 +16,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.michaelildefonso.rekapoapp",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -24,6 +25,14 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "29692ad4-9570-4c7e-b0d3-5b3dd96d1c29"
+      }
+    },
+    "plugins": [
+      "expo-font"
+    ]
   }
 }

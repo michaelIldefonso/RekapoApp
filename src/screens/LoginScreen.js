@@ -1,20 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   SafeAreaView,
   Image,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import LoginScreenStyles from '../styles/LoginScreenStyles';
 import ThemeToggleButton from '../components/ThemeToggleButton';
+import { 
+  configureGoogleSignIn, 
+  handleGoogleLogin as googleLoginService 
+} from '../services/authService';
 
 const LoginScreen = ({ onLogin, isDarkMode, onToggleDarkMode }) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Configure Google Sign-In when component mounts
+  useEffect(() => {
+    configureGoogleSignIn();
+  }, []);
+
   // Handler for Google login button
-  const handleGoogleLogin = () => {
-    // Google OAuth2 login logic would go here
-    // For now, just navigate to main screens
-    onLogin();
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    try {
+      const result = await googleLoginService();
+      
+      if (result.success) {
+        // Log user data to verify profile picture
+        console.log('✅ Login successful!');
+        console.log('📧 Email:', result.user.email);
+        console.log('👤 Name:', result.user.name);
+        console.log('📸 Profile Picture:', result.user.profile_picture_path);
+        console.log('🆔 User ID:', result.user.id);
+        console.log('🔑 JWT Token:', result.token.substring(0, 20) + '...');
+        
+        // Successfully logged in and verified with backend
+        Alert.alert(
+          'Success',
+          `Welcome ${result.user.name || result.user.email}!`,
+          [{ text: 'OK', onPress: () => onLogin(result.user, result.token) }]
+        );
+      } else {
+        // Login failed
+        Alert.alert(
+          'Login Failed',
+          result.error || 'Unable to sign in with Google. Please try again.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        'Error',
+        'An unexpected error occurred. Please try again.',
+        [{ text: 'OK' }]
+      );
+      console.error('Login error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Choose styles for dark mode
@@ -59,12 +106,22 @@ const LoginScreen = ({ onLogin, isDarkMode, onToggleDarkMode }) => {
           {/* Only logo, no words */}
           <Text style={LoginScreenStyles.logoText}>🎙️</Text>
           <Text style={loginTitleTextStyle}>Sign in to get started</Text>
-          <TouchableOpacity style={googleButtonStyle} onPress={handleGoogleLogin}>
+          <TouchableOpacity 
+            style={googleButtonStyle} 
+            onPress={handleGoogleLogin}
+            disabled={isLoading}
+          >
             <View style={LoginScreenStyles.googleButtonContent}>
-              <View style={googleIconStyle}>
-                <Text style={LoginScreenStyles.googleIconText}>G</Text>
-              </View>
-              <Text style={googleButtonTextStyle}>Continue with Google</Text>
+              {isLoading ? (
+                <ActivityIndicator color={isDarkMode ? '#fff' : '#000'} />
+              ) : (
+                <>
+                  <View style={googleIconStyle}>
+                    <Text style={LoginScreenStyles.googleIconText}>G</Text>
+                  </View>
+                  <Text style={googleButtonTextStyle}>Continue with Google</Text>
+                </>
+              )}
             </View>
           </TouchableOpacity>
         </View>
