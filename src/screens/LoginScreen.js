@@ -20,11 +20,11 @@ const LoginScreen = ({ onLogin, isDarkMode, onToggleDarkMode }) => {
   // Choose styles for dark mode
   const containerStyle = [
     LoginScreenStyles.container,
-    isDarkMode && { backgroundColor: '#222' }, //css for darkmode, background color
+    isDarkMode && { backgroundColor: '#222' }, //css for darkmode, background color oh yiea
   ];
   const googleButtonStyle = [
     LoginScreenStyles.googleButton,
-    isDarkMode && { backgroundColor: '#504a4aff' }, // css for darkmode, google button background
+    isDarkMode && { backgroundColor: '#504a4aff' }, // css for darkmode, google button background namia fuckable mouth
   ];
   const googleButtonTextStyle = [
     LoginScreenStyles.googleButtonText,

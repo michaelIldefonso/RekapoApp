@@ -8,6 +8,12 @@ import MainScreen from './src/screens/MainScreen';
 import SessionHistoryScreen from './src/screens/SessionHistoryScreen';
 import StartMeetingScreen from './src/screens/StartMeetingScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import AccountSettingsScreen from './src/screens/profilebutton/AccountSettingsScreen';
+import NotificationSettingsScreen from './src/screens/profilebutton/NotificationSettingsScreen';
+import StorageDataScreen from './src/screens/profilebutton/StorageDataScreen';
+import PrivacySettingsScreen from './src/screens/profilebutton/PrivacySettingsScreen';
+import HelpSupportScreen from './src/screens/profilebutton/HelpSupportScreen';
+import AboutScreen from './src/screens/profilebutton/AboutScreen';
 
 // Import components
 import BottomNavigation from './src/components/BottomNavigation';
@@ -40,6 +46,9 @@ export default function App() {
     setIsDarkMode((prev) => !prev);
   };
 
+  // This function determines which screen component to render based on the current activeScreen state.
+  // It also passes global props (like isDarkMode, onToggleDarkMode, and navigation handlers) to each screen.
+  // This centralizes navigation and shared state management in the app.
   const renderScreen = () => {
     switch (activeScreen) {
       case 'Main':
@@ -49,7 +58,19 @@ export default function App() {
       case 'StartMeeting':
         return <StartMeetingScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} />;
       case 'Profile':
-        return <ProfileScreen onLogout={handleLogout} isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} />;
+        return <ProfileScreen onLogout={handleLogout} isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} onNavigate={handleNavigate} />;
+      case 'AccountSettings':
+        return <AccountSettingsScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} onNavigate={handleNavigate} />;
+      case 'NotificationSettings':
+        return <NotificationSettingsScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} onNavigate={handleNavigate} />;
+      case 'StorageData':
+        return <StorageDataScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} onNavigate={handleNavigate} />;
+      case 'PrivacySettings':
+        return <PrivacySettingsScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} onNavigate={handleNavigate} />;
+      case 'HelpSupport':
+        return <HelpSupportScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} onNavigate={handleNavigate} />;
+      case 'About':
+        return <AboutScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} onNavigate={handleNavigate} />;
       default:
         return <MainScreen onNavigate={handleNavigate} isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} />;
     }

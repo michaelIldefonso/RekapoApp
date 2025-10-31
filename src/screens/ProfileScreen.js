@@ -10,7 +10,7 @@ import {
 import ProfileScreenStyles from '../styles/ProfileScreenStyles';
 import ThemeToggleButton from '../components/ThemeToggleButton';
 
-const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode }) => {
+const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) => {
   const [userInfo] = useState({
     name: 'John Doe',
     email: 'john.doe@example.com',
@@ -27,6 +27,31 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode }) => {
         { text: 'Logout', style: 'destructive', onPress: onLogout },
       ]
     );
+  };
+
+  const handleOptionPress = (title) => {
+    switch (title) {
+      case 'Account Settings':
+        onNavigate('AccountSettings');
+        break;
+      case 'Notification Settings':
+        onNavigate('NotificationSettings');
+        break;
+      case 'Storage & Data':
+        onNavigate('StorageData');
+        break;
+      case 'Privacy Settings':
+        onNavigate('PrivacySettings');
+        break;
+      case 'Help & Support':
+        onNavigate('HelpSupport');
+        break;
+      case 'About':
+        onNavigate('About');
+        break;
+      default:
+        break;
+    }
   };
 
   const profileOptions = [
@@ -139,7 +164,11 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode }) => {
 
         <View style={ProfileScreenStyles.optionsContainer}>
           {profileOptions.map((option, index) => (
-            <TouchableOpacity key={index} style={optionCardStyle}>
+            <TouchableOpacity 
+              key={index} 
+              style={optionCardStyle}
+              onPress={() => handleOptionPress(option.title)}
+            >
               <View>
                 <Text style={optionTitleStyle}>{option.title}</Text>
                 <Text style={optionSubtitleStyle}>{option.subtitle}</Text>

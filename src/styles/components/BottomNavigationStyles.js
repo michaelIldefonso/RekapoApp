@@ -5,7 +5,7 @@ const BottomNavigationStyles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: 'white',
     paddingTop: 10,
-    paddingBottom: 10,
+    paddingBottom: 40, // Extra space for phone nav bar
     paddingHorizontal: 10,
     borderTopWidth: 1,
     borderTopColor: '#e1e8ed',
