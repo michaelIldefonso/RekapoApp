@@ -7,7 +7,6 @@ import {
 } from 'react-native';
 import NotificationSettingsScreenStyles from '../../styles/profilebuttonstyles/NotificationSettingsScreenStyles';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
-import BackButton from '../../components/BackButton';
 
 const NotificationSettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => {
   // Dynamic styles for dark mode
@@ -24,10 +23,7 @@ const NotificationSettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }
     <SafeAreaView style={containerStyle}>
       <ScrollView style={NotificationSettingsScreenStyles.content}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <BackButton isDarkMode={isDarkMode} onPress={() => onNavigate('Profile')} />
-            <Text style={titleStyle}>Notification Settings</Text>
-          </View>
+          <Text style={titleStyle}>Notification Settings</Text>
           <View style={NotificationSettingsScreenStyles.themeToggleButtonWrapper}>
             <ThemeToggleButton isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
           </View>

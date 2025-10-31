@@ -7,7 +7,6 @@ import {
 } from 'react-native';
 import StorageDataScreenStyles from '../../styles/profilebuttonstyles/StorageDataScreenStyles';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
-import BackButton from '../../components/BackButton';
 
 const StorageDataScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => {
   // Dynamic styles for dark mode
@@ -24,10 +23,7 @@ const StorageDataScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => {
     <SafeAreaView style={containerStyle}>
       <ScrollView style={StorageDataScreenStyles.content}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <BackButton isDarkMode={isDarkMode} onPress={() => onNavigate('Profile')} />
-            <Text style={titleStyle}>Storage & Data</Text>
-          </View>
+          <Text style={titleStyle}>Storage & Data</Text>
           <View style={StorageDataScreenStyles.themeToggleButtonWrapper}>
             <ThemeToggleButton isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
           </View>

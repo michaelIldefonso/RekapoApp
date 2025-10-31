@@ -7,7 +7,6 @@ import {
 } from 'react-native';
 import AccountSettingsScreenStyles from '../../styles/profilebuttonstyles/AccountSettingsScreenStyles';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
-import BackButton from '../../components/BackButton';
 
 const AccountSettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => {
   // Dynamic styles for dark mode
@@ -24,10 +23,7 @@ const AccountSettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => 
     <SafeAreaView style={containerStyle}>
       <ScrollView style={AccountSettingsScreenStyles.content}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <BackButton isDarkMode={isDarkMode} onPress={() => onNavigate('Profile')} />
-            <Text style={titleStyle}>Account Settings</Text>
-          </View>
+          <Text style={titleStyle}>Account Settings</Text>
           <View style={AccountSettingsScreenStyles.themeToggleButtonWrapper}>
             <ThemeToggleButton isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
           </View>

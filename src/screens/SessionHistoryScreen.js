@@ -17,21 +17,21 @@ const SessionHistoryScreen = ({ isDarkMode, onToggleDarkMode }) => {
       title: 'Team Meeting #1',
       date: '2023-10-25',
       duration: '45 min',
-      participants: 5,
+  // participants: 5,
     },
     {
       id: '2',
       title: 'Project Review',
       date: '2023-10-22',
       duration: '30 min',
-      participants: 3,
+  // participants: 3,
     },
     {
       id: '3',
       title: 'Client Call',
       date: '2023-10-20',
       duration: '60 min',
-      participants: 2,
+  // participants: 2,
     },
   ];
 
@@ -50,7 +50,7 @@ const SessionHistoryScreen = ({ isDarkMode, onToggleDarkMode }) => {
   ];
   const sessionCardStyle = [
     SessionHistoryScreenStyles.sessionCard,
-    isDarkMode && { backgroundColor: '#333', shadowOpacity: 0, elevation: 0 },
+    isDarkMode && { backgroundColor: '#504a4aff', borderColor: '#ffffffff', borderWidth: 1, shadowOpacity: 0.2 },
   ];
   const sessionTitleStyle = [
     SessionHistoryScreenStyles.sessionTitle,
@@ -73,7 +73,7 @@ const SessionHistoryScreen = ({ isDarkMode, onToggleDarkMode }) => {
       </View>
       <View style={SessionHistoryScreenStyles.sessionDetails}>
         <Text style={sessionInfoStyle}>Duration: {item.duration}</Text>
-        <Text style={sessionInfoStyle}>Participants: {item.participants}</Text>
+  {/* <Text style={sessionInfoStyle}>Participants: {item.participants}</Text> */}
       </View>
     </TouchableOpacity>
   );

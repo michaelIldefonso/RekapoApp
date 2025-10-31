@@ -7,7 +7,6 @@ import {
 } from 'react-native';
 import PrivacySettingsScreenStyles from '../../styles/profilebuttonstyles/PrivacySettingsScreenStyles';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
-import BackButton from '../../components/BackButton';
 
 const PrivacySettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => {
   // Dynamic styles for dark mode
@@ -24,10 +23,7 @@ const PrivacySettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => 
     <SafeAreaView style={containerStyle}>
       <ScrollView style={PrivacySettingsScreenStyles.content}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <BackButton isDarkMode={isDarkMode} onPress={() => onNavigate('Profile')} />
-            <Text style={titleStyle}>Privacy Settings</Text>
-          </View>
+          <Text style={titleStyle}>Privacy Settings</Text>
           <View style={PrivacySettingsScreenStyles.themeToggleButtonWrapper}>
             <ThemeToggleButton isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
           </View>
