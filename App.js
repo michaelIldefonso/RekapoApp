@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, ActivityIndicator } from 'react-native';
-import { isAuthenticated } from './src/services/authService';
+import { isAuthenticated, getStoredUser, getStoredToken } from './src/services/authService';
 
 // Import screens
 import LoginScreen from './src/screens/LoginScreen';
@@ -36,8 +36,20 @@ export default function App() {
     try {
       const authenticated = await isAuthenticated();
       if (authenticated) {
-        setIsLoggedIn(true);
-        console.log('✅ User is authenticated');
+        // Load stored user data and token
+        const storedUser = await getStoredUser();
+        const storedToken = await getStoredToken();
+        
+        if (storedUser && storedToken) {
+          setUserData(storedUser);
+          setJwtToken(storedToken);
+          setIsLoggedIn(true);
+          console.log('✅ User is authenticated');
+        } else {
+          // Authentication check passed but no user data - force re-login
+          setIsLoggedIn(false);
+          console.log('⚠️ User data missing, requiring re-login');
+        }
       } else {
         setIsLoggedIn(false);
         console.log('❌ User is not authenticated or token expired');

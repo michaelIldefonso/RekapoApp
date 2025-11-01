@@ -42,10 +42,25 @@ const LoginScreen = ({ onLogin, isDarkMode, onToggleDarkMode }) => {
         Alert.alert(
           'Success',
           `Welcome ${result.user.name || result.user.email}!`,
-          [{ text: 'OK', onPress: () => onLogin(result.user, result.token) }]
+          [{ 
+            text: 'OK', 
+            onPress: () => {
+              // Ensure loading is cleared before navigation
+              setIsLoading(false);
+              onLogin(result.user, result.token);
+            }
+          }]
         );
       } else {
-        // Login failed
+        // Login failed - clear loading state immediately
+        setIsLoading(false);
+        
+        // Don't show alert if user cancelled
+        if (result.errorCode === 'SIGN_IN_CANCELLED') {
+          console.log('User cancelled sign in');
+          return;
+        }
+        
         Alert.alert(
           'Login Failed',
           result.error || 'Unable to sign in with Google. Please try again.',
@@ -53,14 +68,15 @@ const LoginScreen = ({ onLogin, isDarkMode, onToggleDarkMode }) => {
         );
       }
     } catch (error) {
+      // Always clear loading state on error
+      setIsLoading(false);
+      
       Alert.alert(
         'Error',
         'An unexpected error occurred. Please try again.',
         [{ text: 'OK' }]
       );
       console.error('Login error:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
