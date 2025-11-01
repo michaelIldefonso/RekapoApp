@@ -4,7 +4,7 @@
 
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import EncryptedStorage from 'react-native-encrypted-storage';
+import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from 'jwt-decode';
 import config from '../config/app.config';
 
@@ -62,7 +62,7 @@ export const verifyWithBackend = async (idToken) => {
 
     if (response.ok) {
       // 🔒 SECURITY: Store JWT in ENCRYPTED storage
-      await EncryptedStorage.setItem(config.JWT_TOKEN_KEY, data.access_token);
+      await SecureStore.setItemAsync(config.JWT_TOKEN_KEY, data.access_token);
       
       // 📦 Store only non-sensitive user data in regular storage (for performance)
       const publicUserData = {
@@ -123,7 +123,7 @@ export const signOut = async () => {
   try {
     await GoogleSignin.signOut();
     // Clear encrypted JWT token
-    await EncryptedStorage.removeItem(config.JWT_TOKEN_KEY);
+    await SecureStore.deleteItemAsync(config.JWT_TOKEN_KEY);
     // Clear user data
     await AsyncStorage.removeItem(config.USER_DATA_KEY);
     // Clear all other app data
@@ -138,7 +138,7 @@ export const signOut = async () => {
 // Get stored JWT token (from encrypted storage)
 export const getStoredToken = async () => {
   try {
-    const token = await EncryptedStorage.getItem(config.JWT_TOKEN_KEY);
+    const token = await SecureStore.getItemAsync(config.JWT_TOKEN_KEY);
     return token;
   } catch (error) {
     console.error('Error getting token:', error);
