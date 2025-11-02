@@ -2,6 +2,11 @@
 // Loads configuration from .env file
 import { GOOGLE_WEB_CLIENT_ID, BACKEND_API_URL } from '@env';
 
+// Debug logging to verify .env values are loaded
+console.log('🔧 Config Debug:');
+console.log('  BACKEND_API_URL from .env:', BACKEND_API_URL || 'NOT SET');
+console.log('  GOOGLE_WEB_CLIENT_ID from .env:', GOOGLE_WEB_CLIENT_ID ? 'SET' : 'NOT SET');
+
 export const config = {
   // Backend API URL from .env (fallback for when .env isn't loaded in EAS builds)
   // Change this fallback based on your network:
@@ -16,5 +21,8 @@ export const config = {
   JWT_TOKEN_KEY: 'jwt_token',
   USER_DATA_KEY: 'user_data',
 };
+
+console.log('✅ Final BACKEND_URL:', config.BACKEND_URL);
+console.log('✅ Final GOOGLE_WEB_CLIENT_ID:', config.GOOGLE_WEB_CLIENT_ID ? 'Present' : 'MISSING');
 
 export default config;
