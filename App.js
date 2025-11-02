@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, ActivityIndicator } from 'react-native';
-import { isAuthenticated, getStoredUser, getStoredToken } from './src/services/authService';
+import { isAuthenticated, getStoredUser, getStoredToken, configureGoogleSignIn } from './src/services/authService';
 
 // Import screens
 import LoginScreen from './src/screens/LoginScreen';
@@ -29,6 +29,8 @@ export default function App() {
 
   // Check authentication status on app startup
   useEffect(() => {
+    // Configure Google Sign-In FIRST before checking auth
+    configureGoogleSignIn();
     checkAuthStatus();
   }, []);
 

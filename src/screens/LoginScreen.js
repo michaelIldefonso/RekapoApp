@@ -11,17 +11,13 @@ import {
 import LoginScreenStyles from '../styles/LoginScreenStyles';
 import ThemeToggleButton from '../components/ThemeToggleButton';
 import { 
-  configureGoogleSignIn, 
   handleGoogleLogin as googleLoginService 
 } from '../services/authService';
 
 const LoginScreen = ({ onLogin, isDarkMode, onToggleDarkMode }) => {
   const [isLoading, setIsLoading] = useState(false);
 
-  // Configure Google Sign-In when component mounts
-  useEffect(() => {
-    configureGoogleSignIn();
-  }, []);
+  // Google Sign-In is now configured in App.js before this component loads
 
   // Handler for Google login button
   const handleGoogleLogin = async () => {
