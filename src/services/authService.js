@@ -12,12 +12,25 @@ import config from '../config/app.config';
 // Web Client ID is used for backend verification
 // Note: Backend uses long-lived JWT tokens (not Google refresh tokens)
 export const configureGoogleSignIn = () => {
-  GoogleSignin.configure({
-    webClientId: config.GOOGLE_WEB_CLIENT_ID, // From Google Cloud Console - OAuth 2.0 Web client
-    offlineAccess: false, // Only request ID token, not refresh token
-    // If your device works with offlineAccess:true, that's fine - the backend ignores the refresh token
-    // But some devices get stuck when requesting offline access, so keeping it disabled
-  });
+  console.log('⚙️ Configuring Google Sign-In...');
+  console.log('🔑 Web Client ID:', config.GOOGLE_WEB_CLIENT_ID ? 'Present' : 'MISSING!');
+  
+  if (!config.GOOGLE_WEB_CLIENT_ID) {
+    console.error('❌ GOOGLE_WEB_CLIENT_ID is not set in config!');
+    return;
+  }
+  
+  try {
+    GoogleSignin.configure({
+      webClientId: config.GOOGLE_WEB_CLIENT_ID, // From Google Cloud Console - OAuth 2.0 Web client
+      offlineAccess: false, // Only request ID token, not refresh token
+      // If your device works with offlineAccess:true, that's fine - the backend ignores the refresh token
+      // But some devices get stuck when requesting offline access, so keeping it disabled
+    });
+    console.log('✅ Google Sign-In configured successfully');
+  } catch (error) {
+    console.error('❌ Error configuring Google Sign-In:', error);
+  }
 };
 
 // Sign in with Google
@@ -28,30 +41,31 @@ export const signInWithGoogle = async () => {
     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
     console.log('✅ Google Play Services available');
     
-    // Check if already signed in and sign out first to ensure fresh login
-    const isSignedIn = await GoogleSignin.isSignedIn();
-    console.log('📊 Current sign-in status:', isSignedIn);
-    
-    if (isSignedIn) {
-      console.log('🔄 Signing out existing session...');
-      await GoogleSignin.signOut();
-      console.log('✅ Signed out successfully');
-    }
+    // Don't try to sign out before sign in - causes "apiClient is null" error
+    // The library will handle existing sessions automatically
     
     // Get user info and ID token from Google
     console.log('🚀 Starting Google sign-in...');
     const userInfo = await GoogleSignin.signIn();
-    console.log('✅ Got user info from Google');
+    console.log('✅ Got response from Google');
+    console.log('📦 Response structure:', JSON.stringify(userInfo, null, 2));
     
     // Validate that we got the expected data
-    if (!userInfo || !userInfo.user) {
+    // The response structure might be different - check both userInfo.user and userInfo.data
+    const user = userInfo?.user || userInfo?.data?.user || userInfo;
+    
+    if (!user) {
+      console.error('❌ No user data in response');
       throw new Error('Failed to get user information from Google');
     }
+    
+    console.log('👤 User data:', JSON.stringify(user, null, 2));
     
     // Get the ID token to send to backend
     console.log('🔑 Getting ID token...');
     const tokens = await GoogleSignin.getTokens();
-    console.log('✅ Got ID token');
+    console.log('✅ Got tokens');
+    console.log('🔑 Tokens structure:', JSON.stringify(tokens, null, 2));
     
     if (!tokens || !tokens.idToken) {
       throw new Error('Failed to get authentication token from Google');
@@ -59,7 +73,7 @@ export const signInWithGoogle = async () => {
     
     return {
       success: true,
-      user: userInfo.user,
+      user: user,
       idToken: tokens.idToken, // Send this to your backend for verification
     };
   } catch (error) {
