@@ -59,12 +59,6 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
       case 'Account Settings':
         onNavigate('AccountSettings');
         break;
-      case 'Notification Settings':
-        onNavigate('NotificationSettings');
-        break;
-      case 'Storage & Data':
-        onNavigate('StorageData');
-        break;
       case 'Privacy Settings':
         onNavigate('PrivacySettings');
         break;
@@ -81,8 +75,6 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
 
   const profileOptions = [
     { title: 'Account Settings', subtitle: 'Manage your account preferences' },
-    { title: 'Notification Settings', subtitle: 'Configure app notifications' },
-    { title: 'Storage & Data', subtitle: 'Manage your recordings and data' },
     { title: 'Privacy Settings', subtitle: 'Control your privacy preferences' },
     { title: 'Help & Support', subtitle: 'Get help and contact support' },
     { title: 'About', subtitle: 'App version and information' },

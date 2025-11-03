@@ -10,8 +10,6 @@ import SessionHistoryScreen from './src/screens/SessionHistoryScreen';
 import StartMeetingScreen from './src/screens/StartMeetingScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import AccountSettingsScreen from './src/screens/profilebutton/AccountSettingsScreen';
-import NotificationSettingsScreen from './src/screens/profilebutton/NotificationSettingsScreen';
-import StorageDataScreen from './src/screens/profilebutton/StorageDataScreen';
 import PrivacySettingsScreen from './src/screens/profilebutton/PrivacySettingsScreen';
 import HelpSupportScreen from './src/screens/profilebutton/HelpSupportScreen';
 import AboutScreen from './src/screens/profilebutton/AboutScreen';
@@ -115,10 +113,6 @@ export default function App() {
         return <ProfileScreen onLogout={handleLogout} isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} onNavigate={handleNavigate} />;
       case 'AccountSettings':
         return <AccountSettingsScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} onNavigate={handleNavigate} />;
-      case 'NotificationSettings':
-        return <NotificationSettingsScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} onNavigate={handleNavigate} />;
-      case 'StorageData':
-        return <StorageDataScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} onNavigate={handleNavigate} />;
       case 'PrivacySettings':
         return <PrivacySettingsScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} onNavigate={handleNavigate} />;
       case 'HelpSupport':
