@@ -62,9 +62,6 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
       case 'Privacy Settings':
         onNavigate('PrivacySettings');
         break;
-      case 'Help & Support':
-        onNavigate('HelpSupport');
-        break;
       case 'About':
         onNavigate('About');
         break;
@@ -76,7 +73,6 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
   const profileOptions = [
     { title: 'Account Settings', subtitle: 'Manage your account preferences' },
     { title: 'Privacy Settings', subtitle: 'Control your privacy preferences' },
-    { title: 'Help & Support', subtitle: 'Get help and contact support' },
     { title: 'About', subtitle: 'App version and information' },
   ];
 
@@ -104,22 +100,6 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
   const joinDateStyle = [
     ProfileScreenStyles.joinDate,
     isDarkMode && { color: '#999' },
-  ];
-  const statsCardStyle = [
-    ProfileScreenStyles.statsCard,
-    isDarkMode && { backgroundColor: '#333', shadowOpacity: 0, elevation: 0 },
-  ];
-  const statsTitleStyle = [
-    ProfileScreenStyles.statsTitle,
-    isDarkMode && { color: '#fff' },
-  ];
-  const statNumberStyle = [
-    ProfileScreenStyles.statNumber,
-    isDarkMode && { color: '#fff' },
-  ];
-  const statLabelStyle = [
-    ProfileScreenStyles.statLabel,
-    isDarkMode && { color: '#bbb' },
   ];
   const optionCardStyle = [
     ProfileScreenStyles.optionCard,

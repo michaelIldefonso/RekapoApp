@@ -27,6 +27,8 @@ const ProfileScreenStyles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    borderWidth: 1,
+    borderColor: '#e1e8ed',
   },
   avatar: {
     width: 80,
@@ -73,6 +75,8 @@ const ProfileScreenStyles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+    borderWidth: 1,
+    borderColor: '#e1e8ed',
   },
   optionTitle: {
     fontSize: 16,

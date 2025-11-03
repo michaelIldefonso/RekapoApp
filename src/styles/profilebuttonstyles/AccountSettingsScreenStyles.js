@@ -32,6 +32,8 @@ const AccountSettingsScreenStyles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    borderWidth: 1,
+    borderColor: '#e1e8ed',
   },
   label: {
     fontSize: 14,

@@ -11,7 +11,6 @@ import StartMeetingScreen from './src/screens/StartMeetingScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import AccountSettingsScreen from './src/screens/profilebutton/AccountSettingsScreen';
 import PrivacySettingsScreen from './src/screens/profilebutton/PrivacySettingsScreen';
-import HelpSupportScreen from './src/screens/profilebutton/HelpSupportScreen';
 import AboutScreen from './src/screens/profilebutton/AboutScreen';
 
 // Import components
@@ -115,8 +114,6 @@ export default function App() {
         return <AccountSettingsScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} onNavigate={handleNavigate} />;
       case 'PrivacySettings':
         return <PrivacySettingsScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} onNavigate={handleNavigate} />;
-      case 'HelpSupport':
-        return <HelpSupportScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} onNavigate={handleNavigate} />;
       case 'About':
         return <AboutScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} onNavigate={handleNavigate} />;
       default:
