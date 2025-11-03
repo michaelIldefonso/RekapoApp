@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   TextInput,
   Image,
   ActivityIndicator,
+  BackHandler,
 } from 'react-native';
 import AccountSettingsScreenStyles from '../../styles/profilebuttonstyles/AccountSettingsScreenStyles';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
@@ -26,6 +27,16 @@ const AccountSettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => 
     handleChangePhoto,
     handleSaveUsername,
   } = useAccountSettings();
+
+  // Handle Android hardware back button to go to Profile
+  useEffect(() => {
+    const onBackPress = () => {
+      onNavigate('Profile');
+      return true; // prevent default behavior
+    };
+    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => subscription.remove();
+  }, [onNavigate]);
 
   // Dynamic styles for dark mode
   const containerStyle = [

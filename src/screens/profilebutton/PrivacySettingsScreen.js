@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import PrivacySettingsScreenStyles from '../../styles/profilebuttonstyles/PrivacySettingsScreenStyles';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
+import { BackHandler } from 'react-native';
 
 const PrivacySettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => {
   // Dynamic styles for dark mode
@@ -18,6 +19,15 @@ const PrivacySettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => 
     PrivacySettingsScreenStyles.title,
     isDarkMode && { color: '#fff' },
   ];
+
+  useEffect(() => {
+    const onBackPress = () => {
+      onNavigate('Profile');
+      return true;
+    };
+    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => subscription.remove();
+  }, [onNavigate]);
 
   return (
     <SafeAreaView style={containerStyle}>
