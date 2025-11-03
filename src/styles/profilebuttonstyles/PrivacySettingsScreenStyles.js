@@ -19,6 +19,30 @@ const PrivacySettingsScreenStyles = StyleSheet.create({
   themeToggleButtonWrapper: {
     marginTop: -7,
   },
+  consentCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 12,
+    padding: 18,
+    marginTop: 24,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  consentTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#222',
+  },
+  consentSubtitle: {
+    fontSize: 13,
+    color: '#666',
+    marginTop: 2,
+  },
 });
 
 export default PrivacySettingsScreenStyles;

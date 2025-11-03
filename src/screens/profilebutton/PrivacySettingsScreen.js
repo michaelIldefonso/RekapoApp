@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   SafeAreaView,
   ScrollView,
+  Switch,
 } from 'react-native';
 import PrivacySettingsScreenStyles from '../../styles/profilebuttonstyles/PrivacySettingsScreenStyles';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
@@ -19,6 +20,8 @@ const PrivacySettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => 
     PrivacySettingsScreenStyles.title,
     isDarkMode && { color: '#fff' },
   ];
+
+  const [trainingConsent, setTrainingConsent] = useState(false);
 
   useEffect(() => {
     const onBackPress = () => {
@@ -37,6 +40,35 @@ const PrivacySettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => 
           <View style={PrivacySettingsScreenStyles.themeToggleButtonWrapper}>
             <ThemeToggleButton isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
           </View>
+        </View>
+        {/* Training Data Consent Toggle */}
+        <View style={[
+          PrivacySettingsScreenStyles.consentCard,
+          { backgroundColor: isDarkMode ? '#333' : '#fff',
+            shadowOpacity: isDarkMode ? 0 : 0.08,
+            elevation: isDarkMode ? 0 : 2 }
+        ]}>
+          <View style={{ flex: 1, paddingRight: 12 }}>
+            <Text style={[
+              PrivacySettingsScreenStyles.consentTitle,
+              isDarkMode && { color: '#fff' }
+            ]}>
+              Training Data Consent
+            </Text>
+            <Text style={[
+              PrivacySettingsScreenStyles.consentSubtitle,
+              isDarkMode && { color: '#bbb' }
+            ]}>
+              Allow your data to be used to improve AI models
+            </Text>
+          </View>
+          <Switch
+            value={trainingConsent}
+            onValueChange={setTrainingConsent}
+            trackColor={{ false: '#ccc', true: '#007AFF' }}
+            thumbColor={trainingConsent ? '#fff' : '#f4f3f4'}
+            style={{ marginLeft: 8 }}
+          />
         </View>
         {/* Add your privacy settings content here */}
       </ScrollView>
