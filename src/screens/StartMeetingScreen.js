@@ -5,29 +5,30 @@ import {
   TextInput,
   TouchableOpacity,
   SafeAreaView,
-  Alert,
 } from 'react-native';
 import StartMeetingScreenStyles from '../styles/StartMeetingScreenStyles';
 import ThemeToggleButton from '../components/ThemeToggleButton';
+import MessagePopup from '../components/MessagePopup';
 
 const StartMeetingScreen = (props) => {
   const { isDarkMode, onToggleDarkMode } = props;
   const [meetingTitle, setMeetingTitle] = useState('');
   const [isRecording, setIsRecording] = useState(false);
+  const [messagePopup, setMessagePopup] = useState({ visible: false, title: '', message: '' });
 
   const handleStartRecording = () => {
     if (!meetingTitle.trim()) {
-      Alert.alert('Error', 'Please enter a meeting title');
+      setMessagePopup({ visible: true, title: 'Error', message: 'Please enter a meeting title' });
       return;
     }
 
     setIsRecording(true);
-    Alert.alert('Recording Started', 'Your meeting is now being recorded');
+    setMessagePopup({ visible: true, title: 'Recording Started', message: 'Your meeting is now being recorded' });
   };
 
   const handleStopRecording = () => {
     setIsRecording(false);
-    Alert.alert('Recording Stopped', 'Your recording has been saved');
+    setMessagePopup({ visible: true, title: 'Recording Stopped', message: 'Your recording has been saved' });
     setMeetingTitle('');
   };
 
@@ -150,6 +151,14 @@ const StartMeetingScreen = (props) => {
           <Text style={infoTextStyle}>• Noise suppression</Text>
         </View>
       </View>
+
+      <MessagePopup
+        visible={messagePopup.visible}
+        title={messagePopup.title}
+        message={messagePopup.message}
+        onClose={() => setMessagePopup({ visible: false, title: '', message: '' })}
+        isDarkMode={isDarkMode}
+      />
     </SafeAreaView>
   );
 };

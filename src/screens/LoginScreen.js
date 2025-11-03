@@ -10,12 +10,15 @@ import {
 } from 'react-native';
 import LoginScreenStyles from '../styles/LoginScreenStyles';
 import ThemeToggleButton from '../components/ThemeToggleButton';
+import WelcomePopup from '../components/WelcomePopup';
 import { 
   handleGoogleLogin as googleLoginService 
 } from '../services/authService';
 
 const LoginScreen = ({ onLogin, isDarkMode, onToggleDarkMode }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
+  const [loginResult, setLoginResult] = useState(null);
 
   // Google Sign-In is now configured in App.js before this component loads
 
@@ -34,19 +37,10 @@ const LoginScreen = ({ onLogin, isDarkMode, onToggleDarkMode }) => {
         console.log('🆔 User ID:', result.user.id);
         console.log('🔑 JWT Token:', result.token.substring(0, 20) + '...');
         
-        // Successfully logged in and verified with backend
-        Alert.alert(
-          'Success',
-          `Welcome ${result.user.name || result.user.email}!`,
-          [{ 
-            text: 'OK', 
-            onPress: () => {
-              // Ensure loading is cleared before navigation
-              setIsLoading(false);
-              onLogin(result.user, result.token);
-            }
-          }]
-        );
+        // Successfully logged in - show custom welcome popup
+        setLoginResult(result);
+        setIsLoading(false);
+        setShowWelcomePopup(true);
       } else {
         // Login failed - clear loading state immediately
         setIsLoading(false);
@@ -146,6 +140,16 @@ const LoginScreen = ({ onLogin, isDarkMode, onToggleDarkMode }) => {
           </Text>
         </View>
       </View>
+
+      <WelcomePopup
+        visible={showWelcomePopup}
+        userName={loginResult?.user?.name}
+        onClose={() => {
+          setShowWelcomePopup(false);
+          onLogin(loginResult);
+        }}
+        isDarkMode={isDarkMode}
+      />
     </SafeAreaView>
   );
 };

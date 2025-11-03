@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,9 +12,16 @@ import {
 } from 'react-native';
 import AccountSettingsScreenStyles from '../../styles/profilebuttonstyles/AccountSettingsScreenStyles';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
+import PhotoOptionsPopup from '../../components/PhotoOptionsPopup';
+import DeletePhotoPopup from '../../components/DeletePhotoPopup';
+import MessagePopup from '../../components/MessagePopup';
 import { useAccountSettings } from '../../hooks/useAccountSettings';
 
 const AccountSettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => {
+  const [showPhotoOptions, setShowPhotoOptions] = useState(false);
+  const [showDeletePhoto, setShowDeletePhoto] = useState(false);
+  const [messagePopup, setMessagePopup] = useState({ visible: false, title: '', message: '' });
+
   const {
     userInfo,
     username,
@@ -26,7 +33,23 @@ const AccountSettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => 
     imageRefreshKey,
     handleChangePhoto,
     handleSaveUsername,
+    takePhoto,
+    pickImage,
+    handleDeletePhoto,
+    confirmDeletePhoto,
+    setShowPhotoOptionsCallback,
+    setShowDeletePhotoCallback,
+    setShowMessageCallback,
   } = useAccountSettings();
+
+  // Set up popup callbacks
+  useEffect(() => {
+    setShowPhotoOptionsCallback(() => () => setShowPhotoOptions(true));
+    setShowDeletePhotoCallback(() => () => setShowDeletePhoto(true));
+    setShowMessageCallback(() => (title, message) => {
+      setMessagePopup({ visible: true, title, message });
+    });
+  }, [setShowPhotoOptionsCallback, setShowDeletePhotoCallback, setShowMessageCallback]);
 
   // Handle Android hardware back button to go to Profile
   useEffect(() => {
@@ -222,6 +245,42 @@ const AccountSettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => 
           </Text>
         </View>
       </ScrollView>
+
+      <PhotoOptionsPopup
+        visible={showPhotoOptions}
+        onTakePhoto={() => {
+          setShowPhotoOptions(false);
+          takePhoto();
+        }}
+        onChooseGallery={() => {
+          setShowPhotoOptions(false);
+          pickImage();
+        }}
+        onDelete={() => {
+          setShowPhotoOptions(false);
+          handleDeletePhoto();
+        }}
+        onCancel={() => setShowPhotoOptions(false)}
+        isDarkMode={isDarkMode}
+      />
+
+      <DeletePhotoPopup
+        visible={showDeletePhoto}
+        onConfirm={() => {
+          setShowDeletePhoto(false);
+          confirmDeletePhoto();
+        }}
+        onCancel={() => setShowDeletePhoto(false)}
+        isDarkMode={isDarkMode}
+      />
+
+      <MessagePopup
+        visible={messagePopup.visible}
+        title={messagePopup.title}
+        message={messagePopup.message}
+        onClose={() => setMessagePopup({ visible: false, title: '', message: '' })}
+        isDarkMode={isDarkMode}
+      />
     </SafeAreaView>
   );
 };

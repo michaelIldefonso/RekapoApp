@@ -11,11 +11,13 @@ import {
 } from 'react-native';
 import ProfileScreenStyles from '../styles/ProfileScreenStyles';
 import ThemeToggleButton from '../components/ThemeToggleButton';
+import LogoutPopup from '../components/LogoutPopup';
 import { getStoredUser, signOut } from '../services/authService';
 
 const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) => {
   const [userInfo, setUserInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 
   // Load user data from storage
   useEffect(() => {
@@ -37,21 +39,17 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
   };
 
   const handleLogout = async () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Logout', 
-          style: 'destructive', 
-          onPress: async () => {
-            await signOut();
-            onLogout();
-          }
-        },
-      ]
-    );
+    setShowLogoutPopup(true);
+  };
+
+  const confirmLogout = async () => {
+    setShowLogoutPopup(false);
+    await signOut();
+    onLogout();
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutPopup(false);
   };
 
   const handleOptionPress = (title) => {
@@ -188,6 +186,13 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
           <Text style={ProfileScreenStyles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      <LogoutPopup
+        visible={showLogoutPopup}
+        onConfirm={confirmLogout}
+        onCancel={cancelLogout}
+        isDarkMode={isDarkMode}
+      />
     </SafeAreaView>
   );
 };
