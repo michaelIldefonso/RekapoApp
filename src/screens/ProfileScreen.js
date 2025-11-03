@@ -181,24 +181,6 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
                 Member since {new Date(userInfo.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
               </Text>
             </View>
-
-            <View style={statsCardStyle}>
-              <Text style={statsTitleStyle}>Your Stats</Text>
-              <View style={ProfileScreenStyles.statsRow}>
-                <View style={ProfileScreenStyles.statItem}>
-                  <Text style={statNumberStyle}>0</Text>
-                  <Text style={statLabelStyle}>Total Sessions</Text>
-                </View>
-                <View style={ProfileScreenStyles.statItem}>
-                  <Text style={statNumberStyle}>0h</Text>
-                  <Text style={statLabelStyle}>Recording Time</Text>
-                </View>
-                <View style={ProfileScreenStyles.statItem}>
-                  <Text style={statNumberStyle}>0</Text>
-                  <Text style={statLabelStyle}>Action Items</Text>
-                </View>
-              </View>
-            </View>
           </>
         ) : (
           <Text style={{ textAlign: 'center', marginTop: 50, color: isDarkMode ? '#fff' : '#000' }}>
