@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity } from 'react-native';
-import DeletePhotoPopupStyles from '../styles/popupstyles/DeletePhotoPopupStyles';
+import DeletePhotoPopupStyles from '../../styles/popupstyles/DeletePhotoPopupStyles';
 
 const DeletePhotoPopup = ({ visible, onConfirm, onCancel, isDarkMode }) => {
   const overlayStyle = [

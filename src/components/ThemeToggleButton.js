@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
-import ThemeToggleButtonStyles from '../styles/components/ThemeToggleButtonStyles';
+import ThemeToggleButtonStyles from '../styles/componentstyles/ThemeToggleButtonStyles';
 import { Ionicons } from '@expo/vector-icons';
 
 /**

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity } from 'react-native';
-import LogoutPopupStyles from '../styles/popupstyles/LogoutPopupStyles';
+import LogoutPopupStyles from '../../styles/popupstyles/LogoutPopupStyles';
 
 const LogoutPopup = ({ visible, onConfirm, onCancel, isDarkMode }) => {
   const overlayStyle = [

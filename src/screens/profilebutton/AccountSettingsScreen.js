@@ -12,9 +12,9 @@ import {
 } from 'react-native';
 import AccountSettingsScreenStyles from '../../styles/profilebuttonstyles/AccountSettingsScreenStyles';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
-import PhotoOptionsPopup from '../../components/PhotoOptionsPopup';
-import DeletePhotoPopup from '../../components/DeletePhotoPopup';
-import MessagePopup from '../../components/MessagePopup';
+import PhotoOptionsPopup from '../../components/popup/PhotoOptionsPopup';
+import DeletePhotoPopup from '../../components/popup/DeletePhotoPopup';
+import MessagePopup from '../../components/popup/MessagePopup';
 import { useAccountSettings } from '../../hooks/useAccountSettings';
 
 const AccountSettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => {

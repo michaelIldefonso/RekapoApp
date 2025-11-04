@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import ProfileScreenStyles from '../styles/ProfileScreenStyles';
 import ThemeToggleButton from '../components/ThemeToggleButton';
-import LogoutPopup from '../components/LogoutPopup';
+import LogoutPopup from '../components/popup/LogoutPopup';
 import { getStoredUser, signOut } from '../services/authService';
 
 const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) => {

@@ -1,15 +1,15 @@
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity } from 'react-native';
-import MessagePopupStyles from '../styles/popupstyles/MessagePopupStyles';
+import WelcomePopupStyles from '../../styles/popupstyles/WelcomePopupStyles';
 
-const MessagePopup = ({ visible, title, message, onClose, isDarkMode }) => {
+const WelcomePopup = ({ visible, userName, onClose, isDarkMode }) => {
   const overlayStyle = [
-    MessagePopupStyles.overlay,
+    WelcomePopupStyles.overlay,
     isDarkMode && { backgroundColor: 'rgba(0, 0, 0, 0.7)' },
   ];
   
   const popupStyle = [
-    MessagePopupStyles.popup,
+    WelcomePopupStyles.popup,
     isDarkMode && { 
       backgroundColor: '#333',
       borderColor: '#e1e8ed',
@@ -17,12 +17,12 @@ const MessagePopup = ({ visible, title, message, onClose, isDarkMode }) => {
   ];
   
   const titleStyle = [
-    MessagePopupStyles.title,
+    WelcomePopupStyles.title,
     isDarkMode && { color: '#fff' },
   ];
   
   const messageStyle = [
-    MessagePopupStyles.message,
+    WelcomePopupStyles.message,
     isDarkMode && { color: '#bbb' },
   ];
 
@@ -39,13 +39,15 @@ const MessagePopup = ({ visible, title, message, onClose, isDarkMode }) => {
         onPress={onClose}
       >
         <View style={popupStyle}>
-          <Text style={titleStyle}>{title}</Text>
-          <Text style={messageStyle}>{message}</Text>
+          <Text style={titleStyle}>Success</Text>
+          <Text style={messageStyle}>
+            Welcome {userName}!
+          </Text>
           <TouchableOpacity 
-            style={MessagePopupStyles.button}
+            style={WelcomePopupStyles.button}
             onPress={onClose}
           >
-            <Text style={MessagePopupStyles.buttonText}>OK</Text>
+            <Text style={WelcomePopupStyles.buttonText}>OK</Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -53,4 +55,4 @@ const MessagePopup = ({ visible, title, message, onClose, isDarkMode }) => {
   );
 };
 
-export default MessagePopup;
+export default WelcomePopup;

@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import LoginScreenStyles from '../styles/LoginScreenStyles';
 import ThemeToggleButton from '../components/ThemeToggleButton';
-import WelcomePopup from '../components/WelcomePopup';
+import WelcomePopup from '../components/popup/WelcomePopup';
 import { 
   handleGoogleLogin as googleLoginService 
 } from '../services/authService';

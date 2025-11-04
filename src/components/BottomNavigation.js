@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
-import BottomNavigationStyles from '../styles/components/BottomNavigationStyles';
+import BottomNavigationStyles from '../styles/componentstyles/BottomNavigationStyles';
 
 const BottomNavigation = ({ activeScreen, onNavigate, isDarkMode }) => {
   const navItems = [

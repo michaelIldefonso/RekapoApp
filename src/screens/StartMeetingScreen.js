@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import StartMeetingScreenStyles from '../styles/StartMeetingScreenStyles';
 import ThemeToggleButton from '../components/ThemeToggleButton';
-import MessagePopup from '../components/MessagePopup';
+import MessagePopup from '../components/popup/MessagePopup';
 
 const StartMeetingScreen = (props) => {
   const { isDarkMode, onToggleDarkMode } = props;

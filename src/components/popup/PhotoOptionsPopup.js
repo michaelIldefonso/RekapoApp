@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity } from 'react-native';
-import PhotoOptionsPopupStyles from '../styles/popupstyles/PhotoOptionsPopupStyles';
+import PhotoOptionsPopupStyles from '../../styles/popupstyles/PhotoOptionsPopupStyles';
 
 const PhotoOptionsPopup = ({ visible, onTakePhoto, onChooseGallery, onDelete, onCancel, isDarkMode }) => {
   const overlayStyle = [
