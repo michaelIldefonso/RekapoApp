@@ -143,12 +143,23 @@ export const verifyWithBackend = async (idToken) => {
       // 🔒 SECURITY: Store JWT in ENCRYPTED storage
       await SecureStore.setItemAsync(config.JWT_TOKEN_KEY, data.access_token);
       
+      // Fix profile picture path if it's relative (from backend)
+      let profilePicturePath = data.user.profile_picture_path;
+      if (profilePicturePath && !profilePicturePath.startsWith('http')) {
+        // It's a relative path from backend upload, construct full URL
+        const baseUrl = config.BACKEND_URL.replace('/api', '');
+        const separator = profilePicturePath.startsWith('/') ? '' : '/';
+        profilePicturePath = `${baseUrl}${separator}${profilePicturePath}`;
+        console.log('🔗 Converted relative photo path to full URL:', profilePicturePath);
+      }
+      
       // 📦 Store only non-sensitive user data in regular storage (for performance)
       const publicUserData = {
         id: data.user.id,
         email: data.user.email,
         name: data.user.name,
-        profile_picture_path: data.user.profile_picture_path,
+        username: data.user.username, // ← User's custom username (different from Google name)
+        profile_picture_path: profilePicturePath,
         google_id: data.user.google_id,
         created_at: data.user.created_at,
         data_usage_consent: data.user.data_usage_consent,
