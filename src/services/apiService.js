@@ -142,3 +142,9 @@ export const getMeetingSessions = async () => {
 export const getMeetingById = async (meetingId) => {
   return await apiRequest(`/meetings/${meetingId}`, 'GET');
 };
+
+export const updateUserConsent = async (dataUsageConsent) => {
+  return await apiRequest('/users/me/consent', 'PATCH', { 
+    data_usage_consent: dataUsageConsent 
+  });
+};
