@@ -131,20 +131,117 @@ export const updateUserProfile = async (profileData) => {
   throw new Error('No valid profile data provided');
 };
 
-export const createMeetingSession = async (meetingData) => {
-  return await apiRequest('/meetings', 'POST', meetingData);
+// Session Management APIs
+export const createMeetingSession = async (sessionData) => {
+  // Backend expects: { session_title?: string }
+  return await apiRequest('/sessions', 'POST', {
+    session_title: sessionData.title || sessionData.session_title || 'Untitled Meeting'
+  });
 };
 
-export const getMeetingSessions = async () => {
-  return await apiRequest('/meetings', 'GET');
+export const getMeetingSessions = async (skip = 0, limit = 50) => {
+  return await apiRequest(`/sessions?skip=${skip}&limit=${limit}`, 'GET');
 };
 
-export const getMeetingById = async (meetingId) => {
-  return await apiRequest(`/meetings/${meetingId}`, 'GET');
+export const getMeetingById = async (sessionId) => {
+  return await apiRequest(`/sessions/${sessionId}`, 'GET');
+};
+
+export const updateMeetingSession = async (sessionId, updateData) => {
+  // Backend expects: { session_title?: string, status?: string, end_time?: string }
+  return await apiRequest(`/sessions/${sessionId}`, 'PATCH', updateData);
+};
+
+export const deleteMeetingSession = async (sessionId) => {
+  return await apiRequest(`/sessions/${sessionId}`, 'DELETE');
 };
 
 export const updateUserConsent = async (dataUsageConsent) => {
   return await apiRequest('/users/me/consent', 'PATCH', { 
     data_usage_consent: dataUsageConsent 
   });
+};
+
+/**
+ * WebSocket connection for real-time meeting transcription
+ * @param {number} sessionId - Database session ID
+ * @param {function} onMessage - Callback for incoming messages
+ * @param {function} onError - Callback for errors
+ * @param {function} onClose - Callback for connection close
+ * @returns {object} WebSocket connection with helper methods
+ */
+export const connectTranscriptionWebSocket = (sessionId, onMessage, onError, onClose) => {
+  const wsUrl = config.BACKEND_URL.replace('http', 'ws');
+  const fullUrl = `${wsUrl}/api/ws/transcribe`;
+  console.log('🔌 Connecting to WebSocket:', fullUrl);
+  console.log('📋 Session ID:', sessionId);
+  
+  const ws = new WebSocket(fullUrl);
+  
+  let segmentNumber = 0;
+  
+  ws.onopen = () => {
+    console.log('🔌 WebSocket connected successfully');
+    console.log('📊 WebSocket state:', {
+      readyState: ws.readyState,
+      url: ws.url,
+      protocol: ws.protocol
+    });
+  };
+  
+  ws.onmessage = (event) => {
+    try {
+      console.log('📨 Raw message:', event.data);
+      const data = JSON.parse(event.data);
+      console.log('📨 Received:', data.status || data);
+      if (onMessage) onMessage(data);
+    } catch (error) {
+      console.error('Failed to parse WebSocket message:', error);
+      console.error('Raw data:', event.data);
+    }
+  };
+  
+  ws.onerror = (error) => {
+    console.error('❌ WebSocket error:', error);
+    console.error('❌ WebSocket readyState at error:', ws.readyState);
+    if (onError) onError(error);
+  };
+  
+  ws.onclose = (event) => {
+    console.log('🔌 WebSocket disconnected');
+    console.log('📊 Close event:', {
+      code: event.code,
+      reason: event.reason,
+      wasClean: event.wasClean
+    });
+    if (onClose) onClose();
+  };
+  
+  return {
+    connection: ws,
+    sendAudioChunk: (audioBase64, language = null, model = 'small') => {
+      segmentNumber++;
+      const message = {
+        session_id: sessionId,
+        segment_number: segmentNumber,
+        audio: audioBase64,
+        filename: `segment_${segmentNumber}.wav`,
+        language: language,
+        model: model
+      };
+      
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(message));
+        console.log(`📤 Sent segment ${segmentNumber}`);
+      } else {
+        console.error('WebSocket is not open. ReadyState:', ws.readyState);
+      }
+    },
+    close: () => {
+      if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+        ws.close();
+      }
+    },
+    getSegmentNumber: () => segmentNumber
+  };
 };
