@@ -200,13 +200,17 @@ const StartMeetingScreen = (props) => {
             
             console.log(`✅ Base64 length: ${base64.length} characters`);
             console.log(`📦 Estimated size: ${(base64.length / 1024).toFixed(2)} KB`);
-            
-            // Check WebSocket state before sending
-            if (wsRef.current.connection.readyState === WebSocket.OPEN) {
-              wsRef.current.sendAudioChunk(base64, null, 'small');
-              console.log('✅ Chunk sent successfully');
-            } else {
-              console.error('❌ WebSocket not open, readyState:', wsRef.current.connection.readyState);
+
+            // Send the original audio chunk directly (frontend noise filtering removed)
+            try {
+              if (wsRef.current.connection.readyState === WebSocket.OPEN) {
+                wsRef.current.sendAudioChunk(base64, null, 'small');
+                console.log('✅ Chunk sent (original, no frontend filter)');
+              } else {
+                console.error('❌ WebSocket not open, readyState:', wsRef.current.connection.readyState);
+              }
+            } catch (sendErr) {
+              console.error('❌ Error sending chunk:', sendErr);
             }
           } catch (sendError) {
             console.error('❌ Error sending chunk:', sendError);
@@ -559,7 +563,7 @@ const StartMeetingScreen = (props) => {
               <Text style={infoTextStyle}>• Taglish-To-English Translation</Text>
               <Text style={infoTextStyle}>• Meeting summary (every 10 segments)</Text>
               <Text style={infoTextStyle}>• Smart chunking (max 10s per segment)</Text>
-              <Text style={infoTextStyle}>• Backend VAD noise filtering</Text>
+              <Text style={infoTextStyle}>• Backend VAD filtering</Text>
             </View>
           )}
         </View>

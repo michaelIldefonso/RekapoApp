@@ -7,6 +7,7 @@ import { isAuthenticated, getStoredUser, getStoredToken, configureGoogleSignIn }
 import LoginScreen from './src/screens/LoginScreen';
 import MainScreen from './src/screens/MainScreen';
 import SessionHistoryScreen from './src/screens/SessionHistoryScreen';
+import SessionDetailsScreen from './src/screens/SessionDetailsScreen';
 import StartMeetingScreen from './src/screens/StartMeetingScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import AccountSettingsScreen from './src/screens/profilebutton/AccountSettingsScreen';
@@ -23,6 +24,7 @@ export default function App() {
   const [userData, setUserData] = useState(null); // Store user data
   const [jwtToken, setJwtToken] = useState(null); // Store JWT token
   const [isCheckingAuth, setIsCheckingAuth] = useState(true); // Check auth state on app load
+  const [navigationParams, setNavigationParams] = useState({}); // Store navigation parameters
 
   // Check authentication status on app startup
   useEffect(() => {
@@ -74,8 +76,9 @@ export default function App() {
     setActiveScreen('Main');
   };
 
-  const handleNavigate = (screen) => {
+  const handleNavigate = (screen, params = {}) => {
     setActiveScreen(screen);
+    setNavigationParams(params);
   };
 
   // Handler to update dark mode from any screen
@@ -101,11 +104,19 @@ export default function App() {
   // It also passes global props (like isDarkMode, onToggleDarkMode, and navigation handlers) to each screen.
   // This centralizes navigation and shared state management in the app.
   const renderScreen = () => {
+    // Create navigation object similar to React Navigation
+    const navigation = {
+      navigate: handleNavigate,
+      goBack: () => handleNavigate('SessionHistory'),
+    };
+
     switch (activeScreen) {
       case 'Main':
         return <MainScreen onNavigate={handleNavigate} isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} />;
       case 'SessionHistory':
-        return <SessionHistoryScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} />;
+        return <SessionHistoryScreen navigation={navigation} isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} />;
+      case 'SessionDetails':
+        return <SessionDetailsScreen route={{ params: navigationParams }} navigation={navigation} isDarkMode={isDarkMode} />;
       case 'StartMeeting':
         return <StartMeetingScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} />;
       case 'Profile':

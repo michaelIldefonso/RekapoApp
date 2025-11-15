@@ -162,6 +162,27 @@ export const updateUserConsent = async (dataUsageConsent) => {
   });
 };
 
+// Session History APIs
+
+/**
+ * Get all sessions for the authenticated user
+ * @param {number} skip - Number of sessions to skip for pagination (default: 0)
+ * @param {number} limit - Maximum number of sessions to return (default: 50, max: 100)
+ * @returns {Promise} Array of session objects with basic information
+ */
+export const getSessionHistory = async (skip = 0, limit = 50) => {
+  return await apiRequest(`/sessions?skip=${skip}&limit=${limit}`, 'GET');
+};
+
+/**
+ * Get complete session details including all transcripts, translations, and summaries
+ * @param {number} sessionId - The ID of the session to retrieve
+ * @returns {Promise} Complete session data with recording_segments and summaries
+ */
+export const getSessionDetails = async (sessionId) => {
+  return await apiRequest(`/sessions/${sessionId}/details`, 'GET');
+};
+
 /**
  * WebSocket connection for real-time meeting transcription
  * @param {number} sessionId - Database session ID
