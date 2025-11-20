@@ -4,11 +4,11 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { 
   useAudioRecorder,
   RecordingPresets,
@@ -38,20 +38,42 @@ const StartMeetingScreen = (props) => {
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const wsRef = useRef(null);
   const recordingIntervalRef = useRef(null);
+  const recordingTimeoutsRef = useRef([]);
   const recordingStartTimeRef = useRef(null);
   const isRecordingRef = useRef(false);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      // Mark recording as stopped so any in-flight loops exit
+      isRecordingRef.current = false;
+
+      // Close websocket if any
       if (wsRef.current) {
-        wsRef.current.close();
+        try { wsRef.current.close(); } catch (e) { /* ignore */ }
+        wsRef.current = null;
       }
-      if (recorder.isRecording) {
-        recorder.stop();
-      }
+
+      // Clear any intervals
       if (recordingIntervalRef.current) {
         clearInterval(recordingIntervalRef.current);
+        recordingIntervalRef.current = null;
+      }
+
+      // Clear any pending timeouts used for chunk scheduling/retry
+      if (recordingTimeoutsRef.current && recordingTimeoutsRef.current.length > 0) {
+        recordingTimeoutsRef.current.forEach(id => clearTimeout(id));
+        recordingTimeoutsRef.current = [];
+      }
+
+      // Try to stop recorder if it's still recording. Don't await here.
+      try {
+        if (recorder && recorder.isRecording) {
+          recorder.stop();
+        }
+      } catch (e) {
+        // Ignore errors during unmount cleanup — recorder native object may already be released
+        console.log('Recorder stop during cleanup error:', e?.message || e);
       }
     };
   }, [recorder]);
@@ -222,7 +244,8 @@ const StartMeetingScreen = (props) => {
         // Start next chunk if still recording
         if (isRecordingRef.current) {
           console.log('🔄 Starting next chunk...');
-          setTimeout(() => recordChunk(), 100);
+          const id = setTimeout(() => recordChunk(), 100);
+          recordingTimeoutsRef.current.push(id);
         }
 
       } catch (error) {
@@ -230,7 +253,8 @@ const StartMeetingScreen = (props) => {
         setCurrentStatus('Recording error: ' + error.message);
         // Retry
         if (isRecordingRef.current) {
-          setTimeout(() => recordChunk(), 1000);
+          const id = setTimeout(() => recordChunk(), 1000);
+          recordingTimeoutsRef.current.push(id);
         }
       }
     };
