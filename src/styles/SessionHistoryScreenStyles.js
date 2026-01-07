@@ -27,7 +27,6 @@ const SessionHistoryScreenStyles = StyleSheet.create({
   sessionCard: {
     backgroundColor: 'white',
     borderRadius: 15,
-    padding: 20,
     marginBottom: 15,
     shadowColor: '#000',
     shadowOffset: {
@@ -39,12 +38,26 @@ const SessionHistoryScreenStyles = StyleSheet.create({
     elevation: 3,
     borderWidth: 1,
     borderColor: '#e1e8ed',
+    flexDirection: 'row',
+    alignItems: 'stretch',
+  },
+  sessionContent: {
+    flex: 1,
+    padding: 20,
   },
   sessionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
+  },
+  deleteButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    backgroundColor: 'transparent',
+    borderTopRightRadius: 15,
+    borderBottomRightRadius: 15,
   },
   sessionTitle: {
     fontSize: 18,
