@@ -140,12 +140,33 @@ const StartMeetingScreen = (props) => {
 
     } catch (error) {
       console.error('❌ Start recording error:', error);
+      
+      // Reset all states on error
+      setIsRecording(false);
+      isRecordingRef.current = false;
+      setIsProcessing(false);
+      
+      // Close websocket if it was opened
+      if (wsRef.current) {
+        try {
+          wsRef.current.close();
+        } catch (e) {
+          console.log('Error closing websocket:', e);
+        }
+        wsRef.current = null;
+      }
+      
+      // Clear session if it was created
+      if (sessionId) {
+        setSessionId(null);
+      }
+      
       setMessagePopup({ 
         visible: true, 
         title: 'Error', 
         message: error.message || 'Failed to start recording' 
       });
-      setCurrentStatus('Error occurred');
+      setCurrentStatus('Ready to record');
     }
   };
 
@@ -189,8 +210,10 @@ const StartMeetingScreen = (props) => {
         if (!isRecordingRef.current) {
           console.log('⚠️ Global recording flag is false, stopping');
           if (recorder.isRecording) {
-            recorder.stop();
+            await recorder.stop();
           }
+          setIsProcessing(false);
+          setCurrentStatus('Recording stopped');
           return;
         }
 
@@ -251,7 +274,32 @@ const StartMeetingScreen = (props) => {
       } catch (error) {
         console.error('❌ Recording chunk error:', error);
         setCurrentStatus('Recording error: ' + error.message);
-        // Retry
+        setIsProcessing(false);
+        
+        // Stop recording on critical errors to prevent infinite loops
+        if (!isRecordingRef.current) {
+          console.log('⚠️ Stopping due to error and flag check');
+          return;
+        }
+        
+        // Retry with a limit
+        const retryCount = (recordChunk.retryCount || 0) + 1;
+        if (retryCount > 3) {
+          console.error('❌ Max retries reached, stopping recording');
+          setIsRecording(false);
+          isRecordingRef.current = false;
+          setCurrentStatus('Recording failed - too many errors');
+          setMessagePopup({
+            visible: true,
+            title: 'Recording Error',
+            message: 'Recording stopped due to repeated errors. Please try again.'
+          });
+          return;
+        }
+        
+        recordChunk.retryCount = retryCount;
+        console.log(`🔄 Retry attempt ${retryCount}/3`);
+        
         if (isRecordingRef.current) {
           const id = setTimeout(() => recordChunk(), 1000);
           recordingTimeoutsRef.current.push(id);
