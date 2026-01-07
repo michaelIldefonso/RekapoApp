@@ -3,6 +3,10 @@ import { Modal, View, Text, TouchableOpacity } from 'react-native';
 import MessagePopupStyles from '../../styles/popupstyles/MessagePopupStyles';
 
 const MessagePopup = ({ visible, title, message, onClose, isDarkMode }) => {
+  // Ensure title and message are always strings
+  const titleText = String(title || '');
+  const messageText = String(message || '');
+  
   const overlayStyle = [
     MessagePopupStyles.overlay,
     isDarkMode && { backgroundColor: 'rgba(0, 0, 0, 0.7)' },
@@ -39,8 +43,8 @@ const MessagePopup = ({ visible, title, message, onClose, isDarkMode }) => {
         onPress={onClose}
       >
         <View style={popupStyle}>
-          <Text style={titleStyle}>{title}</Text>
-          <Text style={messageStyle}>{message}</Text>
+          <Text style={titleStyle}>{titleText}</Text>
+          <Text style={messageStyle}>{messageText}</Text>
           <TouchableOpacity 
             style={MessagePopupStyles.button}
             onPress={onClose}

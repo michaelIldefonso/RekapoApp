@@ -273,6 +273,7 @@ const SessionHistoryScreen = ({ navigation, isDarkMode, onToggleDarkMode }) => {
           }
         />
       </View>
+
       <DeleteSessionPopup
         visible={deletePopupVisible}
         onConfirm={confirmDelete}
@@ -286,7 +287,8 @@ const SessionHistoryScreen = ({ navigation, isDarkMode, onToggleDarkMode }) => {
         message={messagePopup.message}
         onClose={() => setMessagePopup({ visible: false, title: '', message: '' })}
         isDarkMode={isDarkMode}
-      />    </SafeAreaView>
+      />
+    </SafeAreaView>
   );
 };
 

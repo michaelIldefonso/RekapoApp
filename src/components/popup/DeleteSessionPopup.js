@@ -3,6 +3,9 @@ import { Modal, View, Text, TouchableOpacity } from 'react-native';
 import DeleteSessionPopupStyles from '../../styles/popupstyles/DeleteSessionPopupStyles';
 
 const DeleteSessionPopup = ({ visible, onConfirm, onCancel, isDarkMode, sessionTitle }) => {
+  // Ensure sessionTitle is always a string
+  const title = String(sessionTitle || '');
+  
   const overlayStyle = [
     DeleteSessionPopupStyles.overlay,
     isDarkMode && { backgroundColor: 'rgba(0, 0, 0, 0.7)' },
@@ -60,11 +63,7 @@ const DeleteSessionPopup = ({ visible, onConfirm, onCancel, isDarkMode, sessionT
           <View style={popupStyle}>
             <Text style={titleStyle}>Delete Session</Text>
             <Text style={messageStyle}>
-              Are you sure you want to delete
-            </Text>
-            <Text style={sessionTitleStyle}>"{sessionTitle}"?</Text>
-            <Text style={messageStyle}>
-              This action cannot be undone.
+              Are you sure you want to delete{'\n'}<Text style={sessionTitleStyle}>"{title}"?</Text>{'\n'}This action cannot be undone.
             </Text>
             <View style={DeleteSessionPopupStyles.buttonRow}>
               <TouchableOpacity 
