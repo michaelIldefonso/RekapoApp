@@ -20,6 +20,7 @@ import StartMeetingScreenStyles from '../styles/StartMeetingScreenStyles';
 import ThemeToggleButton from '../components/ThemeToggleButton';
 import MessagePopup from '../components/popup/MessagePopup';
 import { createMeetingSession, updateMeetingSession, connectTranscriptionWebSocket } from '../services/apiService';
+import { checkBackendConnection, getConnectionTroubleshootingMessage } from '../utils/connectionHelper';
 
 const StartMeetingScreen = (props) => {
   const { isDarkMode, onToggleDarkMode } = props;
@@ -81,6 +82,23 @@ const StartMeetingScreen = (props) => {
   const handleStartRecording = async () => {
     try {
       console.log('🎙️ Starting recording process...');
+      
+      // Check backend connection first
+      setCurrentStatus('Checking backend connection...');
+      const connectionCheck = await checkBackendConnection();
+      
+      if (!connectionCheck.success) {
+        const troubleshooting = getConnectionTroubleshootingMessage();
+        setMessagePopup({ 
+          visible: true, 
+          title: '❌ Backend Connection Failed', 
+          message: `${connectionCheck.message}\n\n${troubleshooting}`
+        });
+        setCurrentStatus('Ready to record');
+        return;
+      }
+      
+      console.log('✅ Backend is reachable');
 
       // Request permissions
       const { granted } = await AudioModule.requestRecordingPermissionsAsync();
@@ -116,15 +134,42 @@ const StartMeetingScreen = (props) => {
       setSessionId(newSessionId);
       console.log('✅ Session created:', newSessionId);
 
-      // Connect WebSocket
+      // Connect WebSocket with retry logic
       setCurrentStatus('Connecting to transcription service...');
-      const ws = connectTranscriptionWebSocket(
-        newSessionId,
-        handleWebSocketMessage,
-        handleWebSocketError,
-        handleWebSocketClose
-      );
-      wsRef.current = ws;
+      try {
+        const ws = await connectTranscriptionWebSocket(
+          newSessionId,
+          handleWebSocketMessage,
+          handleWebSocketError,
+          handleWebSocketClose
+        );
+        
+        // Wait for connection to open (max 5 seconds)
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            reject(new Error('WebSocket connection timeout'));
+          }, 5000);
+          
+          if (ws.connection.readyState === WebSocket.OPEN) {
+            clearTimeout(timeout);
+            resolve();
+          } else {
+            ws.connection.onopen = () => {
+              clearTimeout(timeout);
+              resolve();
+            };
+            ws.connection.onerror = (err) => {
+              clearTimeout(timeout);
+              reject(new Error('WebSocket connection failed'));
+            };
+          }
+        });
+        
+        wsRef.current = ws;
+        console.log('✅ WebSocket connected and ready');
+      } catch (wsError) {
+        throw new Error(`Failed to connect to transcription service: ${wsError.message}`);
+      }
 
       // Start recording with 10-second chunks
       setIsRecording(true);
@@ -349,14 +394,35 @@ const StartMeetingScreen = (props) => {
   };
 
   const handleWebSocketError = (error) => {
-    console.error('WebSocket error:', error);
-    setCurrentStatus('Connection error');
+    console.error('❌ WebSocket error in screen:', error);
+    setCurrentStatus('Connection error - Check backend server');
+    
+    if (isRecording) {
+      setMessagePopup({
+        visible: true,
+        title: '⚠️ Connection Error',
+        message: 'Lost connection to transcription service. Please check if the backend server is running.'
+      });
+    }
   };
 
-  const handleWebSocketClose = () => {
-    console.log('WebSocket closed');
+  const handleWebSocketClose = (event) => {
+    console.log('🔌 WebSocket closed in screen');
+    if (event && event.code) {
+      console.log('Close code:', event.code, 'Reason:', event.reason);
+    }
+    
     if (isRecording) {
       setCurrentStatus('Connection lost');
+      setMessagePopup({
+        visible: true,
+        title: '⚠️ Connection Lost',
+        message: 'Transcription service disconnected. Recording stopped.'
+      });
+      
+      // Auto-stop recording if connection is lost
+      setIsRecording(false);
+      isRecordingRef.current = false;
     }
   };
 

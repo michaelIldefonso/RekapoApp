@@ -191,10 +191,19 @@ export const getSessionDetails = async (sessionId) => {
  * @param {function} onClose - Callback for connection close
  * @returns {object} WebSocket connection with helper methods
  */
-export const connectTranscriptionWebSocket = (sessionId, onMessage, onError, onClose) => {
+export const connectTranscriptionWebSocket = async (sessionId, onMessage, onError, onClose) => {
+  const token = await getStoredToken();
+  
+  if (!token) {
+    const error = new Error('No authentication token found');
+    if (onError) onError(error);
+    throw error;
+  }
+  
   const wsUrl = config.BACKEND_URL.replace('http', 'ws');
-  const fullUrl = `${wsUrl}/api/ws/transcribe`;
-  console.log('🔌 Connecting to WebSocket:', fullUrl);
+  // Add session_id and token as query parameters
+  const fullUrl = `${wsUrl}/api/ws/transcribe?session_id=${sessionId}&token=${encodeURIComponent(token)}`;
+  console.log('🔌 Connecting to WebSocket:', fullUrl.replace(token, 'TOKEN_HIDDEN'));
   console.log('📋 Session ID:', sessionId);
   
   const ws = new WebSocket(fullUrl);
@@ -225,6 +234,18 @@ export const connectTranscriptionWebSocket = (sessionId, onMessage, onError, onC
   ws.onerror = (error) => {
     console.error('❌ WebSocket error:', error);
     console.error('❌ WebSocket readyState at error:', ws.readyState);
+    console.error('❌ WebSocket URL:', ws.url);
+    console.error('❌ Error details:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
+    
+    // Provide more helpful error message
+    if (ws.readyState === 3) {
+      console.error('⚠️ WebSocket failed to connect. Possible issues:');
+      console.error('   1. Backend server may not be running');
+      console.error('   2. Wrong IP address or port');
+      console.error('   3. Firewall blocking the connection');
+      console.error('   4. Authentication token may be invalid');
+    }
+    
     if (onError) onError(error);
   };
   
@@ -235,7 +256,23 @@ export const connectTranscriptionWebSocket = (sessionId, onMessage, onError, onC
       reason: event.reason,
       wasClean: event.wasClean
     });
-    if (onClose) onClose();
+    
+    // Log common close codes
+    if (event.code === 1000) {
+      console.log('✅ Normal closure');
+    } else if (event.code === 1006) {
+      console.error('⚠️ Abnormal closure - connection failed or was lost');
+    } else if (event.code === 1001) {
+      console.log('⚠️ Going away - server or client is going offline');
+    } else if (event.code === 1003) {
+      console.error('⚠️ Unsupported data type');
+    } else if (event.code === 1008) {
+      console.error('⚠️ Policy violation');
+    } else if (event.code === 1011) {
+      console.error('⚠️ Server error');
+    }
+    
+    if (onClose) onClose(event);
   };
   
   return {
