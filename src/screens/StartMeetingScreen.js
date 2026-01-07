@@ -46,13 +46,16 @@ const StartMeetingScreen = (props) => {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      // Mark recording as stopped so any in-flight loops exit
+      console.log('🧹 Cleanup: Component unmounting');
+      
+      // Mark recording as stopped FIRST so any in-flight loops exit immediately
       isRecordingRef.current = false;
 
-      // Close websocket if any
-      if (wsRef.current) {
-        try { wsRef.current.close(); } catch (e) { /* ignore */ }
-        wsRef.current = null;
+      // Clear any pending timeouts used for chunk scheduling/retry BEFORE stopping recorder
+      if (recordingTimeoutsRef.current && recordingTimeoutsRef.current.length > 0) {
+        console.log('🧹 Clearing', recordingTimeoutsRef.current.length, 'pending timeouts');
+        recordingTimeoutsRef.current.forEach(id => clearTimeout(id));
+        recordingTimeoutsRef.current = [];
       }
 
       // Clear any intervals
@@ -61,21 +64,30 @@ const StartMeetingScreen = (props) => {
         recordingIntervalRef.current = null;
       }
 
-      // Clear any pending timeouts used for chunk scheduling/retry
-      if (recordingTimeoutsRef.current && recordingTimeoutsRef.current.length > 0) {
-        recordingTimeoutsRef.current.forEach(id => clearTimeout(id));
-        recordingTimeoutsRef.current = [];
+      // Close websocket if any
+      if (wsRef.current) {
+        try { 
+          console.log('🧹 Closing websocket');
+          wsRef.current.close(); 
+        } catch (e) { 
+          console.log('Websocket close error:', e?.message);
+        }
+        wsRef.current = null;
       }
 
-      // Try to stop recorder if it's still recording. Don't await here.
-      try {
-        if (recorder && recorder.isRecording) {
-          recorder.stop();
+      // Try to stop recorder if it's still recording
+      // Use a small delay to let any in-flight operations complete
+      setTimeout(() => {
+        try {
+          if (recorder && recorder.isRecording) {
+            console.log('🧹 Stopping active recorder');
+            recorder.stop();
+          }
+        } catch (e) {
+          // Ignore errors during unmount cleanup — recorder native object may already be released
+          console.log('Recorder stop during cleanup (ignored):', e?.message || e);
         }
-      } catch (e) {
-        // Ignore errors during unmount cleanup — recorder native object may already be released
-        console.log('Recorder stop during cleanup error:', e?.message || e);
-      }
+      }, 50);
     };
   }, [recorder]);
 
@@ -226,24 +238,52 @@ const StartMeetingScreen = (props) => {
           return;
         }
 
-        // Prepare recorder for new recording
+        // Safety check: verify recorder is still valid
+        if (!recorder) {
+          console.log('⚠️ Recorder object is null, stopping chunks');
+          isRecordingRef.current = false;
+          return;
+        }
+
+        // Prepare recorder for new recording - wrap in try-catch
         console.log('🔴 Preparing recorder...');
-        await recorder.prepareToRecordAsync();
+        try {
+          await recorder.prepareToRecordAsync();
+        } catch (prepError) {
+          console.log('⚠️ Recorder prepare failed (likely released):', prepError.message);
+          isRecordingRef.current = false;
+          return;
+        }
+        
         console.log('✅ Recorder prepared, starting recording...');
         recordingStartTimeRef.current = Date.now();
         
-        // Start recording
+        // Start recording - wrap in try-catch
         console.log('▶️ Calling recorder.record()...');
-        recorder.record();
+        try {
+          recorder.record();
+        } catch (recordError) {
+          console.log('⚠️ Recorder record failed (likely released):', recordError.message);
+          isRecordingRef.current = false;
+          return;
+        }
         
         // Check state immediately after
         await new Promise(resolve => setTimeout(resolve, 100));
-        console.log('✅ Recording started!', {
-          isRecording: recorder.isRecording,
-          canRecord: recorder.canRecord,
-          uri: recorder.uri,
-          durationMillis: recorder.durationMillis
-        });
+        
+        try {
+          console.log('✅ Recording started!', {
+            isRecording: recorder.isRecording,
+            canRecord: recorder.canRecord,
+            uri: recorder.uri,
+            durationMillis: recorder.durationMillis
+          });
+        } catch (stateError) {
+          console.log('⚠️ Cannot read recorder state (likely released)');
+          isRecordingRef.current = false;
+          return;
+        }
+        
         setCurrentStatus('Recording... (listening)');
 
         // Wait for hard limit
@@ -254,25 +294,42 @@ const StartMeetingScreen = (props) => {
 
         if (!isRecordingRef.current) {
           console.log('⚠️ Global recording flag is false, stopping');
-          if (recorder.isRecording) {
-            await recorder.stop();
+          try {
+            if (recorder && recorder.isRecording) {
+              await recorder.stop();
+            }
+          } catch (stopError) {
+            console.log('⚠️ Stop failed during flag check (ignored):', stopError.message);
           }
           setIsProcessing(false);
           setCurrentStatus('Recording stopped');
           return;
         }
 
-        // Stop and get URI
+        // Stop and get URI - wrap in try-catch
         console.log('⏹️ Stopping recording...');
-        await recorder.stop();
+        let uri = null;
+        try {
+          if (recorder && recorder.isRecording) {
+            await recorder.stop();
+            uri = recorder.uri;
+          }
+        } catch (stopError) {
+          console.log('⚠️ Recorder stop failed (likely released):', stopError.message);
+          isRecordingRef.current = false;
+          return;
+        }
         
-        console.log('🛑 After stop, state:', {
-          isRecording: recorder.isRecording,
-          uri: recorder.uri,
-          durationMillis: recorder.durationMillis
-        });
+        try {
+          console.log('🛑 After stop, state:', {
+            isRecording: recorder.isRecording,
+            uri: recorder.uri,
+            durationMillis: recorder.durationMillis
+          });
+        } catch (stateError) {
+          console.log('⚠️ Cannot read recorder state after stop');
+        }
         
-        const uri = recorder.uri;
         const duration = (Date.now() - recordingStartTimeRef.current) / 1000;
         console.log(`📊 Recording duration: ${duration.toFixed(1)}s, URI:`, uri);
 
