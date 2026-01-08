@@ -77,7 +77,7 @@ const LoginScreen = ({ onLogin, isDarkMode, onToggleDarkMode }) => {
   ];
   const googleButtonStyle = [
     LoginScreenStyles.googleButton,
-    isDarkMode && { backgroundColor: '#504a4aff' }, // css for darkmode, google button background namia fuckable mouth
+    isDarkMode && { backgroundColor: '#333333' }, // css for darkmode, google button background namia fuckable mouth
   ];
   const googleButtonTextStyle = [
     LoginScreenStyles.googleButtonText,

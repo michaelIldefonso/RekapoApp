@@ -51,7 +51,7 @@ const MainScreen = ({ onNavigate, isDarkMode, onToggleDarkMode }) => {
   // Dynamic styles for cards in dark mode
   const cardStyle = [
     MainScreenStyles.card,
-    isDarkMode && { backgroundColor: '#504a4aff', borderColor: '#ffffffff', borderWidth: 1, shadowOpacity: 0.2 },
+    isDarkMode && { backgroundColor: '#333333', borderColor: '#444444', borderWidth: 1, shadowOpacity: 0.2 },
   ];
   const cardTitleStyle = [
     MainScreenStyles.cardTitle,

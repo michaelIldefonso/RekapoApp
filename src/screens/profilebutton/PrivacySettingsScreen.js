@@ -93,6 +93,7 @@ const PrivacySettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => 
           <View style={[
             PrivacySettingsScreenStyles.consentCard,
             { backgroundColor: isDarkMode ? '#333' : '#fff',
+              borderColor: isDarkMode ? '#444444' : undefined,
               shadowOpacity: isDarkMode ? 0 : 0.08,
               elevation: isDarkMode ? 0 : 2 }
           ]}>

@@ -74,6 +74,7 @@ const AccountSettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => 
     AccountSettingsScreenStyles.card,
     isDarkMode && { 
       backgroundColor: '#333',
+      borderColor: '#444444',
       shadowOpacity: 0,
       elevation: 0,
     },

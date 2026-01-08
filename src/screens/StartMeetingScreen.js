@@ -569,12 +569,12 @@ const StartMeetingScreen = (props) => {
     isDarkMode && {
       backgroundColor: '#333',
       color: '#fff',
-      borderColor: '#fff',
+      borderColor: '#444444',
     },
   ];
   const statusContainerStyle = [
     StartMeetingScreenStyles.statusContainer,
-    isDarkMode && { backgroundColor: '#333', borderColor: '#fff', shadowOpacity: 0 },
+    isDarkMode && { backgroundColor: '#333', borderColor: '#444444', shadowOpacity: 0 },
   ];
   const statusTextStyle = [
     StartMeetingScreenStyles.statusText,
@@ -594,7 +594,7 @@ const StartMeetingScreen = (props) => {
   ];
   const infoContainerStyle = [
     StartMeetingScreenStyles.infoContainer,
-    isDarkMode && { backgroundColor: '#333' },
+    isDarkMode && { backgroundColor: '#333', borderColor: '#444444' },
   ];
   const infoTitleStyle = [
     StartMeetingScreenStyles.infoTitle,

@@ -85,7 +85,7 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
   ];
   const profileCardStyle = [
     ProfileScreenStyles.profileCard,
-    isDarkMode && { backgroundColor: '#333', shadowOpacity: 0, elevation: 0 },
+    isDarkMode && { backgroundColor: '#333', borderColor: '#444444', shadowOpacity: 0, elevation: 0 },
   ];
   const userNameStyle = [
     ProfileScreenStyles.userName,
@@ -101,7 +101,7 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
   ];
   const optionCardStyle = [
     ProfileScreenStyles.optionCard,
-    isDarkMode && { backgroundColor: '#333', shadowOpacity: 0, elevation: 0 },
+    isDarkMode && { backgroundColor: '#333', borderColor: '#444444', shadowOpacity: 0, elevation: 0 },
   ];
   const optionTitleStyle = [
     ProfileScreenStyles.optionTitle,
