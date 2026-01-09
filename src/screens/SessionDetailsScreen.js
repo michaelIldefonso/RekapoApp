@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Alert,
+  BackHandler,
 } from 'react-native';
 import SessionDetailsScreenStyles from '../styles/SessionDetailsScreenStyles';
 import { getSessionDetails } from '../services/apiService';
@@ -20,7 +21,17 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
   useEffect(() => {
     loadSessionDetails();
   }, [sessionId]);
+// Handle hardware back button
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      navigation.goBack();
+      return true; // Prevent default behavior
+    });
 
+    return () => backHandler.remove();
+  }, [navigation]);
+
+  
   const loadSessionDetails = async () => {
     try {
       setLoading(true);
@@ -146,12 +157,6 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
           >
             <Text style={SessionDetailsScreenStyles.retryButtonText}>Retry</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[backButtonStyle, { marginTop: 10 }]}
-            onPress={() => navigation.goBack()}
-          >
-            <Text style={backButtonTextStyle}>Go Back</Text>
-          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -161,12 +166,6 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
     <SafeAreaView style={containerStyle}>
       {/* Header */}
       <View style={headerStyle}>
-        <TouchableOpacity 
-          style={backButtonStyle}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={backButtonTextStyle}>← Back</Text>
-        </TouchableOpacity>
         <Text style={titleStyle}>{sessionData.session_title}</Text>
         <Text style={subtitleStyle}>{formatDateTime(sessionData.start_time)}</Text>
       </View>
