@@ -9,6 +9,7 @@ import MainScreen from './src/screens/MainScreen';
 import SessionHistoryScreen from './src/screens/SessionHistoryScreen';
 import SessionDetailsScreen from './src/screens/SessionDetailsScreen';
 import StartMeetingScreen from './src/screens/StartMeetingScreen';
+import StartRecord from './src/screens/StartRecord';
 import ProfileScreen from './src/screens/ProfileScreen';
 import AccountSettingsScreen from './src/screens/profilebutton/AccountSettingsScreen';
 import PrivacySettingsScreen from './src/screens/profilebutton/PrivacySettingsScreen';
@@ -107,7 +108,7 @@ export default function App() {
     // Create navigation object similar to React Navigation
     const navigation = {
       navigate: handleNavigate,
-      goBack: () => handleNavigate('SessionHistory'),
+      goBack: () => handleNavigate('StartMeeting'),
     };
 
     switch (activeScreen) {
@@ -118,7 +119,9 @@ export default function App() {
       case 'SessionDetails':
         return <SessionDetailsScreen route={{ params: navigationParams }} navigation={navigation} isDarkMode={isDarkMode} />;
       case 'StartMeeting':
-        return <StartMeetingScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} />;
+        return <StartMeetingScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} navigation={navigation} />;
+      case 'StartRecord':
+        return <StartRecord isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} route={{ params: navigationParams }} navigation={navigation} />;
       case 'Profile':
         return <ProfileScreen onLogout={handleLogout} isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} onNavigate={handleNavigate} />;
       case 'AccountSettings':
