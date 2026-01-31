@@ -281,40 +281,47 @@ const StartRecord = (props) => {
         const duration = (Date.now() - recordingStartTimeRef.current) / 1000;
         console.log(`📊 Recording duration: ${duration.toFixed(1)}s, URI:`, uri);
 
-        if (uri && wsRef.current && duration > 0.5) {
-          try {
-            setIsProcessing(true);
-            setCurrentStatus('Processing audio...');
-            console.log(`📤 Sending chunk: ${duration.toFixed(1)}s`);
-            
-            const base64 = await FileSystem.readAsStringAsync(uri, {
-              encoding: 'base64',
-            });
-            
-            console.log(`✅ Base64 length: ${base64.length} characters`);
-            console.log(`📦 Estimated size: ${(base64.length / 1024).toFixed(2)} KB`);
-
-            try {
-              if (wsRef.current.connection.readyState === WebSocket.OPEN) {
-                wsRef.current.sendAudioChunk(base64, null, 'small');
-                console.log('✅ Chunk sent (original, no frontend filter)');
-              } else {
-                console.error('❌ WebSocket not open, readyState:', wsRef.current.connection.readyState);
-              }
-            } catch (sendErr) {
-              console.error('❌ Error sending chunk:', sendErr);
-            }
-          } catch (sendError) {
-            console.error('❌ Error sending chunk:', sendError);
-          }
-        } else {
-          console.log('⏭️ Skipping chunk - too short or no audio');
+        // 🚀 START NEXT RECORDING IMMEDIATELY (parallel processing - eliminates gap)
+        if (isRecordingRef.current) {
+          console.log('🔄 Starting next chunk NOW (while processing previous)...');
+          const id = setTimeout(() => recordChunk(), 0); // Start immediately
+          recordingTimeoutsRef.current.push(id);
         }
 
-        if (isRecordingRef.current) {
-          console.log('🔄 Starting next chunk...');
-          const id = setTimeout(() => recordChunk(), 100);
-          recordingTimeoutsRef.current.push(id);
+        // Process previous chunk in parallel (non-blocking)
+        if (uri && wsRef.current && duration > 0.5) {
+          // Fire-and-forget: don't await, let it run in background
+          (async () => {
+            try {
+              setIsProcessing(true);
+              setCurrentStatus('Processing audio...');
+              console.log(`📤 Sending chunk: ${duration.toFixed(1)}s`);
+              
+              const base64 = await FileSystem.readAsStringAsync(uri, {
+                encoding: 'base64',
+              });
+              
+              console.log(`✅ Base64 length: ${base64.length} characters`);
+              console.log(`📦 Estimated size: ${(base64.length / 1024).toFixed(2)} KB`);
+
+              try {
+                if (wsRef.current && wsRef.current.connection.readyState === WebSocket.OPEN) {
+                  wsRef.current.sendAudioChunk(base64, null, 'small');
+                  console.log('✅ Chunk sent (original, no frontend filter)');
+                } else {
+                  console.error('❌ WebSocket not open, readyState:', wsRef.current?.connection.readyState);
+                }
+              } catch (sendErr) {
+                console.error('❌ Error sending chunk:', sendErr);
+              }
+            } catch (sendError) {
+              console.error('❌ Error sending chunk:', sendError);
+            } finally {
+              setIsProcessing(false);
+            }
+          })();
+        } else {
+          console.log('⏭️ Skipping chunk - too short or no audio');
         }
 
       } catch (error) {
