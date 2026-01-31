@@ -24,8 +24,12 @@
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
-        "RECORD_AUDIO"
-      ]
+        "RECORD_AUDIO",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ],
+      "usesCleartextTraffic": true,
+      "networkSecurityConfig": "./android-network-security.xml"
     },
     "web": {
       "favicon": "./assets/favicon.png"
