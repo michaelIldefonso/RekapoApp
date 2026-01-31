@@ -601,17 +601,9 @@ const StartRecord = (props) => {
                 key={index} 
                 style={transcriptionItemStyle}
               >
-                <Text style={segmentNumberStyle}>
-                  Segment {item.segment} • {item.language.toUpperCase()} • {item.duration?.toFixed(1)}s
+                <Text style={translationTextStyle}>
+                  {item.translation}
                 </Text>
-                <Text style={transcriptionTextStyle}>
-                  {item.original}
-                </Text>
-                {item.translation !== item.original && (
-                  <Text style={translationTextStyle}>
-                    🇬🇧 {item.translation}
-                  </Text>
-                )}
               </View>
             ))}
           </ScrollView>
