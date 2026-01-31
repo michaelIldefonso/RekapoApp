@@ -596,7 +596,7 @@ const StartRecord = (props) => {
             style={StartRecordStyles.transcriptionScroll}
             nestedScrollEnabled={true}
           >
-            {transcriptions.slice().reverse().map((item, index) => (
+            {transcriptions.map((item, index) => (
               <View 
                 key={index} 
                 style={transcriptionItemStyle}
