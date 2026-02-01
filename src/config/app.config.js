@@ -18,7 +18,7 @@ export const config = {
   // - Android emulator: 'http://10.0.2.2:8000'
   BACKEND_URL: sanitizedBackendUrl,
   // Google OAuth Web Client ID from .env (fallback from EAS Secrets)
-  GOOGLE_WEB_CLIENT_ID: GOOGLE_WEB_CLIENT_ID || '333706226225-hlecdsce1c6j1kuo3us1qf31kg8j0v5v.apps.googleusercontent.com',
+  GOOGLE_WEB_CLIENT_ID: GOOGLE_WEB_CLIENT_ID || '33370626225-hlecdsce1c6j1kuo3us1qf31kg8j0v5v.apps.googleusercontent.com',
   // App settings
   JWT_TOKEN_KEY: 'jwt_token',
   USER_DATA_KEY: 'user_data',
