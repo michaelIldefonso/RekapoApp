@@ -8,15 +8,22 @@ import {
   TouchableOpacity,
   Alert,
   BackHandler,
+  TextInput,
+  Modal,
 } from 'react-native';
 import SessionDetailsScreenStyles from '../styles/SessionDetailsScreenStyles';
-import { getSessionDetails } from '../services/apiService';
+import { getSessionDetails, updateMeetingSession } from '../services/apiService';
+import MessagePopup from '../components/popup/MessagePopup';
 
 const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
   const { sessionId } = route.params;
   const [sessionData, setSessionData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [successPopup, setSuccessPopup] = useState({ visible: false, title: '', message: '' });
 
   useEffect(() => {
     loadSessionDetails();
@@ -40,6 +47,7 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
       
       if (result.success) {
         setSessionData(result.data);
+        setNewTitle(result.data.session_title);
       } else {
         setError(result.error);
         Alert.alert('Error', `Failed to load session details: ${result.error}`);
@@ -49,6 +57,34 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
       Alert.alert('Error', 'Failed to load session details');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEditTitle = async () => {
+    if (!newTitle.trim()) {
+      Alert.alert('Error', 'Title cannot be empty');
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      const result = await updateMeetingSession(sessionId, { session_title: newTitle });
+      
+      if (result.success || result.status === 200) {
+        setSessionData({ ...sessionData, session_title: newTitle });
+        setEditingTitle(false);
+        setSuccessPopup({
+          visible: true,
+          title: '✅ Success',
+          message: 'Session title updated successfully'
+        });
+      } else {
+        Alert.alert('Error', 'Failed to update session title');
+      }
+    } catch (err) {
+      Alert.alert('Error', err.message);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -166,8 +202,15 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
     <SafeAreaView style={containerStyle}>
       {/* Header */}
       <View style={headerStyle}>
-        <Text style={titleStyle}>{sessionData.session_title}</Text>
-        <Text style={subtitleStyle}>{formatDateTime(sessionData.start_time)}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View style={{ flex: 1 }}>
+            <TouchableOpacity onPress={() => setEditingTitle(true)}>
+              <Text style={titleStyle}>{sessionData.session_title}</Text>
+              <Text style={[subtitleStyle, { marginTop: 4 }]}>Tap to edit</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <Text style={[subtitleStyle, { marginTop: 8 }]}>{formatDateTime(sessionData.start_time)}</Text>
       </View>
 
       <ScrollView style={SessionDetailsScreenStyles.scrollView}>
@@ -215,13 +258,6 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
           {sessionData.recording_segments && sessionData.recording_segments.length > 0 ? (
             sessionData.recording_segments.map((segment) => (
               <View key={segment.id} style={segmentCardStyle}>
-                <Text style={segmentNumberStyle}>Segment {segment.segment_number}</Text>
-                
-                <View style={SessionDetailsScreenStyles.textBlock}>
-                  <Text style={labelStyle}>Original:</Text>
-                  <Text style={originalTextStyle}>{segment.transcript_text}</Text>
-                </View>
-
                 <View style={SessionDetailsScreenStyles.textBlock}>
                   <Text style={labelStyle}>English:</Text>
                   <Text style={translatedTextStyle}>{segment.english_translation}</Text>
@@ -235,6 +271,94 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
           )}
         </View>
       </ScrollView>
+
+      {/* Edit Title Modal */}
+      <Modal
+        visible={editingTitle}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setEditingTitle(false)}
+      >
+        <View style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        }}>
+          <View style={{
+            backgroundColor: isDarkMode ? '#333' : '#fff',
+            borderRadius: 12,
+            padding: 20,
+            width: '85%',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 5,
+          }}>
+            <Text style={[titleStyle, { marginBottom: 15 }]}>Edit Session Title</Text>
+            
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: isDarkMode ? '#555' : '#ddd',
+                borderRadius: 8,
+                padding: 12,
+                marginBottom: 15,
+                fontSize: 16,
+                color: isDarkMode ? '#fff' : '#000',
+                backgroundColor: isDarkMode ? '#444' : '#f9f9f9',
+              }}
+              placeholder="Enter new title"
+              placeholderTextColor={isDarkMode ? '#999' : '#999'}
+              value={newTitle}
+              onChangeText={setNewTitle}
+              editable={!isSaving}
+            />
+
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  backgroundColor: '#ccc',
+                  paddingVertical: 10,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                }}
+                onPress={() => setEditingTitle(false)}
+                disabled={isSaving}
+              >
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#000' }}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  backgroundColor: '#007AFF',
+                  paddingVertical: 10,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                }}
+                onPress={handleEditTitle}
+                disabled={isSaving}
+              >
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>
+                  {isSaving ? 'Saving...' : 'Save'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Success Popup */}
+      <MessagePopup
+        visible={successPopup.visible}
+        title={successPopup.title}
+        message={successPopup.message}
+        onClose={() => setSuccessPopup({ visible: false, title: '', message: '' })}
+        isDarkMode={isDarkMode}
+      />
     </SafeAreaView>
   );
 };
