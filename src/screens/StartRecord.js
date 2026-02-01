@@ -146,7 +146,7 @@ const StartRecord = (props) => {
         throw new Error(`Failed to connect to transcription service: ${wsError.message}`);
       }
 
-      // Start recording with 10-second chunks
+      // Start recording with 20-second chunks
       setIsRecording(true);
       isRecordingRef.current = true;
       setCurrentStatus('Recording...');
@@ -184,7 +184,7 @@ const StartRecord = (props) => {
   };
 
   const startRecordingChunks = async () => {
-    const HARD_LIMIT_MS = 10000; // 10 seconds hard limit
+    const HARD_LIMIT_MS = 20000; // 20 seconds hard limit
     
     const recordChunk = async () => {
       try {
@@ -239,7 +239,7 @@ const StartRecord = (props) => {
 
         await new Promise(resolve => setTimeout(resolve, HARD_LIMIT_MS));
 
-        console.log('⏱️ 10s elapsed, stopping...');
+        console.log('⏱️ 20s elapsed, stopping...');
 
         if (!isRecordingRef.current) {
           console.log('⚠️ Global recording flag is false, stopping');

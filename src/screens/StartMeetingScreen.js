@@ -154,7 +154,7 @@ const StartMeetingScreen = (props) => {
             <Text style={infoTextStyle}>• Audio transcribe</Text>
             <Text style={infoTextStyle}>• Taglish-To-English Translation</Text>
             <Text style={infoTextStyle}>• Meeting summary (every 10 segments)</Text>
-            <Text style={infoTextStyle}>• Smart chunking (max 10s per segment)</Text>
+            <Text style={infoTextStyle}>• Smart chunking (max 20s per segment)</Text>
             <Text style={infoTextStyle}>• Backend VAD filtering</Text>
           </View>
         </View>
