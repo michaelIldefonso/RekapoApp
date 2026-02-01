@@ -17,6 +17,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import StartRecordStyles from '../styles/StartRecordStyles';
 import ThemeToggleButton from '../components/ThemeToggleButton';
 import MessagePopup from '../components/popup/MessagePopup';
+import SummariesPopup from '../components/popup/SummariesPopup';
 import { updateMeetingSession, connectTranscriptionWebSocket } from '../services/apiService';
 
 const StartRecord = (props) => {
@@ -25,6 +26,7 @@ const StartRecord = (props) => {
 
   const [isRecording, setIsRecording] = useState(false);
   const [messagePopup, setMessagePopup] = useState({ visible: false, title: '', message: '' });
+  const [showSummariesPopup, setShowSummariesPopup] = useState(false);
   
   // Transcription states
   const [transcriptions, setTranscriptions] = useState([]);
@@ -576,6 +578,18 @@ const StartRecord = (props) => {
         </TouchableOpacity>
       </View>
 
+      {/* Summarize Button */}
+      <TouchableOpacity
+        style={[
+          StartRecordStyles.button,
+          { backgroundColor: '#4CAF50', marginHorizontal: 12, marginVertical: 8, paddingVertical: 12 },
+          isDarkMode && { backgroundColor: '#45a049' }
+        ]}
+        onPress={() => setShowSummariesPopup(true)}
+      >
+        <Text style={[StartRecordStyles.buttonText, { fontSize: 16, fontWeight: '600' }]}>📝 Summarize</Text>
+      </TouchableOpacity>
+
       {/* Stop Button - HIDDEN */}
       <View style={buttonContainerStyle}>
         <TouchableOpacity
@@ -662,6 +676,13 @@ const StartRecord = (props) => {
         message={messagePopup.message}
         onClose={() => setMessagePopup({ visible: false, title: '', message: '' })}
         isDarkMode={isDarkMode}
+      />
+
+      <SummariesPopup
+        visible={showSummariesPopup}
+        summaries={summaries}
+        isDarkMode={isDarkMode}
+        onClose={() => setShowSummariesPopup(false)}
       />
     </SafeAreaView>
   );

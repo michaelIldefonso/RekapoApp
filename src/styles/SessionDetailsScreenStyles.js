@@ -6,6 +6,7 @@ const SessionDetailsScreenStyles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   header: {
+    paddingTop: 40,
     padding: 20,
     backgroundColor: '#fff',
     borderBottomWidth: 1,

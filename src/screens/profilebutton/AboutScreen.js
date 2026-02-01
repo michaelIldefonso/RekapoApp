@@ -4,6 +4,7 @@ import {
   Text,
   SafeAreaView,
   ScrollView,
+  Image,
 } from 'react-native';
 import AboutScreenStyles from '../../styles/profilebuttonstyles/AboutScreenStyles';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
@@ -38,7 +39,52 @@ const AboutScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => {
             <ThemeToggleButton isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
           </View>
         </View>
-        {/* Add your about content here */}
+
+        {/* Logo */}
+        <View style={AboutScreenStyles.logoContainer}>
+          <Image
+            source={require('../../../assets/icon.png')}
+            style={AboutScreenStyles.logo}
+          />
+        </View>
+
+        {/* Main Title */}
+        <Text style={[AboutScreenStyles.mainTitle, isDarkMode && { color: '#fff' }]}>
+          Rekapo
+        </Text>
+
+        {/* Description */}
+        <Text style={[AboutScreenStyles.description, isDarkMode && { color: '#ddd' }]}>
+          Near Real-time meeting summarization with ML — supports English & Tagalog Code-Switching
+        </Text>
+
+        {/* Version */}
+        <Text style={[AboutScreenStyles.versionText, isDarkMode && { color: '#999' }]}>
+          Version 0.1 (Beta)
+        </Text>
+
+        {/* Credits */}
+        <Text style={[AboutScreenStyles.creditsTitle, isDarkMode && { color: '#fff' }]}>
+          Developed by
+        </Text>
+        <Text style={[AboutScreenStyles.creditsText, isDarkMode && { color: '#ddd' }]}>
+          Michael S. Ildefonso, Miko A. Bataller, Marvin Orlina, and Je'an Rafael Mollasgo
+        </Text>
+
+        {/* Institution */}
+        <Text style={[AboutScreenStyles.creditsText, isDarkMode && { color: '#ddd' }]}>
+          ACLC College of Taytay — 2026
+        </Text>
+
+        {/* Copyright */}
+        <Text style={[AboutScreenStyles.copyrightText, isDarkMode && { color: '#666' }]}>
+          © 2026 Ildefonso, Bataller, Orlina, Mollasgo. All Rights Reserved.
+        </Text>
+
+        {/* Disclaimer */}
+        <Text style={[AboutScreenStyles.disclaimerText, isDarkMode && { color: '#ff6b6b' }]}>
+          This is a test application and is not intended for commercial use.
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );
