@@ -30,11 +30,16 @@ export default function App() {
 
   // Check authentication status on app startup
   useEffect(() => {
-    // Configure Google Sign-In FIRST before checking auth
-    configureGoogleSignIn();
-    // Fetch dynamic config from Firebase (for backend URL)
-    fetchDynamicConfig();
-    checkAuthStatus();
+    const initApp = async () => {
+      // Configure Google Sign-In FIRST before checking auth
+      configureGoogleSignIn();
+      // Fetch dynamic config from Firebase (for backend URL)
+      await fetchDynamicConfig();
+      // Now check auth with correct backend URL
+      checkAuthStatus();
+    };
+    
+    initApp();
   }, []);
 
   const checkAuthStatus = async () => {
