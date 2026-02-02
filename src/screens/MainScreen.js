@@ -61,6 +61,11 @@ const MainScreen = ({ onNavigate, isDarkMode, onToggleDarkMode }) => {
     MainScreenStyles.cardDescription,
     isDarkMode && { color: '#bbb' },
   ];
+  const appDescriptionStyle = [
+    MainScreenStyles.cardDescription,
+    { marginTop: 16, marginBottom: 8, lineHeight: 20 },
+    isDarkMode && { color: '#bbb' },
+  ];
 
   return (
     <SafeAreaView style={containerStyle}>
@@ -78,6 +83,11 @@ const MainScreen = ({ onNavigate, isDarkMode, onToggleDarkMode }) => {
             <ThemeToggleButton isDarkMode={isDarkMode} onToggle={handleToggleTheme} />
           </View>
         </View>
+
+        <Text style={appDescriptionStyle}>
+          Record, transcribe, and organize your meetings with AI-powered speech recognition. 
+          Supports English and Taglish conversations.
+        </Text>
 
         <View style={MainScreenStyles.cardContainer}>
           <TouchableOpacity
@@ -99,13 +109,6 @@ const MainScreen = ({ onNavigate, isDarkMode, onToggleDarkMode }) => {
               View your past recordings
             </Text>
           </TouchableOpacity>
-
-          <View style={cardStyle}>
-            <Text style={cardTitleStyle}>Recent Activity</Text>
-            <Text style={cardDescriptionStyle}>
-              No recent sessions
-            </Text>
-          </View>
         </View>
   {/* BottomNavigation should be rendered by App.js, not here */}
       </ScrollView>
