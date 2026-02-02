@@ -1,14 +1,12 @@
 // App Configuration
 // Loads configuration from .env file and Firebase Remote Config
-import { GOOGLE_WEB_CLIENT_ID, BACKEND_API_URL } from '@env';
+import { GOOGLE_WEB_CLIENT_ID, BACKEND_API_URL, FIREBASE_CONFIG_URL } from '@env';
 
 // Debug logging to verify .env values are loaded
 console.log('🔧 Config Debug:');
 console.log('  BACKEND_API_URL from .env:', BACKEND_API_URL || 'NOT SET');
 console.log('  GOOGLE_WEB_CLIENT_ID from .env:', GOOGLE_WEB_CLIENT_ID ? 'SET' : 'NOT SET');
-
-// Firebase config URL - deployed config.json for dynamic backend URL updates
-const FIREBASE_CONFIG_URL = 'https://rekapo-51989.web.app/config.json';
+console.log('  FIREBASE_CONFIG_URL from .env:', FIREBASE_CONFIG_URL || 'NOT SET');
 
 // Remove trailing slash from BACKEND_API_URL if present
 const sanitizedBackendUrl = (BACKEND_API_URL || 'http://192.168.100.2:8000').replace(/\/$/, '');
@@ -33,6 +31,12 @@ export const config = {
  * Call this on app startup to get the latest backend URL
  */
 export const fetchDynamicConfig = async () => {
+  // Skip Firebase fetch if URL is not set
+  if (!FIREBASE_CONFIG_URL) {
+    console.log('ℹ️ FIREBASE_CONFIG_URL not set, using .env BACKEND_API_URL');
+    return { success: false, error: 'Firebase URL not configured' };
+  }
+  
   try {
     console.log('🌐 Fetching dynamic config from Firebase...');
     const response = await fetch(FIREBASE_CONFIG_URL, {
