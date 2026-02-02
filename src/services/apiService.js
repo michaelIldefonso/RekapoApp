@@ -22,6 +22,7 @@ export const apiRequest = async (endpoint, method = 'GET', body = null) => {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
+        'Bypass-Tunnel-Reminder': '112.201.180.148',
       },
     };
 
@@ -89,6 +90,7 @@ export const uploadProfilePhoto = async (imageUri) => {
       method: 'PATCH',
       headers: {
         'Authorization': `Bearer ${token}`,
+        'Bypass-Tunnel-Reminder': '112.201.180.148',
       },
       body: formData,
     });

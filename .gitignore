@@ -42,6 +42,11 @@ client_secret_*.json
 /ios
 /android
 
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+.firebaserc
 
 .qodo
 .vscode

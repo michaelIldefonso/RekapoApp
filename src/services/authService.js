@@ -118,6 +118,7 @@ export const verifyWithBackend = async (idToken) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Bypass-Tunnel-Reminder': '112.201.180.148',
       },
       body: JSON.stringify({
         id_token: idToken, // Backend expects 'id_token' not 'idToken'
