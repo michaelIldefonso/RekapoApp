@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, ActivityIndicator } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
 import { isAuthenticated, getStoredUser, getStoredToken, configureGoogleSignIn } from './src/services/authService';
 import { fetchDynamicConfig } from './src/config/app.config';
 
@@ -31,6 +32,16 @@ export default function App() {
   // Check authentication status on app startup
   useEffect(() => {
     const initApp = async () => {
+      // Load dark mode preference from storage
+      try {
+        const storedDarkMode = await SecureStore.getItemAsync('dark_mode');
+        if (storedDarkMode === 'true') {
+          setIsDarkMode(true);
+        }
+      } catch (error) {
+        console.log('Could not load dark mode preference:', error);
+      }
+      
       // Configure Google Sign-In FIRST before checking auth
       configureGoogleSignIn();
       // Fetch dynamic config from Firebase (for backend URL)
@@ -91,13 +102,16 @@ export default function App() {
   };
 
   // Handler to update dark mode from any screen
-  const handleDarkModeChange = (value) => {
+  const handleDarkModeChange = async (value) => {
     setIsDarkMode(value);
+    await SecureStore.setItemAsync('dark_mode', value ? 'true' : 'false');
   };
 
   // Handler to toggle dark mode
-  const handleToggleDarkMode = () => {
-    setIsDarkMode((prev) => !prev);
+  const handleToggleDarkMode = async () => {
+    const newValue = !isDarkMode;
+    setIsDarkMode(newValue);
+    await SecureStore.setItemAsync('dark_mode', newValue ? 'true' : 'false');
   };
 
   // Show loading screen while checking authentication

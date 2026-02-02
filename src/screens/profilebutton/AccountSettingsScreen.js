@@ -137,9 +137,7 @@ const AccountSettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => 
           <View style={{ alignItems: 'center', marginVertical: 16 }}>
             {userInfo?.profile_picture_path ? (
               <>
-                <Text style={{ fontSize: 10, color: '#888', marginBottom: 4 }}>
-                  Debug: {userInfo.profile_picture_path}
-                </Text>
+
                 <Image
                   key={`${userInfo.profile_picture_path}-${imageRefreshKey}`}
                   source={{ 
