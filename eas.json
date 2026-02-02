@@ -6,16 +6,10 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal",
-      "android": {
-        "applicationIdSuffix": ".dev"
-      }
+      "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal",
-      "android": {
-        "applicationIdSuffix": ".preview"
-      }
+      "distribution": "internal"
     },
     "production": {
       "autoIncrement": true
