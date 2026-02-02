@@ -22,9 +22,13 @@ export const apiRequest = async (endpoint, method = 'GET', body = null) => {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
-        'Bypass-Tunnel-Reminder': '112.201.180.148',
       },
     };
+    
+    // Add bypass tunnel header if configured
+    if (config.BYPASS_TUNNEL_IP) {
+      options.headers['Bypass-Tunnel-Reminder'] = config.BYPASS_TUNNEL_IP;
+    }
 
     if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
       options.body = JSON.stringify(body);
@@ -86,12 +90,18 @@ export const uploadProfilePhoto = async (imageUri) => {
 
     console.log('📦 FormData prepared, sending to backend...');
 
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+    };
+    
+    // Add bypass tunnel header if configured
+    if (config.BYPASS_TUNNEL_IP) {
+      headers['Bypass-Tunnel-Reminder'] = config.BYPASS_TUNNEL_IP;
+    }
+
     const response = await fetch(`${config.BACKEND_URL}/api/users/me/photo`, {
       method: 'PATCH',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Bypass-Tunnel-Reminder': '112.201.180.148',
-      },
+      headers: headers,
       body: formData,
     });
 

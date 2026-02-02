@@ -114,12 +114,18 @@ export const verifyWithBackend = async (idToken) => {
       controller.abort();
     }, 15000); // 15 second timeout
     
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Add bypass tunnel header if configured
+    if (config.BYPASS_TUNNEL_IP) {
+      headers['Bypass-Tunnel-Reminder'] = config.BYPASS_TUNNEL_IP;
+    }
+    
     const response = await fetch(`${config.BACKEND_URL}/api/auth/google-mobile`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Bypass-Tunnel-Reminder': '112.201.180.148',
-      },
+      headers: headers,
       body: JSON.stringify({
         id_token: idToken, // Backend expects 'id_token' not 'idToken'
         data_usage_consent: true, // Required by your backend
