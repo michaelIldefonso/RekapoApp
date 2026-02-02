@@ -643,7 +643,7 @@ const StartRecord = (props) => {
             StartRecordStyles.summaryTitle,
             isDarkMode && { color: '#fff' }
           ]}>
-            📝 Summaries
+            📝 Summary
           </Text>
           <ScrollView 
             horizontal
