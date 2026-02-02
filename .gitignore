@@ -43,6 +43,7 @@ client_secret_*.json
 /android
 
 # Firebase
+firebase-config/
 .firebase/
 firebase-debug.log
 firebase-debug.*.log
