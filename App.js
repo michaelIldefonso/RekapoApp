@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import { isAuthenticated, getStoredUser, getStoredToken, configureGoogleSignIn } from './src/services/authService';
+import { fetchDynamicConfig } from './src/config/app.config';
 
 // Import screens
 import LoginScreen from './src/screens/LoginScreen';
@@ -31,6 +32,8 @@ export default function App() {
   useEffect(() => {
     // Configure Google Sign-In FIRST before checking auth
     configureGoogleSignIn();
+    // Fetch dynamic config from Firebase (for backend URL)
+    fetchDynamicConfig();
     checkAuthStatus();
   }, []);
 
