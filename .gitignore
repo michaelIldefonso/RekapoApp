@@ -48,6 +48,11 @@ firebase-config/
 firebase-debug.log
 firebase-debug.*.log
 .firebaserc
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+.firebaserc
 
 .qodo
 .vscode
