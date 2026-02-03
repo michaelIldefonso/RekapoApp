@@ -34,43 +34,65 @@ const MainScreen = ({ onNavigate, isDarkMode, onToggleDarkMode }) => {
     onToggleDarkMode(); // Use the app-level toggle handler
   };
 
-  // Container style for dark mode
+  // Dynamic styles for dark mode
   const containerStyle = [
     MainScreenStyles.container,
-    isDarkMode && { backgroundColor: '#222' }, //css for darkmode, background color
+    isDarkMode && MainScreenStyles.containerDark,
   ];
   const titleStyle = [
     MainScreenStyles.title,
-    isDarkMode && { color: '#ffffffff' },
+    isDarkMode && MainScreenStyles.titleDark,
   ];
   const subtitleStyle = [
     MainScreenStyles.subtitle,
-    isDarkMode && { color: '#ffffffff' },
+    isDarkMode && MainScreenStyles.subtitleDark,
   ];
-
-  // Dynamic styles for cards in dark mode
-  const cardStyle = [
-    MainScreenStyles.card,
-    isDarkMode && { backgroundColor: '#333333', borderColor: '#444444', borderWidth: 1, shadowOpacity: 0.2 },
+  const heroCardStyle = [
+    MainScreenStyles.heroCard,
+    isDarkMode && MainScreenStyles.heroCardDark,
   ];
-  const cardTitleStyle = [
-    MainScreenStyles.cardTitle,
-    isDarkMode && { color: '#fff' },
+  const sectionTitleStyle = [
+    MainScreenStyles.sectionTitle,
+    isDarkMode && MainScreenStyles.sectionTitleDark,
   ];
-  const cardDescriptionStyle = [
-    MainScreenStyles.cardDescription,
-    isDarkMode && { color: '#bbb' },
+  const featureBoxStyle = [
+    MainScreenStyles.featureBox,
+    isDarkMode && MainScreenStyles.featureBoxDark,
   ];
-  const appDescriptionStyle = [
-    MainScreenStyles.cardDescription,
-    { marginTop: 16, marginBottom: 8, lineHeight: 20 },
-    isDarkMode && { color: '#bbb' },
+  const featureBoxStyleAlt = [
+    MainScreenStyles.featureBoxAlt,
+    isDarkMode && MainScreenStyles.featureBoxDark,
+  ];
+  const featureTextStyle = [
+    MainScreenStyles.featureText,
+    isDarkMode && MainScreenStyles.featureTextDark,
+  ];
+  const featureSubtextStyle = [
+    MainScreenStyles.featureSubtext,
+    isDarkMode && MainScreenStyles.featureSubtextDark,
+  ];
+  const featureArrowStyle = [
+    MainScreenStyles.featureArrow,
+    isDarkMode && MainScreenStyles.featureArrowDark,
+  ];
+  const infoCardStyle = [
+    MainScreenStyles.infoCard,
+    isDarkMode && MainScreenStyles.infoCardDark,
+  ];
+  const infoTitleStyle = [
+    MainScreenStyles.infoTitle,
+    isDarkMode && MainScreenStyles.infoTitleDark,
+  ];
+  const infoTextStyle = [
+    MainScreenStyles.infoText,
+    isDarkMode && MainScreenStyles.infoTextDark,
   ];
 
   return (
     <SafeAreaView style={containerStyle}>
-      <ScrollView style={MainScreenStyles.content}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+      <ScrollView style={MainScreenStyles.content} showsVerticalScrollIndicator={false}>
+        {/* Header with Theme Toggle */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 12 }}>
           <View>
             <Text style={titleStyle}>Dashboard</Text>
             {userInfo && (
@@ -84,33 +106,71 @@ const MainScreen = ({ onNavigate, isDarkMode, onToggleDarkMode }) => {
           </View>
         </View>
 
-        <Text style={appDescriptionStyle}>
-          Record, transcribe, and organize your meetings with AI-powered speech recognition. 
-          Supports English and Taglish conversations.
+        {/* Hero Card */}
+        <View style={heroCardStyle}>
+          <Text style={[MainScreenStyles.heroTitle, isDarkMode && { color: '#007AFF' }]}>
+            🎙️ Intelligent Meeting Recorder
+          </Text>
+          <Text style={[MainScreenStyles.heroDescription, isDarkMode && { color: '#ccc' }]}>
+            Record, transcribe, and organize your meetings with AI-powered speech recognition.
+          </Text>
+          <Text style={[MainScreenStyles.heroSubtext, isDarkMode && { color: '#007AFF' }]}>
+            Supports English and Taglish conversations.
+          </Text>
+        </View>
+
+        {/* Features Section */}
+        <Text style={sectionTitleStyle}>
+          ✨ Key Features
         </Text>
 
-        <View style={MainScreenStyles.cardContainer}>
-          <TouchableOpacity
-            style={cardStyle}
-            onPress={() => onNavigate('StartMeeting')}
-          >
-            <Text style={cardTitleStyle}>Start New Meeting</Text>
-            <Text style={cardDescriptionStyle}>
-              Begin a new recording session
-            </Text>
-          </TouchableOpacity>
+        {/* Feature 1 */}
+        <TouchableOpacity onPress={() => onNavigate('StartMeeting')} activeOpacity={0.7}>
+          <View style={featureBoxStyle}>
+            <Text style={MainScreenStyles.featureIcon}>🎙️</Text>
+            <View style={MainScreenStyles.featureContent}>
+              <Text style={featureTextStyle}>Start Recording</Text>
+              <Text style={featureSubtextStyle}>
+                Tap to begin a new meeting
+              </Text>
+            </View>
+            <Text style={featureArrowStyle}>›</Text>
+          </View>
+        </TouchableOpacity>
 
-          <TouchableOpacity
-            style={cardStyle}
-            onPress={() => onNavigate('SessionHistory')}
-          >
-            <Text style={cardTitleStyle}>Session History</Text>
-            <Text style={cardDescriptionStyle}>
-              View your past recordings
+        {/* Feature 2 */}
+        <TouchableOpacity onPress={() => onNavigate('SessionHistory')} activeOpacity={0.7}>
+          <View style={featureBoxStyleAlt}>
+            <Text style={MainScreenStyles.featureIcon}>📋</Text>
+            <View style={MainScreenStyles.featureContent}>
+              <Text style={featureTextStyle}>View History</Text>
+              <Text style={featureSubtextStyle}>
+                Browse past recordings & summaries
+              </Text>
+            </View>
+            <Text style={featureArrowStyle}>›</Text>
+          </View>
+        </TouchableOpacity>
+
+        {/* Feature 3 */}
+        <View style={[featureBoxStyle, { marginBottom: 24 }]}>
+          <Text style={MainScreenStyles.featureIcon}>🔄</Text>
+          <View style={MainScreenStyles.featureContent}>
+            <Text style={featureTextStyle}>Auto-Translate</Text>
+            <Text style={featureSubtextStyle}>
+              Get English translations instantly
             </Text>
-          </TouchableOpacity>
+          </View>
+          <Text style={featureArrowStyle}>✓</Text>
         </View>
-  {/* BottomNavigation should be rendered by App.js, not here */}
+
+        {/* Info Section */}
+        <View style={infoCardStyle}>
+          <Text style={infoTitleStyle}>💡 Pro Tip</Text>
+          <Text style={infoTextStyle}>
+            Your recordings are automatically saved and can be accessed anytime from your Session History. Each recording includes AI-generated summaries and full transcripts.
+          </Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

@@ -211,7 +211,7 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
   ];
   const summaryCardStyle = [
     SessionDetailsScreenStyles.summaryCard,
-    isDarkMode && { backgroundColor: '#2a4a5a', borderColor: '#3a5a6a' },
+    isDarkMode && { backgroundColor: 'transparent', borderColor: '#007AFF' },
   ];
   const summaryTextStyle = [
     SessionDetailsScreenStyles.summaryText,
