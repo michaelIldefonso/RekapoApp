@@ -31,7 +31,7 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
 // Handle hardware back button
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      navigation.goBack();
+      navigation.navigate('SessionHistory');
       return true; // Prevent default behavior
     });
 
