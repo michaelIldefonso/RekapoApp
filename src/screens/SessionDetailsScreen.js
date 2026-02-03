@@ -24,6 +24,9 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
   const [newTitle, setNewTitle] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [successPopup, setSuccessPopup] = useState({ visible: false, title: '', message: '' });
+  const [expandedSummary, setExpandedSummary] = useState(false);
+  const [flippedSegments, setFlippedSegments] = useState({});
+  const [segmentRatings, setSegmentRatings] = useState({});
 
   useEffect(() => {
     loadSessionDetails();
@@ -97,6 +100,72 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const formatTimeOnly = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const formatDateOnly = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric',
+    });
+  };
+
+  const calculateDuration = (startTime, endTime) => {
+    if (!endTime) return 'In progress';
+    
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    const durationMs = end - start;
+    const durationMin = Math.floor(durationMs / 60000);
+    
+    if (durationMin < 60) {
+      return `${durationMin} min`;
+    } else {
+      const hours = Math.floor(durationMin / 60);
+      const minutes = durationMin % 60;
+      return `${hours}h ${minutes}min`;
+    }
+  };
+
+  const toggleSegmentFlip = (segmentId) => {
+    setFlippedSegments(prev => ({
+      ...prev,
+      [segmentId]: !prev[segmentId]
+    }));
+  };
+
+  const handleSegmentRating = (segmentId, rating) => {
+    setSegmentRatings(prev => ({
+      ...prev,
+      [segmentId]: prev[segmentId] === rating ? 0 : rating
+    }));
+  };
+
+  const renderStars = (segmentId) => {
+    const rating = segmentRatings[segmentId] || 0;
+    return (
+      <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <TouchableOpacity
+            key={star}
+            onPress={() => handleSegmentRating(segmentId, star)}
+          >
+            <Text style={{ fontSize: 24 }}>
+              {star <= rating ? '★' : '☆'}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
   };
 
   // Dynamic styles for dark mode
@@ -202,40 +271,82 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
     <SafeAreaView style={containerStyle}>
       {/* Header */}
       <View style={headerStyle}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <View style={{ flex: 1 }}>
             <TouchableOpacity onPress={() => setEditingTitle(true)}>
               <Text style={titleStyle}>{sessionData.session_title}</Text>
               <Text style={[subtitleStyle, { marginTop: 4 }]}>Tap to edit</Text>
             </TouchableOpacity>
+            
+            {/* Time Range and Duration */}
+            <View style={{ marginTop: 12 }}>
+              <Text style={[subtitleStyle, { marginBottom: 4 }]}>
+                {formatDateOnly(sessionData.start_time)} • {formatTimeOnly(sessionData.start_time)}
+              </Text>
+              <Text style={[labelStyle, { marginTop: 6 }]}>
+                ⏱️ Duration: {calculateDuration(sessionData.start_time, sessionData.end_time)}
+              </Text>
+            </View>
+          </View>
+          
+          {/* Status and Segments on Right Side */}
+          <View style={{ marginLeft: 16 }}>
+            <View style={{ marginBottom: 12 }}>
+              <Text style={[labelStyle, { fontSize: 12 }]}>Status</Text>
+              <Text style={[infoValueStyle, { 
+                color: sessionData.status === 'completed' ? '#4CAF50' : 
+                       sessionData.status === 'recording' ? '#FF9800' : '#F44336',
+                fontSize: 14,
+                fontWeight: '600',
+                marginTop: 2
+              }]}>
+                {sessionData.status.toUpperCase()}
+              </Text>
+            </View>
+            <View>
+              <Text style={[labelStyle, { fontSize: 12 }]}>Segments</Text>
+              <Text style={[infoValueStyle, { fontSize: 14, fontWeight: '600', marginTop: 2 }]}>
+                {sessionData.total_segments}
+              </Text>
+            </View>
           </View>
         </View>
-        <Text style={[subtitleStyle, { marginTop: 8 }]}>{formatDateTime(sessionData.start_time)}</Text>
       </View>
 
       <ScrollView style={SessionDetailsScreenStyles.scrollView}>
-        {/* Session Info */}
-        <View style={SessionDetailsScreenStyles.infoSection}>
-          <View style={infoRowStyle}>
-            <Text style={infoLabelStyle}>Status:</Text>
-            <Text style={[infoValueStyle, { 
-              color: sessionData.status === 'completed' ? '#4CAF50' : 
-                     sessionData.status === 'recording' ? '#FF9800' : '#F44336'
-            }]}>
-              {sessionData.status.toUpperCase()}
-            </Text>
-          </View>
-          <View style={infoRowStyle}>
-            <Text style={infoLabelStyle}>Total Segments:</Text>
-            <Text style={infoValueStyle}>{sessionData.total_segments}</Text>
-          </View>
-          {sessionData.end_time && (
-            <View style={infoRowStyle}>
-              <Text style={infoLabelStyle}>Ended:</Text>
-              <Text style={infoValueStyle}>{formatDateTime(sessionData.end_time)}</Text>
+        {/* Overall Session Summary Card - Expandable */}
+        <TouchableOpacity 
+          onPress={() => setExpandedSummary(!expandedSummary)}
+          activeOpacity={0.7}
+        >
+          <View style={[summaryCardStyle, { 
+            backgroundColor: 'transparent',
+            borderLeftWidth: 0,
+            padding: 15,
+            marginBottom: 16,
+          }]}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={[sectionTitleStyle, { marginBottom: 0 }]}>📋 Session Summary</Text>
+              <Text style={{ fontSize: 20, color: isDarkMode ? '#bbb' : '#7f8c8d' }}>
+                {expandedSummary ? '▼' : '▶'}
+              </Text>
             </View>
-          )}
-        </View>
+            
+            {expandedSummary && (
+              <View style={{ marginTop: 12 }}>
+                {sessionData.summaries && sessionData.summaries.length > 0 ? (
+                  <Text style={[summaryTextStyle, { color: isDarkMode ? '#bbb' : '#5a6c7d' }]}>
+                    {sessionData.summaries.map(s => s.summary_text).join('\n\n')}
+                  </Text>
+                ) : (
+                  <Text style={[summaryTextStyle, { color: isDarkMode ? '#999' : '#999', fontStyle: 'italic' }]}>
+                    No summary available for this session yet.
+                  </Text>
+                )}
+              </View>
+            )}
+          </View>
+        </TouchableOpacity>
 
         {/* Summaries Section */}
         {sessionData.summaries && sessionData.summaries.length > 0 && (
@@ -257,12 +368,31 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
           <Text style={sectionTitleStyle}>🎙️ Full Transcript</Text>
           {sessionData.recording_segments && sessionData.recording_segments.length > 0 ? (
             sessionData.recording_segments.map((segment) => (
-              <View key={segment.id} style={segmentCardStyle}>
-                <View style={SessionDetailsScreenStyles.textBlock}>
-                  <Text style={labelStyle}>English:</Text>
-                  <Text style={translatedTextStyle}>{segment.english_translation}</Text>
+              <TouchableOpacity 
+                key={segment.id}
+                onPress={() => toggleSegmentFlip(segment.id)}
+                activeOpacity={0.7}
+              >
+                <View style={[segmentCardStyle]}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                    <Text style={labelStyle}>
+                      {flippedSegments[segment.id] ? 'Original Transcription' : 'English Translation'}
+                    </Text>
+                    <Text style={{ fontSize: 16, color: isDarkMode ? '#bbb' : '#7f8c8d' }}>
+                      {flippedSegments[segment.id] ? '🔄' : '🔄'}
+                    </Text>
+                  </View>
+                  <View style={SessionDetailsScreenStyles.textBlock}>
+                    <Text style={flippedSegments[segment.id] ? [originalTextStyle] : [translatedTextStyle]}>
+                      {flippedSegments[segment.id] 
+                        ? (segment.original_text || segment.original_transcription || 'Original text not available')
+                        : segment.english_translation
+                      }
+                    </Text>
+                  </View>
+                  {flippedSegments[segment.id] && renderStars(segment.id)}
                 </View>
-              </View>
+              </TouchableOpacity>
             ))
           ) : (
             <View style={segmentCardStyle}>
