@@ -570,34 +570,20 @@ const StartRecord = (props) => {
             />
           )}
         </View>
-        <TouchableOpacity
-          style={[buttonStyle, stopButtonStyle]}
-          onPress={handleStopRecording}
-        >
-          <Text style={StartRecordStyles.buttonText}>Stop</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Summarize Button */}
-      <TouchableOpacity
-        style={[
-          StartRecordStyles.button,
-          { backgroundColor: '#4CAF50', marginHorizontal: 12, marginVertical: 8, paddingVertical: 12 },
-          isDarkMode && { backgroundColor: '#45a049' }
-        ]}
-        onPress={() => setShowSummariesPopup(true)}
-      >
-        <Text style={[StartRecordStyles.buttonText, { fontSize: 16, fontWeight: '600' }]}>📝 Summarize</Text>
-      </TouchableOpacity>
-
-      {/* Stop Button - HIDDEN */}
-      <View style={buttonContainerStyle}>
-        <TouchableOpacity
-          style={[buttonStyle, stopButtonStyle]}
-          onPress={handleStopRecording}
-        >
-          <Text style={StartRecordStyles.buttonText}>Stop Recording</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <TouchableOpacity
+            style={[buttonStyle, { backgroundColor: '#4CAF50' }, isDarkMode && { backgroundColor: '#45a049' }]}
+            onPress={() => setShowSummariesPopup(true)}
+          >
+            <Text style={StartRecordStyles.buttonText}>📝</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[buttonStyle, stopButtonStyle]}
+            onPress={handleStopRecording}
+          >
+            <Text style={StartRecordStyles.buttonText}>Stop</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Main Transcription Area - takes most of screen */}
