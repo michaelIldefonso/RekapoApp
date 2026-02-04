@@ -51,6 +51,12 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
       if (result.success) {
         setSessionData(result.data);
         setNewTitle(result.data.session_title);
+        
+        // Debug: Log first segment structure to see available fields
+        if (result.data.recording_segments && result.data.recording_segments.length > 0) {
+          console.log('📝 First segment fields:', Object.keys(result.data.recording_segments[0]));
+          console.log('📝 First segment data:', result.data.recording_segments[0]);
+        }
       } else {
         setError(result.error);
         Alert.alert('Error', `Failed to load session details: ${result.error}`);
@@ -380,8 +386,8 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
                   <View style={SessionDetailsScreenStyles.textBlock}>
                     <Text style={flippedSegments[segment.id] ? [originalTextStyle] : [translatedTextStyle]}>
                       {flippedSegments[segment.id] 
-                        ? (segment.english_translation || 'Original text not available')
-                        : (segment.original_text || segment.original_transcription || segment.transcription || 'Translation not available')
+                        ? (segment.transcript_text || 'Original text not available')
+                        : (segment.english_translation || 'Translation not available')
                       }
                     </Text>
                   </View>
