@@ -27,6 +27,7 @@ const StartRecord = (props) => {
   const [isRecording, setIsRecording] = useState(false);
   const [messagePopup, setMessagePopup] = useState({ visible: false, title: '', message: '' });
   const [showSummariesPopup, setShowSummariesPopup] = useState(false);
+  const [flippedSegments, setFlippedSegments] = useState({});
   
   // Transcription states
   const [transcriptions, setTranscriptions] = useState([]);
@@ -597,14 +598,19 @@ const StartRecord = (props) => {
             nestedScrollEnabled={true}
           >
             {transcriptions.map((item, index) => (
-              <View 
+              <TouchableOpacity 
                 key={index} 
                 style={transcriptionItemStyle}
+                onPress={() => setFlippedSegments(prev => ({ ...prev, [index]: !prev[index] }))}
+                activeOpacity={0.7}
               >
-                <Text style={translationTextStyle}>
-                  {item.translation}
+                <Text style={[
+                  translationTextStyle,
+                  flippedSegments[index] && { color: isDarkMode ? '#42A5F5' : '#2196F3' }
+                ]}>
+                  {flippedSegments[index] ? item.original : item.translation}
                 </Text>
-              </View>
+              </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
