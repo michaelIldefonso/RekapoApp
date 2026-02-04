@@ -153,7 +153,7 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
   const renderStars = (segmentId) => {
     const rating = segmentRatings[segmentId] || 0;
     return (
-      <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
+      <View style={SessionDetailsScreenStyles.segmentRatingContainer}>
         {[1, 2, 3, 4, 5].map((star) => (
           <TouchableOpacity
             key={star}
@@ -271,15 +271,15 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
     <SafeAreaView style={containerStyle}>
       {/* Header */}
       <View style={headerStyle}>
-        <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          <View style={{ flex: 1 }}>
+        <View style={SessionDetailsScreenStyles.headerRowContainer}>
+          <View style={SessionDetailsScreenStyles.headerLeftSection}>
             <TouchableOpacity onPress={() => setEditingTitle(true)}>
               <Text style={titleStyle}>{sessionData.session_title}</Text>
               <Text style={[subtitleStyle, { marginTop: 4 }]}>Tap to edit</Text>
             </TouchableOpacity>
             
             {/* Time Range and Duration */}
-            <View style={{ marginTop: 12 }}>
+            <View style={SessionDetailsScreenStyles.timeRangeContainer}>
               <Text style={[subtitleStyle, { marginBottom: 4 }]}>
                 {formatDateOnly(sessionData.start_time)} • {formatTimeOnly(sessionData.start_time)}
               </Text>
@@ -290,8 +290,8 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
           </View>
           
           {/* Status and Segments on Right Side */}
-          <View style={{ marginLeft: 16 }}>
-            <View style={{ marginBottom: 12 }}>
+          <View style={SessionDetailsScreenStyles.headerRightSection}>
+            <View style={SessionDetailsScreenStyles.statusContainer}>
               <Text style={[labelStyle, { fontSize: 12 }]}>Status</Text>
               <Text style={[infoValueStyle, { 
                 color: sessionData.status === 'completed' ? '#4CAF50' : 
@@ -303,7 +303,7 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
                 {sessionData.status.toUpperCase()}
               </Text>
             </View>
-            <View>
+            <View style={SessionDetailsScreenStyles.segmentsContainer}>
               <Text style={[labelStyle, { fontSize: 12 }]}>Segments</Text>
               <Text style={[infoValueStyle, { fontSize: 14, fontWeight: '600', marginTop: 2 }]}>
                 {sessionData.total_segments}
@@ -319,21 +319,16 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
           onPress={() => setExpandedSummary(!expandedSummary)}
           activeOpacity={0.7}
         >
-          <View style={[summaryCardStyle, { 
-            backgroundColor: 'transparent',
-            borderLeftWidth: 0,
-            padding: 15,
-            marginBottom: 16,
-          }]}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={[sectionTitleStyle, { marginBottom: 0 }]}>📋 Session Summary</Text>
-              <Text style={{ fontSize: 20, color: isDarkMode ? '#bbb' : '#7f8c8d' }}>
+          <View style={[summaryCardStyle, SessionDetailsScreenStyles.summaryCardContainer]}>
+            <View style={SessionDetailsScreenStyles.summaryHeaderRow}>
+              <Text style={[sectionTitleStyle, SessionDetailsScreenStyles.summaryHeaderTitle]}>📋 Session Summary</Text>
+              <Text style={[SessionDetailsScreenStyles.summaryExpandIcon, isDarkMode && { color: '#bbb' }]}>
                 {expandedSummary ? '▼' : '▶'}
               </Text>
             </View>
             
             {expandedSummary && (
-              <View style={{ marginTop: 12 }}>
+              <View style={SessionDetailsScreenStyles.summaryContentContainer}>
                 {sessionData.summaries && sessionData.summaries.length > 0 ? (
                   <Text style={[summaryTextStyle, { color: isDarkMode ? '#bbb' : '#5a6c7d' }]}>
                     {sessionData.summaries.map(s => s.summary_text).join('\n\n')}
@@ -374,19 +369,19 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
                 activeOpacity={0.7}
               >
                 <View style={[segmentCardStyle]}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                  <View style={SessionDetailsScreenStyles.segmentHeaderRow}>
                     <Text style={labelStyle}>
                       {flippedSegments[segment.id] ? 'Original Transcription' : 'English Translation'}
                     </Text>
-                    <Text style={{ fontSize: 16, color: isDarkMode ? '#bbb' : '#7f8c8d' }}>
+                    <Text style={[SessionDetailsScreenStyles.segmentFlipIcon, isDarkMode && { color: '#bbb' }]}>
                       {flippedSegments[segment.id] ? '🔄' : '🔄'}
                     </Text>
                   </View>
                   <View style={SessionDetailsScreenStyles.textBlock}>
                     <Text style={flippedSegments[segment.id] ? [originalTextStyle] : [translatedTextStyle]}>
                       {flippedSegments[segment.id] 
-                        ? (segment.original_text || segment.original_transcription || 'Original text not available')
-                        : segment.english_translation
+                        ? (segment.english_translation || 'Original text not available')
+                        : (segment.original_text || segment.original_transcription || segment.transcription || 'Translation not available')
                       }
                     </Text>
                   </View>
@@ -409,70 +404,34 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
         animationType="fade"
         onRequestClose={() => setEditingTitle(false)}
       >
-        <View style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        }}>
-          <View style={{
-            backgroundColor: isDarkMode ? '#333' : '#fff',
-            borderRadius: 12,
-            padding: 20,
-            width: '85%',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.25,
-            shadowRadius: 3.84,
-            elevation: 5,
-          }}>
-            <Text style={[titleStyle, { marginBottom: 15 }]}>Edit Session Title</Text>
+        <View style={SessionDetailsScreenStyles.modalOverlay}>
+          <View style={[SessionDetailsScreenStyles.modalContent, isDarkMode && { backgroundColor: '#333' }]}>
+            <Text style={[titleStyle, SessionDetailsScreenStyles.modalTitle]}>Edit Session Title</Text>
             
             <TextInput
-              style={{
-                borderWidth: 1,
-                borderColor: isDarkMode ? '#555' : '#ddd',
-                borderRadius: 8,
-                padding: 12,
-                marginBottom: 15,
-                fontSize: 16,
-                color: isDarkMode ? '#fff' : '#000',
-                backgroundColor: isDarkMode ? '#444' : '#f9f9f9',
-              }}
+              style={[SessionDetailsScreenStyles.modalInput, isDarkMode && { borderColor: '#555', color: '#fff', backgroundColor: '#444' }]}
               placeholder="Enter new title"
-              placeholderTextColor={isDarkMode ? '#999' : '#999'}
+              placeholderTextColor="#999"
               value={newTitle}
               onChangeText={setNewTitle}
               editable={!isSaving}
             />
 
-            <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={SessionDetailsScreenStyles.modalButtonContainer}>
               <TouchableOpacity
-                style={{
-                  flex: 1,
-                  backgroundColor: '#ccc',
-                  paddingVertical: 10,
-                  borderRadius: 8,
-                  alignItems: 'center',
-                }}
+                style={[SessionDetailsScreenStyles.modalButton, SessionDetailsScreenStyles.modalCancelButton]}
                 onPress={() => setEditingTitle(false)}
                 disabled={isSaving}
               >
-                <Text style={{ fontSize: 16, fontWeight: '600', color: '#000' }}>Cancel</Text>
+                <Text style={SessionDetailsScreenStyles.modalCancelButtonText}>Cancel</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={{
-                  flex: 1,
-                  backgroundColor: '#007AFF',
-                  paddingVertical: 10,
-                  borderRadius: 8,
-                  alignItems: 'center',
-                }}
+                style={[SessionDetailsScreenStyles.modalButton, SessionDetailsScreenStyles.modalSaveButton]}
                 onPress={handleEditTitle}
                 disabled={isSaving}
               >
-                <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>
+                <Text style={SessionDetailsScreenStyles.modalSaveButtonText}>
                   {isSaving ? 'Saving...' : 'Save'}
                 </Text>
               </TouchableOpacity>

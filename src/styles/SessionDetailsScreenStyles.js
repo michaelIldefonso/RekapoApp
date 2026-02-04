@@ -153,6 +153,122 @@ const SessionDetailsScreenStyles = StyleSheet.create({
     lineHeight: 22,
     fontStyle: 'italic',
   },
+  // Modal and Edit Title Styles
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20,
+    width: '85%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  modalTitle: {
+    marginBottom: 15,
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 15,
+    fontSize: 16,
+    color: '#000',
+    backgroundColor: '#f9f9f9',
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalCancelButton: {
+    backgroundColor: '#ccc',
+  },
+  modalCancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+  },
+  modalSaveButton: {
+    backgroundColor: '#007AFF',
+  },
+  modalSaveButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  // Header Layout Styles
+  headerRowContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  headerLeftSection: {
+    flex: 1,
+  },
+  headerRightSection: {
+    marginLeft: 16,
+  },
+  timeRangeContainer: {
+    marginTop: 12,
+  },
+  statusContainer: {
+    marginBottom: 12,
+  },
+  segmentsContainer: {
+    marginBottom: 0,
+  },
+  // Summary Section Styles
+  summaryCardContainer: {
+    backgroundColor: 'transparent',
+    borderLeftWidth: 0,
+    padding: 15,
+    marginBottom: 16,
+  },
+  summaryHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  summaryHeaderTitle: {
+    marginBottom: 0,
+  },
+  summaryExpandIcon: {
+    fontSize: 20,
+    color: '#7f8c8d',
+  },
+  summaryContentContainer: {
+    marginTop: 12,
+  },
+  // Transcript Segment Styles
+  segmentHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  segmentFlipIcon: {
+    fontSize: 16,
+    color: '#7f8c8d',
+  },
+  segmentRatingContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
+  },
 });
 
 export default SessionDetailsScreenStyles;
