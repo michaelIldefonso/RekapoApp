@@ -203,6 +203,21 @@ export const getSessionDetails = async (sessionId) => {
  * @param {function} onClose - Callback for connection close
  * @returns {object} WebSocket connection with helper methods
  */
+/**
+ * Rate a recording segment for transcription quality
+ * @param {number} sessionId - The session ID that contains the segment
+ * @param {number} segmentId - The segment ID to rate
+ * @param {number} rating - Quality rating from 1 (poor) to 5 (excellent)
+ * @returns {Promise} Rating response with success status
+ */
+export const rateSegment = async (sessionId, segmentId, rating) => {
+  return await apiRequest(
+    `/sessions/${sessionId}/segments/${segmentId}/rate`,
+    'PATCH',
+    { rating }
+  );
+};
+
 export const connectTranscriptionWebSocket = async (sessionId, onMessage, onError, onClose) => {
   const token = await getStoredToken();
   

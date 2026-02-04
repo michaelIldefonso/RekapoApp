@@ -12,7 +12,7 @@ import {
   Modal,
 } from 'react-native';
 import SessionDetailsScreenStyles from '../styles/SessionDetailsScreenStyles';
-import { getSessionDetails, updateMeetingSession } from '../services/apiService';
+import { getSessionDetails, updateMeetingSession, rateSegment } from '../services/apiService';
 import MessagePopup from '../components/popup/MessagePopup';
 
 const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
@@ -53,8 +53,17 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
         setSessionData(result.data);
         setNewTitle(result.data.session_title);
         
-        // Debug: Log first segment structure to see available fields
+        // Initialize segment ratings from API data
         if (result.data.recording_segments && result.data.recording_segments.length > 0) {
+          const ratingsMap = {};
+          result.data.recording_segments.forEach(segment => {
+            if (segment.rating) {
+              ratingsMap[segment.id] = segment.rating;
+            }
+          });
+          setSegmentRatings(ratingsMap);
+          
+          // Debug: Log first segment structure to see available fields
           console.log('📝 First segment fields:', Object.keys(result.data.recording_segments[0]));
           console.log('📝 First segment data:', result.data.recording_segments[0]);
         }
@@ -150,15 +159,64 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
     }));
   };
 
-  const handleSegmentRating = (segmentId, rating) => {
-    setSegmentRatings(prev => ({
-      ...prev,
-      [segmentId]: prev[segmentId] === rating ? 0 : rating
-    }));
+  const handleSegmentRating = async (segmentId, rating) => {
+    const currentRating = segmentRatings[segmentId];
+    const newRating = currentRating === rating ? 0 : rating;
+    
+    // Only send API request if rating is being set (not cleared)
+    if (newRating > 0) {
+      try {
+        // Optimistically update UI
+        setSegmentRatings(prev => ({
+          ...prev,
+          [segmentId]: newRating
+        }));
+        
+        // Call API to save rating
+        const result = await rateSegment(sessionId, segmentId, newRating);
+        
+        if (result.success) {
+          console.log(`✅ Rated segment ${segmentId} with ${newRating} stars`);
+        } else {
+          // Revert on failure
+          setSegmentRatings(prev => ({
+            ...prev,
+            [segmentId]: currentRating
+          }));
+          Alert.alert('Error', 'Failed to save rating');
+        }
+      } catch (error) {
+        // Revert on error
+        setSegmentRatings(prev => ({
+          ...prev,
+          [segmentId]: currentRating
+        }));
+        Alert.alert('Error', `Failed to save rating: ${error.message}`);
+      }
+    } else {
+      // Just clear locally (no API call for clearing)
+      setSegmentRatings(prev => ({
+        ...prev,
+        [segmentId]: 0
+      }));
+    }
   };
 
-  const renderStars = (segmentId) => {
+  const renderRatingOrBadge = (segmentId) => {
     const rating = segmentRatings[segmentId] || 0;
+    
+    // If already rated, show badge
+    if (rating > 0) {
+      return (
+        <View style={SessionDetailsScreenStyles.segmentRatingContainer}>
+          <Text style={{ fontSize: 14, color: '#FFD700', fontWeight: 'bold' }}>
+            Rated ⭐
+          </Text>
+        </View>
+      );
+    }
+    
+    // If not rated, show interactive stars
     return (
       <View style={SessionDetailsScreenStyles.segmentRatingContainer}>
         {[1, 2, 3, 4, 5].map((star) => (
@@ -166,9 +224,7 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
             key={star}
             onPress={() => handleSegmentRating(segmentId, star)}
           >
-            <Text style={{ fontSize: 24 }}>
-              {star <= rating ? '★' : '☆'}
-            </Text>
+            <Text style={{ fontSize: 24 }}>☆</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -397,7 +453,7 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
                       }
                     </Text>
                   </View>
-                  {flippedSegments[segment.id] && renderStars(segment.id)}
+                  {flippedSegments[segment.id] && renderRatingOrBadge(segment.id)}
                 </View>
               </TouchableOpacity>
             ))
