@@ -25,6 +25,7 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [successPopup, setSuccessPopup] = useState({ visible: false, title: '', message: '' });
   const [expandedSummary, setExpandedSummary] = useState(false);
+  const [expandedAISummaries, setExpandedAISummaries] = useState(false);
   const [flippedSegments, setFlippedSegments] = useState({});
   const [segmentRatings, setSegmentRatings] = useState({});
 
@@ -175,74 +176,73 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
   };
 
   // Dynamic styles for dark mode
-  const containerStyle = [
-    SessionDetailsScreenStyles.container,
-    isDarkMode && { backgroundColor: '#222' },
-  ];
-  const headerStyle = [
-    SessionDetailsScreenStyles.header,
-    isDarkMode && { backgroundColor: '#333', borderBottomColor: '#444' },
-  ];
-  const titleStyle = [
-    SessionDetailsScreenStyles.title,
-    isDarkMode && { color: '#fff' },
-  ];
-  const subtitleStyle = [
-    SessionDetailsScreenStyles.subtitle,
-    isDarkMode && { color: '#bbb' },
-  ];
-  const sectionTitleStyle = [
-    SessionDetailsScreenStyles.sectionTitle,
-    isDarkMode && { color: '#fff' },
-  ];
-  const segmentCardStyle = [
-    SessionDetailsScreenStyles.segmentCard,
-    isDarkMode && { backgroundColor: '#333', borderColor: '#444' },
-  ];
-  const segmentNumberStyle = [
-    SessionDetailsScreenStyles.segmentNumber,
-    isDarkMode && { color: '#007AFF' },
-  ];
-  const labelStyle = [
-    SessionDetailsScreenStyles.label,
-    isDarkMode && { color: '#aaa' },
-  ];
-  const originalTextStyle = [
-    SessionDetailsScreenStyles.originalText,
-    isDarkMode && { color: '#fff' },
-  ];
-  const translatedTextStyle = [
-    SessionDetailsScreenStyles.translatedText,
-    isDarkMode && { color: '#bbb' },
-  ];
-  const summaryCardStyle = [
-    SessionDetailsScreenStyles.summaryCard,
-    isDarkMode && { backgroundColor: 'transparent', borderColor: '#007AFF' },
-  ];
-  const summaryTextStyle = [
-    SessionDetailsScreenStyles.summaryText,
-    isDarkMode && { color: '#fff' },
-  ];
-  const backButtonStyle = [
-    SessionDetailsScreenStyles.backButton,
-    isDarkMode && { backgroundColor: '#444' },
-  ];
-  const backButtonTextStyle = [
-    SessionDetailsScreenStyles.backButtonText,
-    isDarkMode && { color: '#fff' },
-  ];
-  const infoRowStyle = [
-    SessionDetailsScreenStyles.infoRow,
-    isDarkMode && { backgroundColor: '#2a2a2a' },
-  ];
-  const infoLabelStyle = [
-    SessionDetailsScreenStyles.infoLabel,
-    isDarkMode && { color: '#aaa' },
-  ];
-  const infoValueStyle = [
-    SessionDetailsScreenStyles.infoValue,
-    isDarkMode && { color: '#fff' },
-  ];
+  const containerStyle = isDarkMode 
+    ? [SessionDetailsScreenStyles.container, SessionDetailsScreenStyles.containerDark]
+    : SessionDetailsScreenStyles.container;
+  
+  const headerStyle = isDarkMode
+    ? [SessionDetailsScreenStyles.header, SessionDetailsScreenStyles.headerDark]
+    : SessionDetailsScreenStyles.header;
+  
+  const titleStyle = isDarkMode
+    ? [SessionDetailsScreenStyles.title, SessionDetailsScreenStyles.titleDark]
+    : SessionDetailsScreenStyles.title;
+  
+  const subtitleStyle = isDarkMode
+    ? [SessionDetailsScreenStyles.subtitle, SessionDetailsScreenStyles.subtitleDark]
+    : SessionDetailsScreenStyles.subtitle;
+  
+  const sectionTitleStyle = isDarkMode
+    ? [SessionDetailsScreenStyles.sectionTitle, SessionDetailsScreenStyles.sectionTitleDark]
+    : SessionDetailsScreenStyles.sectionTitle;
+  
+  const segmentCardStyle = isDarkMode
+    ? [SessionDetailsScreenStyles.segmentCard, SessionDetailsScreenStyles.segmentCardDark]
+    : SessionDetailsScreenStyles.segmentCard;
+  
+  const segmentNumberStyle = isDarkMode
+    ? [SessionDetailsScreenStyles.segmentNumber, SessionDetailsScreenStyles.segmentNumberDark]
+    : SessionDetailsScreenStyles.segmentNumber;
+  
+  const labelStyle = isDarkMode
+    ? [SessionDetailsScreenStyles.label, SessionDetailsScreenStyles.labelDark]
+    : SessionDetailsScreenStyles.label;
+  
+  const originalTextStyle = isDarkMode
+    ? [SessionDetailsScreenStyles.originalText, SessionDetailsScreenStyles.originalTextDark]
+    : SessionDetailsScreenStyles.originalText;
+  
+  const translatedTextStyle = isDarkMode
+    ? [SessionDetailsScreenStyles.translatedText, SessionDetailsScreenStyles.translatedTextDark]
+    : SessionDetailsScreenStyles.translatedText;
+  
+  const summaryCardStyle = isDarkMode
+    ? [SessionDetailsScreenStyles.summaryCard, SessionDetailsScreenStyles.summaryCardDark]
+    : SessionDetailsScreenStyles.summaryCard;
+  
+  const summaryTextStyle = isDarkMode
+    ? [SessionDetailsScreenStyles.summaryText, SessionDetailsScreenStyles.summaryTextDark]
+    : SessionDetailsScreenStyles.summaryText;
+  
+  const backButtonStyle = isDarkMode
+    ? [SessionDetailsScreenStyles.backButton, SessionDetailsScreenStyles.backButtonDark]
+    : SessionDetailsScreenStyles.backButton;
+  
+  const backButtonTextStyle = isDarkMode
+    ? [SessionDetailsScreenStyles.backButtonText, SessionDetailsScreenStyles.backButtonTextDark]
+    : SessionDetailsScreenStyles.backButtonText;
+  
+  const infoRowStyle = isDarkMode
+    ? [SessionDetailsScreenStyles.infoRow, SessionDetailsScreenStyles.infoRowDark]
+    : SessionDetailsScreenStyles.infoRow;
+  
+  const infoLabelStyle = isDarkMode
+    ? [SessionDetailsScreenStyles.infoLabel, SessionDetailsScreenStyles.infoLabelDark]
+    : SessionDetailsScreenStyles.infoLabel;
+  
+  const infoValueStyle = isDarkMode
+    ? [SessionDetailsScreenStyles.infoValue, SessionDetailsScreenStyles.infoValueDark]
+    : SessionDetailsScreenStyles.infoValue;
 
   if (loading) {
     return (
@@ -299,19 +299,16 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
           <View style={SessionDetailsScreenStyles.headerRightSection}>
             <View style={SessionDetailsScreenStyles.statusContainer}>
               <Text style={[labelStyle, { fontSize: 12 }]}>Status</Text>
-              <Text style={[infoValueStyle, { 
+              <Text style={[infoValueStyle, {
                 color: sessionData.status === 'completed' ? '#4CAF50' : 
-                       sessionData.status === 'recording' ? '#FF9800' : '#F44336',
-                fontSize: 14,
-                fontWeight: '600',
-                marginTop: 2
-              }]}>
+                       sessionData.status === 'recording' ? '#FF9800' : '#F44336'
+              }, SessionDetailsScreenStyles.statusText]}>
                 {sessionData.status.toUpperCase()}
               </Text>
             </View>
             <View style={SessionDetailsScreenStyles.segmentsContainer}>
               <Text style={[labelStyle, { fontSize: 12 }]}>Segments</Text>
-              <Text style={[infoValueStyle, { fontSize: 14, fontWeight: '600', marginTop: 2 }]}>
+              <Text style={[infoValueStyle, SessionDetailsScreenStyles.segmentText]}>
                 {sessionData.total_segments}
               </Text>
             </View>
@@ -320,49 +317,58 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
       </View>
 
       <ScrollView style={SessionDetailsScreenStyles.scrollView}>
-        {/* Overall Session Summary Card - Expandable */}
+        {/* Overall Session Summary Card */}
+        <View style={[summaryCardStyle, SessionDetailsScreenStyles.summaryCardContainer]}>
+          <Text style={[sectionTitleStyle, SessionDetailsScreenStyles.summaryHeaderTitle]}>📋 Session Summary</Text>
+          
+          <View style={SessionDetailsScreenStyles.summaryContentContainer}>
+            {sessionData.summaries && sessionData.summaries.length > 0 ? (
+              <Text style={[summaryTextStyle, isDarkMode && SessionDetailsScreenStyles.summaryContentContainerDark]}>
+                {sessionData.summaries.map(s => s.summary_text).join('\n\n')}
+              </Text>
+            ) : (
+              <Text style={[summaryTextStyle, SessionDetailsScreenStyles.summaryTextItalic]}>
+                No summary available for this session yet.
+              </Text>
+            )}
+          </View>
+        </View>
+
+        {/* Summaries Section */}
         <TouchableOpacity 
-          onPress={() => setExpandedSummary(!expandedSummary)}
+          onPress={() => setExpandedAISummaries(!expandedAISummaries)}
           activeOpacity={0.7}
         >
           <View style={[summaryCardStyle, SessionDetailsScreenStyles.summaryCardContainer]}>
             <View style={SessionDetailsScreenStyles.summaryHeaderRow}>
-              <Text style={[sectionTitleStyle, SessionDetailsScreenStyles.summaryHeaderTitle]}>📋 Session Summary</Text>
-              <Text style={[SessionDetailsScreenStyles.summaryExpandIcon, isDarkMode && { color: '#bbb' }]}>
-                {expandedSummary ? '▼' : '▶'}
+              <Text style={[sectionTitleStyle, SessionDetailsScreenStyles.summaryHeaderTitle]}>📝 AI Summaries</Text>
+              <Text style={[SessionDetailsScreenStyles.summaryExpandIcon, isDarkMode && SessionDetailsScreenStyles.summaryExpandIconDark]}>
+                {expandedAISummaries ? '▼' : '▶'}
               </Text>
             </View>
             
-            {expandedSummary && (
+            {expandedAISummaries && (
               <View style={SessionDetailsScreenStyles.summaryContentContainer}>
                 {sessionData.summaries && sessionData.summaries.length > 0 ? (
-                  <Text style={[summaryTextStyle, { color: isDarkMode ? '#bbb' : '#5a6c7d' }]}>
-                    {sessionData.summaries.map(s => s.summary_text).join('\n\n')}
-                  </Text>
+                  <View>
+                    {sessionData.summaries.map((summary, index) => (
+                      <View key={summary.id} style={[summaryCardStyle, { marginTop: 12 }]}>
+                        <Text style={[labelStyle, SessionDetailsScreenStyles.labelWithMargin]}>
+                          Summary {index + 1} (Segments {summary.chunk_range_start}-{summary.chunk_range_end})
+                        </Text>
+                        <Text style={summaryTextStyle}>{summary.summary_text}</Text>
+                      </View>
+                    ))}
+                  </View>
                 ) : (
-                  <Text style={[summaryTextStyle, { color: isDarkMode ? '#999' : '#999', fontStyle: 'italic' }]}>
-                    No summary available for this session yet.
+                  <Text style={[summaryTextStyle, SessionDetailsScreenStyles.summaryTextItalic]}>
+                    No summaries available for this session yet.
                   </Text>
                 )}
               </View>
             )}
           </View>
         </TouchableOpacity>
-
-        {/* Summaries Section */}
-        {sessionData.summaries && sessionData.summaries.length > 0 && (
-          <View style={SessionDetailsScreenStyles.section}>
-            <Text style={sectionTitleStyle}>📝 AI Summaries</Text>
-            {sessionData.summaries.map((summary, index) => (
-              <View key={summary.id} style={summaryCardStyle}>
-                <Text style={[labelStyle, { marginBottom: 8 }]}>
-                  Summary {index + 1} (Segments {summary.chunk_range_start}-{summary.chunk_range_end})
-                </Text>
-                <Text style={summaryTextStyle}>{summary.summary_text}</Text>
-              </View>
-            ))}
-          </View>
-        )}
 
         {/* Transcripts Section */}
         <View style={SessionDetailsScreenStyles.section}>
@@ -379,7 +385,7 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
                     <Text style={labelStyle}>
                       {flippedSegments[segment.id] ? 'Original Transcription' : 'English Translation'}
                     </Text>
-                    <Text style={[SessionDetailsScreenStyles.segmentFlipIcon, isDarkMode && { color: '#bbb' }]}>
+                    <Text style={[SessionDetailsScreenStyles.segmentFlipIcon, isDarkMode && SessionDetailsScreenStyles.segmentFlipIconDark]}>
                       {flippedSegments[segment.id] ? '🔄' : '🔄'}
                     </Text>
                   </View>
@@ -411,11 +417,11 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
         onRequestClose={() => setEditingTitle(false)}
       >
         <View style={SessionDetailsScreenStyles.modalOverlay}>
-          <View style={[SessionDetailsScreenStyles.modalContent, isDarkMode && { backgroundColor: '#333' }]}>
+          <View style={[SessionDetailsScreenStyles.modalContent, isDarkMode && SessionDetailsScreenStyles.modalContentDark]}>
             <Text style={[titleStyle, SessionDetailsScreenStyles.modalTitle]}>Edit Session Title</Text>
             
             <TextInput
-              style={[SessionDetailsScreenStyles.modalInput, isDarkMode && { borderColor: '#555', color: '#fff', backgroundColor: '#444' }]}
+              style={[SessionDetailsScreenStyles.modalInput, isDarkMode && SessionDetailsScreenStyles.modalInputDark]}
               placeholder="Enter new title"
               placeholderTextColor="#999"
               value={newTitle}

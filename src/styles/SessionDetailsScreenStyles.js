@@ -269,6 +269,107 @@ const SessionDetailsScreenStyles = StyleSheet.create({
     gap: 8,
     marginTop: 12,
   },
+  // Dark Mode Styles
+  containerDark: {
+    backgroundColor: '#222',
+  },
+  headerDark: {
+    backgroundColor: '#333',
+    borderBottomColor: '#444',
+  },
+  titleDark: {
+    color: '#fff',
+  },
+  subtitleDark: {
+    color: '#bbb',
+  },
+  sectionTitleDark: {
+    color: '#fff',
+  },
+  segmentCardDark: {
+    backgroundColor: '#333',
+    borderColor: '#444',
+  },
+  segmentNumberDark: {
+    color: '#007AFF',
+  },
+  labelDark: {
+    color: '#aaa',
+  },
+  originalTextDark: {
+    color: '#fff',
+  },
+  translatedTextDark: {
+    color: '#bbb',
+  },
+  summaryCardDark: {
+    backgroundColor: 'transparent',
+    borderColor: '#007AFF',
+  },
+  summaryTextDark: {
+    color: '#fff',
+  },
+  backButtonDark: {
+    backgroundColor: '#444',
+  },
+  backButtonTextDark: {
+    color: '#fff',
+  },
+  infoRowDark: {
+    backgroundColor: '#2a2a2a',
+  },
+  infoLabelDark: {
+    color: '#aaa',
+  },
+  infoValueDark: {
+    color: '#fff',
+  },
+  summaryExpandIconDark: {
+    color: '#bbb',
+  },
+  segmentFlipIconDark: {
+    color: '#bbb',
+  },
+  summaryContentContainerDark: {
+    color: '#bbb',
+  },
+  modalContentDark: {
+    backgroundColor: '#333',
+  },
+  modalInputDark: {
+    borderColor: '#555',
+    color: '#fff',
+    backgroundColor: '#444',
+  },
+  statusBadgeCompleted: {
+    color: '#4CAF50',
+  },
+  statusBadgeRecording: {
+    color: '#FF9800',
+  },
+  statusBadgeDefault: {
+    color: '#F44336',
+  },
+  statusText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  segmentText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  summaryTextItalic: {
+    color: '#999',
+    fontStyle: 'italic',
+  },
+  summaryTextColor: {
+    color: '#5a6c7d',
+  },
+  labelWithMargin: {
+    marginBottom: 8,
+  },
 });
 
 export default SessionDetailsScreenStyles;
