@@ -405,9 +405,11 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
             
             {expandedAISummaries && (
               <View style={SessionDetailsScreenStyles.summaryContentContainer}>
-                {sessionData.summaries && sessionData.summaries.length > 0 ? (
+                {sessionData.summaries && sessionData.summaries.filter(s => !s.is_final_summary).length > 0 ? (
                   <View>
-                    {sessionData.summaries.map((summary, index) => (
+                    {sessionData.summaries
+                      .filter(summary => !summary.is_final_summary)
+                      .map((summary, index) => (
                       <View key={summary.id} style={[summaryCardStyle, { marginTop: 12 }]}>
                         <Text style={[labelStyle, SessionDetailsScreenStyles.labelWithMargin]}>
                           Summary {index + 1} (Segments {summary.chunk_range_start}-{summary.chunk_range_end})
