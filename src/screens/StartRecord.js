@@ -385,7 +385,7 @@ const StartRecord = (props) => {
     console.log('📨 WebSocket message:', data.status);
     
     if (data.status === 'processing') {
-      setCurrentStatus(`Processing segment ${data.segment_number}...`);
+      setCurrentStatus('Processing segment...');
     } else if (data.status === 'success') {
       setIsProcessing(false);
       setCurrentStatus('Recording...');
