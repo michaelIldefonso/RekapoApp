@@ -18,7 +18,7 @@ import StartRecordStyles from '../styles/StartRecordStyles';
 import ThemeToggleButton from '../components/ThemeToggleButton';
 import MessagePopup from '../components/popup/MessagePopup';
 import SummariesPopup from '../components/popup/SummariesPopup';
-import { updateMeetingSession, connectTranscriptionWebSocket } from '../services/apiService';
+import { createMeetingSession, updateMeetingSession, connectTranscriptionWebSocket } from '../services/apiService';
 
 const StartRecord = (props) => {
   const { isDarkMode, onToggleDarkMode, route, navigation } = props;
@@ -28,6 +28,7 @@ const StartRecord = (props) => {
   const [messagePopup, setMessagePopup] = useState({ visible: false, title: '', message: '' });
   const [showSummariesPopup, setShowSummariesPopup] = useState(false);
   const [flippedSegments, setFlippedSegments] = useState({});
+  const [individualSessionId, setIndividualSessionId] = useState(null);
   
   // Transcription states
   const [transcriptions, setTranscriptions] = useState([]);
@@ -112,11 +113,26 @@ const StartRecord = (props) => {
       });
       console.log('✅ Audio mode configured');
 
-      // Connect WebSocket with retry logic
+      // Create individual recording session for this user
+      setCurrentStatus('Creating your recording session...');
+      console.log('📝 Creating individual session for user');
+      const sessionResponse = await createMeetingSession({
+        session_title: meetingTitle || 'Untitled Meeting'
+      });
+
+      if (!sessionResponse.success) {
+        throw new Error(sessionResponse.error || 'Failed to create recording session');
+      }
+
+      const userSessionId = sessionResponse.data.id;
+      setIndividualSessionId(userSessionId);
+      console.log('✅ Individual session created:', userSessionId);
+
+      // Connect WebSocket with retry logic using INDIVIDUAL session ID
       setCurrentStatus('Connecting to transcription service...');
       try {
         const ws = await connectTranscriptionWebSocket(
-          sessionId,
+          userSessionId,
           handleWebSocketMessage,
           handleWebSocketError,
           handleWebSocketClose
@@ -455,9 +471,9 @@ const StartRecord = (props) => {
         wsRef.current = null;
       }
 
-      if (sessionId) {
+      if (individualSessionId) {
         try {
-          await updateMeetingSession(sessionId, { status: 'completed' });
+          await updateMeetingSession(individualSessionId, { status: 'completed' });
           console.log('✅ Session marked as completed');
         } catch (error) {
           console.error('Failed to update session status:', error);
