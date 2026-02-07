@@ -15,15 +15,18 @@ const ThemeToggleButton = ({ isDarkMode, onToggle }) => (
   <TouchableOpacity
     style={[
       ThemeToggleButtonStyles.button,
-      { backgroundColor: 'transparent', borderWidth: 0, shadowOpacity: 0, elevation: 0 }, // keep button background transparent
+      isDarkMode 
+        ? { backgroundColor: '#333333', borderColor: '#f1c40f' }
+        : { backgroundColor: '#fff', borderColor: '#3498db' },
     ]}
     onPress={onToggle}
+    activeOpacity={0.7}
   >
     {/* Icon changes based on theme */}
     <Ionicons
       name={isDarkMode ? 'sunny' : 'moon'}
       size={22}
-      color={isDarkMode ? '#f1c40f' : '#34495e'}
+      color={isDarkMode ? '#f1c40f' : '#3498db'}
     />
   </TouchableOpacity>
 );

@@ -6,12 +6,14 @@ const ThemeToggleButtonStyles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: '#fff',
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 30,
+    borderWidth: 2,
+    borderColor: '#f1c40f',
+    marginTop: 10,
   },
 });
 
