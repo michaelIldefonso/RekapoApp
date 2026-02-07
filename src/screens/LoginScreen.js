@@ -11,6 +11,8 @@ import {
 import LoginScreenStyles from '../styles/LoginScreenStyles';
 import ThemeToggleButton from '../components/ThemeToggleButton';
 import WelcomePopup from '../components/popup/WelcomePopup';
+import TermsPopup from '../components/popup/TermsPopup';
+import PrivacyPopup from '../components/popup/PrivacyPopup';
 import { 
   handleGoogleLogin as googleLoginService 
 } from '../services/authService';
@@ -18,6 +20,8 @@ import {
 const LoginScreen = ({ onLogin, isDarkMode, onToggleDarkMode }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
+  const [showTermsPopup, setShowTermsPopup] = useState(false);
+  const [showPrivacyPopup, setShowPrivacyPopup] = useState(false);
   const [loginResult, setLoginResult] = useState(null);
 
   // Google Sign-In is now configured in App.js before this component loads
@@ -135,9 +139,16 @@ const LoginScreen = ({ onLogin, isDarkMode, onToggleDarkMode }) => {
         <View style={LoginScreenStyles.footerContainer}>
           <Text style={footerTextStyle}>
             By continuing, you agree to our{' '}
-            <Text style={linkTextStyle}>Terms of Service</Text> and{' '}
-            <Text style={linkTextStyle}>Privacy Policy</Text>
           </Text>
+          <View style={{ alignItems: 'center' }}>
+            <TouchableOpacity onPress={() => setShowTermsPopup(true)} disabled={isLoading}>
+              <Text style={linkTextStyle}>Terms of Service</Text>
+            </TouchableOpacity>
+            <Text style={[footerTextStyle, { marginTop: 6 }]}>and</Text>
+            <TouchableOpacity onPress={() => setShowPrivacyPopup(true)} disabled={isLoading}>
+              <Text style={linkTextStyle}>Privacy Policy</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -148,6 +159,18 @@ const LoginScreen = ({ onLogin, isDarkMode, onToggleDarkMode }) => {
           setShowWelcomePopup(false);
           onLogin(loginResult);
         }}
+        isDarkMode={isDarkMode}
+      />
+
+      <TermsPopup
+        visible={showTermsPopup}
+        onClose={() => setShowTermsPopup(false)}
+        isDarkMode={isDarkMode}
+      />
+
+      <PrivacyPopup
+        visible={showPrivacyPopup}
+        onClose={() => setShowPrivacyPopup(false)}
         isDarkMode={isDarkMode}
       />
     </SafeAreaView>
