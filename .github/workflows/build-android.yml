@@ -3,8 +3,10 @@ name: Build Android
 on:
   workflow_dispatch:  # Manual trigger
   push:
-    tags:
-      - 'preview*'  # Only trigger on preview tags
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'firebase-config/**'
 
 jobs:
   build:
@@ -55,10 +57,11 @@ jobs:
           retention-days: 30
 
       - name: Create GitHub Release
+        if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.ref_name }}
-          name: Preview Build - ${{ github.ref_name }}
+          tag_name: preview-${{ github.run_number }}
+          name: Preview Build - ${{ github.run_number }}
           body: |
             Preview build for thesis survey
             Built from commit: ${{ github.sha }}
