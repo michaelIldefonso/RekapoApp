@@ -111,6 +111,9 @@ const MainScreen = ({ onNavigate, isDarkMode, onToggleDarkMode }) => {
           <Text style={[MainScreenStyles.heroSubtext, isDarkMode && { color: '#007AFF' }]}>
             Supports English and Taglish conversations.
           </Text>
+          <Text style={[MainScreenStyles.consentNotice, isDarkMode && { color: '#999' }]}>
+            📊 Training data consent is enabled by default. Manage in Profile → Privacy Settings.
+          </Text>
         </View>
 
         {/* Features Section */}

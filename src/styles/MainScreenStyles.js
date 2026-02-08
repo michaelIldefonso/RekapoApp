@@ -92,6 +92,13 @@ const MainScreenStyles = StyleSheet.create({
     marginBottom: 0,
     letterSpacing: 0.5,
   },
+  consentNotice: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 16,
+    lineHeight: 18,
+    fontStyle: 'italic',
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
