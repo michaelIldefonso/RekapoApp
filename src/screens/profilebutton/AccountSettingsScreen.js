@@ -11,7 +11,6 @@ import {
   BackHandler,
 } from 'react-native';
 import AccountSettingsScreenStyles from '../../styles/profilebuttonstyles/AccountSettingsScreenStyles';
-import ThemeToggleButton from '../../components/ThemeToggleButton';
 import PhotoOptionsPopup from '../../components/popup/PhotoOptionsPopup';
 import DeletePhotoPopup from '../../components/popup/DeletePhotoPopup';
 import MessagePopup from '../../components/popup/MessagePopup';
@@ -124,12 +123,7 @@ const AccountSettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => 
         style={AccountSettingsScreenStyles.content}
         contentContainerStyle={AccountSettingsScreenStyles.contentContainer}
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Text style={titleStyle}>Account Settings</Text>
-          <View style={AccountSettingsScreenStyles.themeToggleButtonWrapper}>
-            <ThemeToggleButton isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
-          </View>
-        </View>
+        <Text style={titleStyle}>Account Settings</Text>
 
         {/* Profile Photo Section */}
         <View style={cardStyle}>

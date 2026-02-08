@@ -15,7 +15,6 @@ import {
 } from 'expo-audio';
 import * as FileSystem from 'expo-file-system/legacy';
 import StartRecordStyles from '../styles/StartRecordStyles';
-import ThemeToggleButton from '../components/ThemeToggleButton';
 import MessagePopup from '../components/popup/MessagePopup';
 import SummariesPopup from '../components/popup/SummariesPopup';
 import { createMeetingSession, updateMeetingSession, connectTranscriptionWebSocket } from '../services/apiService';
@@ -564,9 +563,6 @@ const StartRecord = (props) => {
       {/* Minimal Header */}
       <View style={headerStyle}>
         <Text style={headerTitleStyle}>{meetingTitle || 'Recording'}</Text>
-        <View style={StartRecordStyles.themeToggleButtonWrapper}>
-          <ThemeToggleButton isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
-        </View>
       </View>
 
       {/* Compact Status */}
@@ -638,43 +634,6 @@ const StartRecord = (props) => {
           <Text style={[transcriptionTitleStyle, { borderBottomWidth: 0 }]}>
             Waiting for transcriptions...
           </Text>
-        </View>
-      )}
-
-      {/* Summaries at bottom (compact) */}
-      {summaries.length > 0 && (
-        <View style={[
-          StartRecordStyles.summaryContainer,
-          isDarkMode && { backgroundColor: '#333', borderTopColor: '#444' }
-        ]}>
-          <Text style={[
-            StartRecordStyles.summaryTitle,
-            isDarkMode && { color: '#fff' }
-          ]}>
-            📝 Summary
-          </Text>
-          <ScrollView 
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={{ flex: 1 }}
-          >
-            {summaries.map((summary, index) => (
-              <View 
-                key={index}
-                style={[
-                  StartRecordStyles.summaryItem,
-                  isDarkMode && { backgroundColor: '#444' }
-                ]}
-              >
-                <Text style={[
-                  StartRecordStyles.summaryText,
-                  isDarkMode && { color: '#fff' }
-                ]}>
-                  {summary.text.substring(0, 80)}...
-                </Text>
-              </View>
-            ))}
-          </ScrollView>
         </View>
       )}
 

@@ -8,7 +8,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import StartMeetingScreenStyles from '../styles/StartMeetingScreenStyles';
-import ThemeToggleButton from '../components/ThemeToggleButton';
 import MessagePopup from '../components/popup/MessagePopup';
 import { createMeetingSession } from '../services/apiService';
 import { checkBackendConnection, getConnectionTroubleshootingMessage } from '../utils/connectionHelper';
@@ -121,12 +120,7 @@ const StartMeetingScreen = (props) => {
     <SafeAreaView style={containerStyle}>
       <ScrollView style={StartMeetingScreenStyles.scrollView}>
         <View style={StartMeetingScreenStyles.content}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={titleStyle}>Start New Meeting</Text>
-            <View style={StartMeetingScreenStyles.themeToggleButtonWrapper}>
-              <ThemeToggleButton isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
-            </View>
-          </View>
+          <Text style={titleStyle}>Start New Meeting</Text>
           <Text style={subtitleStyle}>Set up your recording session</Text>
 
           <View style={StartMeetingScreenStyles.inputContainer}>

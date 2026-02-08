@@ -7,7 +7,6 @@ import {
   Image,
 } from 'react-native';
 import AboutScreenStyles from '../../styles/profilebuttonstyles/AboutScreenStyles';
-import ThemeToggleButton from '../../components/ThemeToggleButton';
 import { BackHandler } from 'react-native';
 
 const AboutScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => {
@@ -33,12 +32,7 @@ const AboutScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => {
   return (
     <SafeAreaView style={containerStyle}>
       <ScrollView style={AboutScreenStyles.content}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Text style={titleStyle}>About</Text>
-          <View style={AboutScreenStyles.themeToggleButtonWrapper}>
-            <ThemeToggleButton isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
-          </View>
-        </View>
+        <Text style={titleStyle}>About</Text>
 
         {/* Logo */}
         <View style={AboutScreenStyles.logoContainer}>

@@ -7,7 +7,6 @@ import {
   ScrollView,
 } from 'react-native';
 import MainScreenStyles from '../styles/MainScreenStyles';
-import ThemeToggleButton from '../components/ThemeToggleButton';
 import { getStoredUser } from '../services/authService';
 
 const MainScreen = ({ onNavigate, isDarkMode, onToggleDarkMode }) => {
@@ -91,19 +90,14 @@ const MainScreen = ({ onNavigate, isDarkMode, onToggleDarkMode }) => {
   return (
     <SafeAreaView style={containerStyle}>
       <ScrollView style={MainScreenStyles.content} showsVerticalScrollIndicator={false}>
-        {/* Header with Theme Toggle */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 12 }}>
-          <View>
-            <Text style={titleStyle}>Dashboard</Text>
-            {userInfo && (
-              <Text style={[subtitleStyle, { marginTop: 4 }]}>
-                Welcome back, {userInfo.username || userInfo.name?.split(' ')[0] || 'User'}!
-              </Text>
-            )}
-          </View>
-          <View style={MainScreenStyles.themeToggleButtonWrapper}>
-            <ThemeToggleButton isDarkMode={isDarkMode} onToggle={handleToggleTheme} />
-          </View>
+        {/* Header */}
+        <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
+          <Text style={titleStyle}>Dashboard</Text>
+          {userInfo && (
+            <Text style={[subtitleStyle, { marginTop: 4 }]}>
+              Welcome back, {userInfo.username || userInfo.name?.split(' ')[0] || 'User'}!
+            </Text>
+          )}
         </View>
 
         {/* Hero Card */}

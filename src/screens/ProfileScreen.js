@@ -10,7 +10,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import ProfileScreenStyles from '../styles/ProfileScreenStyles';
-import ThemeToggleButton from '../components/ThemeToggleButton';
 import LogoutPopup from '../components/popup/LogoutPopup';
 import { getStoredUser, signOut } from '../services/authService';
 
@@ -54,6 +53,9 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
 
   const handleOptionPress = (title) => {
     switch (title) {
+      case 'Display Mode':
+        onToggleDarkMode();
+        break;
       case 'Account Settings':
         onNavigate('AccountSettings');
         break;
@@ -69,6 +71,7 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
   };
 
   const profileOptions = [
+    { title: 'Display Mode', subtitle: isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode' },
     { title: 'Account Settings', subtitle: 'Manage your account preferences' },
     { title: 'Privacy Settings', subtitle: 'Control your privacy preferences' },
     { title: 'About', subtitle: 'App version and information' },
@@ -123,12 +126,7 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
   return (
     <SafeAreaView style={containerStyle}>
       <ScrollView style={ProfileScreenStyles.content}>
-        <View style={ProfileScreenStyles.headerRow}>
-          <Text style={[titleStyle, { marginBottom: 0, marginTop: 0, lineHeight: 28 }]}>Profile</Text>
-          <View style={ProfileScreenStyles.themeToggleButtonWrapper}>
-            <ThemeToggleButton isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
-          </View>
-        </View>
+        <Text style={titleStyle}>Profile</Text>
 
         {isLoading ? (
           <ActivityIndicator size="large" color="#007AFF" style={{ marginTop: 50 }} />

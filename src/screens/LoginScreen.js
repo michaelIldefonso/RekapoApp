@@ -106,10 +106,6 @@ const LoginScreen = ({ onLogin, isDarkMode, onToggleDarkMode }) => {
 
   return (
     <SafeAreaView style={containerStyle}>
-      {/* Theme toggle button at upper right */}
-      <View style={{ position: 'absolute', top: 20, right: 20, zIndex: 10 }}>
-        <ThemeToggleButton isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
-      </View>
       <View style={LoginScreenStyles.content}>
         <View style={LoginScreenStyles.loginContainer}>
           {/* Only logo, no words */}

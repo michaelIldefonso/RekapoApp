@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import PrivacySettingsScreenStyles from '../../styles/profilebuttonstyles/PrivacySettingsScreenStyles';
-import ThemeToggleButton from '../../components/ThemeToggleButton';
 import { BackHandler } from 'react-native';
 import { updateUserConsent, getUserProfile } from '../../services/apiService';
 import { getStoredUser } from '../../services/authService';
@@ -78,12 +77,7 @@ const PrivacySettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => 
   return (
     <SafeAreaView style={containerStyle}>
       <ScrollView style={PrivacySettingsScreenStyles.content}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Text style={titleStyle}>Privacy Settings</Text>
-          <View style={PrivacySettingsScreenStyles.themeToggleButtonWrapper}>
-            <ThemeToggleButton isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
-          </View>
-        </View>
+        <Text style={titleStyle}>Privacy Settings</Text>
         {/* Training Data Consent Toggle */}
         {loading ? (
           <View style={{ padding: 20, alignItems: 'center' }}>

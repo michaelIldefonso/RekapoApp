@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import SessionHistoryScreenStyles from '../styles/SessionHistoryScreenStyles';
-import ThemeToggleButton from '../components/ThemeToggleButton';
 import DeleteSessionPopup from '../components/popup/DeleteSessionPopup';
 import MessagePopup from '../components/popup/MessagePopup';
 import { getSessionHistory, deleteMeetingSession } from '../services/apiService';
@@ -205,12 +204,7 @@ const SessionHistoryScreen = ({ navigation, isDarkMode, onToggleDarkMode }) => {
     return (
       <SafeAreaView style={containerStyle}>
         <View style={SessionHistoryScreenStyles.content}>
-          <View style={SessionHistoryScreenStyles.headerRow}>
-            <Text style={titleStyle}>Session History</Text>
-            <View style={SessionHistoryScreenStyles.themeToggleButtonWrapper}>
-              <ThemeToggleButton isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
-            </View>
-          </View>
+          <Text style={titleStyle}>Session History</Text>
           <View style={SessionHistoryScreenStyles.loadingContainer}>
             <ActivityIndicator size="large" color={isDarkMode ? '#fff' : '#007AFF'} />
             <Text style={[subtitleStyle, { marginTop: 10 }]}>Loading sessions...</Text>
@@ -225,12 +219,7 @@ const SessionHistoryScreen = ({ navigation, isDarkMode, onToggleDarkMode }) => {
     return (
       <SafeAreaView style={containerStyle}>
         <View style={SessionHistoryScreenStyles.content}>
-          <View style={SessionHistoryScreenStyles.headerRow}>
-            <Text style={titleStyle}>Session History</Text>
-            <View style={SessionHistoryScreenStyles.themeToggleButtonWrapper}>
-              <ThemeToggleButton isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
-            </View>
-          </View>
+          <Text style={titleStyle}>Session History</Text>
           <View style={SessionHistoryScreenStyles.emptyContainer}>
             <Text style={[titleStyle, { fontSize: 48, marginBottom: 10 }]}>📝</Text>
             <Text style={titleStyle}>No sessions yet</Text>
@@ -250,12 +239,7 @@ const SessionHistoryScreen = ({ navigation, isDarkMode, onToggleDarkMode }) => {
   return (
     <SafeAreaView style={containerStyle}>
       <View style={SessionHistoryScreenStyles.content}>
-        <View style={SessionHistoryScreenStyles.headerRow}>
-          <Text style={titleStyle}>Session History</Text>
-          <View style={SessionHistoryScreenStyles.themeToggleButtonWrapper}>
-            <ThemeToggleButton isDarkMode={isDarkMode} onToggle={onToggleDarkMode} />
-          </View>
-        </View>
+        <Text style={titleStyle}>Session History</Text>
         <Text style={subtitleStyle}>Your recorded sessions</Text>
 
         <FlatList
