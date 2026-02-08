@@ -3,10 +3,8 @@ name: Build Android
 on:
   workflow_dispatch:  # Manual trigger
   push:
-    branches: [main]
-    paths-ignore:
-      - '**.md'
-      - 'firebase-config/**'
+    tags:
+      - 'preview*'  # Only trigger on preview tags
 
 jobs:
   build:
@@ -46,22 +44,24 @@ jobs:
           BACKEND_API_URL: ${{ secrets.BACKEND_API_URL }}
           FIREBASE_CONFIG_URL: ${{ secrets.FIREBASE_CONFIG_URL }}
 
+      - name: Rename APK
+        run: mv build-*.apk RekapoApp.apk
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: preview-apk
-          path: build-*.apk
+          path: RekapoApp.apk
           retention-days: 30
 
       - name: Create GitHub Release
-        if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: preview-${{ github.run_number }}
-          name: Preview Build ${{ github.run_number }}
+          tag_name: ${{ github.ref_name }}
+          name: Preview Build - ${{ github.ref_name }}
           body: |
             Preview build for thesis survey
             Built from commit: ${{ github.sha }}
-          files: build-*.apk
+          files: RekapoApp.apk
           draft: false
           prerelease: true
