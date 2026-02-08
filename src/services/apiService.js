@@ -227,7 +227,7 @@ export const connectTranscriptionWebSocket = async (sessionId, onMessage, onErro
     throw error;
   }
   
-  const wsUrl = config.BACKEND_URL.replace('http', 'ws');
+  const wsUrl = config.BACKEND_URL.replace(/^https?:\/\//, 'wss://');
   // Add session_id and token as query parameters
   const fullUrl = `${wsUrl}/api/ws/transcribe?session_id=${sessionId}&token=${encodeURIComponent(token)}`;
   console.log('🔌 Connecting to WebSocket:', fullUrl.replace(token, 'TOKEN_HIDDEN'));
