@@ -227,13 +227,27 @@ export const connectTranscriptionWebSocket = async (sessionId, onMessage, onErro
     throw error;
   }
   
-  const wsUrl = config.BACKEND_URL.replace(/^https?:\/\//, 'wss://');
+  // Convert http:// to ws:// and https:// to wss://
+  const wsProtocol = config.BACKEND_URL.startsWith('https://') ? 'wss://' : 'ws://';
+  const wsUrl = config.BACKEND_URL.replace(/^https?:\/\//, wsProtocol);
+  
   // Add session_id and token as query parameters
   const fullUrl = `${wsUrl}/api/ws/transcribe?session_id=${sessionId}&token=${encodeURIComponent(token)}`;
   console.log('🔌 Connecting to WebSocket:', fullUrl.replace(token, 'TOKEN_HIDDEN'));
   console.log('📋 Session ID:', sessionId);
   
-  const ws = new WebSocket(fullUrl);
+  let ws;
+  try {
+    ws = new WebSocket(fullUrl);
+  } catch (instantiationError) {
+    console.error('❌ WebSocket instantiation failed:', instantiationError);
+    console.error('❌ Failed URL protocol:', wsProtocol);
+    console.error('❌ Backend URL:', config.BACKEND_URL);
+    
+    const error = new Error('Unable to connect to transcription service. Please check your network connection.');
+    if (onError) onError(error);
+    throw error;
+  }
   
   let segmentNumber = 0;
   

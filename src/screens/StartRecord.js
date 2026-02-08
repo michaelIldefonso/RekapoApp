@@ -92,10 +92,12 @@ const StartRecord = (props) => {
   const handleStartRecording = async () => {
     try {
       console.log('🎙️ Starting recording process...');
+      setIsProcessing(true);
       
       // Request permissions
       const { granted } = await AudioModule.requestRecordingPermissionsAsync();
       if (!granted) {
+        setIsProcessing(false);
         setMessagePopup({ 
           visible: true, 
           title: 'Permission Denied', 
@@ -161,10 +163,11 @@ const StartRecord = (props) => {
         wsRef.current = ws;
         console.log('✅ WebSocket connected and ready');
       } catch (wsError) {
-        throw new Error(`Failed to connect to transcription service: ${wsError.message}`);
+        throw new Error('Unable to connect to transcription service. Please check your internet connection and try again.');
       }
 
       // Start recording with 20-second chunks
+      setIsProcessing(false);
       setIsRecording(true);
       isRecordingRef.current = true;
       setCurrentStatus('Recording...');
@@ -194,8 +197,8 @@ const StartRecord = (props) => {
       
       setMessagePopup({ 
         visible: true, 
-        title: 'Error', 
-        message: error.message || 'Failed to start recording' 
+        title: 'Recording Error', 
+        message: error.message || 'Unable to start recording. Please try again.' 
       });
       setCurrentStatus('Ready to record');
     }
@@ -416,14 +419,19 @@ const StartRecord = (props) => {
 
   const handleWebSocketError = (error) => {
     console.error('❌ WebSocket error in screen:', error);
-    setCurrentStatus('Connection error - Check backend server');
+    setCurrentStatus('Connection error');
     
     if (isRecording) {
       setMessagePopup({
         visible: true,
-        title: '⚠️ Connection Error',
-        message: 'Lost connection to transcription service. Please check if the backend server is running.'
+        title: 'Connection Error',
+        message: 'Unable to connect to transcription service. Please check your internet connection and try again.'
       });
+      
+      // Stop recording on connection error
+      setIsRecording(false);
+      isRecordingRef.current = false;
+      setIsProcessing(false);
     }
   };
 
@@ -437,12 +445,13 @@ const StartRecord = (props) => {
       setCurrentStatus('Connection lost');
       setMessagePopup({
         visible: true,
-        title: '⚠️ Connection Lost',
-        message: 'Transcription service disconnected. Recording stopped.'
+        title: 'Connection Lost',
+        message: 'Connection to transcription service was interrupted. Your recording has been stopped.'
       });
       
       setIsRecording(false);
       isRecordingRef.current = false;
+      setIsProcessing(false);
     }
   };
 
