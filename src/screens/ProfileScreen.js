@@ -8,6 +8,7 @@ import {
   Alert,
   Image,
   ActivityIndicator,
+  Switch,
 } from 'react-native';
 import ProfileScreenStyles from '../styles/ProfileScreenStyles';
 import LogoutPopup from '../components/popup/LogoutPopup';
@@ -53,9 +54,6 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
 
   const handleOptionPress = (title) => {
     switch (title) {
-      case 'Display Mode':
-        onToggleDarkMode();
-        break;
       case 'Account Settings':
         onNavigate('AccountSettings');
         break;
@@ -166,17 +164,29 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
 
         <View style={ProfileScreenStyles.optionsContainer}>
           {profileOptions.map((option, index) => (
-            <TouchableOpacity 
+            <View
               key={index} 
               style={optionCardStyle}
-              onPress={() => handleOptionPress(option.title)}
             >
               <View>
                 <Text style={optionTitleStyle}>{option.title}</Text>
                 <Text style={optionSubtitleStyle}>{option.subtitle}</Text>
               </View>
-              <Text style={optionArrowStyle}>›</Text>
-            </TouchableOpacity>
+              {option.title === 'Display Mode' ? (
+                <Switch
+                  value={isDarkMode}
+                  onValueChange={onToggleDarkMode}
+                  trackColor={{ false: '#bdc3c7', true: '#95a5a6' }}
+                  thumbColor={isDarkMode ? '#34495e' : '#ecf0f1'}
+                />
+              ) : (
+                <TouchableOpacity
+                  onPress={() => handleOptionPress(option.title)}
+                >
+                  <Text style={optionArrowStyle}>›</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           ))}
         </View>
 
