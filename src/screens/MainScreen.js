@@ -24,6 +24,8 @@ const MainScreen = ({ onNavigate, isDarkMode, onToggleDarkMode }) => {
       }
     } catch (error) {
       console.error('Error loading user data:', error);
+      // User data load failures are typically non-critical
+      // User can still navigate to profile to reload
     }
   };
 

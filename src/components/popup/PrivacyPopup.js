@@ -21,7 +21,8 @@ Rekapo values your privacy. This Privacy Policy explains how we collect, use, an
 Rekapo may collect the following data:{"\n\n"}
 Audio recordings created by the user{"\n\n"}
 Transcribed text, translated text, and summaries{"\n\n"}
-Basic app usage data for performance and improvement{"\n\n"}
+Technical logs including error reports, app performance data, and usage patterns{"\n\n"}
+Device information and app version for technical support{"\n\n"}
 2. How We Use Your Information{"\n\n"}
 Your data is used solely to:{"\n\n"}
 Provide transcription, translation, and summarization services{"\n\n"}
@@ -32,26 +33,40 @@ We do not sell or rent user data to third parties.{"\n\n"}
 Audio recordings and generated text are processed only to deliver app features{"\n\n"}
 Data is stored securely and accessed only when necessary for system operations{"\n\n"}
 Users may delete their recordings and data within the App{"\n\n"}
-4. Data Sharing{"\n\n"}
+4. Technical Logs and Diagnostics{"\n\n"}
+To maintain app quality and fix issues, we collect technical logs including:{"\n\n"}
+Error messages and crash reports{"\n\n"}
+App performance metrics{"\n\n"}
+Feature usage patterns (no personal content){"\n\n"}
+These logs are automatically sent to our servers for analysis and debugging. Logs are retained for 30 days and do not contain sensitive personal information. This data collection is necessary for providing a reliable service.{"\n\n"}
+5. Data Sharing{"\n\n"}
 We do not share personal data except:{"\n\n"}
 When required by law{"\n\n"}
 To protect the rights and safety of users or the system{"\n\n"}
 5. Data Security{"\n\n"}
 We implement reasonable technical and organizational measures to protect user data from unauthorized access, loss, or misuse.{"\n\n"}
-6. User Consent{"\n\n"}
+6. Machine Learning & Training Data (Optional){"\n\n"}
+8o improve the accuracy of transcription, translation, and summarization services, Rekapo may use anonymized recordings and text data to train and refine AI models.{"\n\n"}
+Training data consent is OPTIONAL:{"\n\n"}
+You can enable or disable training data usage at any time in Profile → Privacy Settings{"\n\n"}
+When enabled, your data may be used to improve AI models (anonymized){"\n\n"}
+When disabled, your data is used only for providing immediate services to you{"\n\n"}
+The core functionality of Rekapo works regardless of your training consent preference{"\n\n"}
+7. User Consent{"\n\n"}
 By using Rekapo, you consent to the collection and processing of your data as described in this Privacy Policy.{"\n\n"}
-7. User Rights{"\n\n"}
+9. User Rights{"\n\n"}
 Users have the right to:{"\n\n"}
 Access their data{"\n\n"}
 Request deletion of stored data{"\n\n"}
+Control training data consent preferences{"\n\n"}
 Stop using the App at any time{"\n\n"}
-8. Children’s Privacy{"\n\n"}
+10. Children's Privacy{"\n\n"}
 Rekapo is not intended for users under the age of 13. We do not knowingly collect data from children.{"\n\n"}
-9. Changes to This Policy{"\n\n"}
+11. Changes to This Policy{"\n\n"}
 This Privacy Policy may be updated. Continued use of the App indicates acceptance of the updated policy.{"\n\n"}
-10. Contact Us{"\n\n"}
+12. Contact Us{"\n\n"}
 If you have questions about this Privacy Policy, contact us at:{"\n"}
-📧 micheal08@gmail.com
+📧 michaelildefonso8@gmail.com
               </Text>
             </ScrollView>
 

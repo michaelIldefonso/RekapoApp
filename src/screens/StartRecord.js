@@ -413,7 +413,12 @@ const StartRecord = (props) => {
       });
     } else if (data.status === 'error') {
       console.error('WebSocket error:', data.message);
-      setCurrentStatus('Error: ' + data.message);
+      setCurrentStatus('Error occurred');
+      setMessagePopup({
+        visible: true,
+        title: 'Transcription Error',
+        message: data.message || 'An error occurred during transcription'
+      });
     }
   };
 
@@ -425,7 +430,7 @@ const StartRecord = (props) => {
       setMessagePopup({
         visible: true,
         title: 'Connection Error',
-        message: 'Unable to connect to transcription service. Please check your internet connection and try again.'
+        message: 'Lost connection to transcription service. Your recording will be stopped. Please check your internet connection and try again.'
       });
       
       // Stop recording on connection error

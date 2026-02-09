@@ -32,7 +32,8 @@ You are responsible for the content you record, upload, or process through the A
 Rekapo is not responsible for unauthorized or illegal recordings made by users.{"\n\n"}
 3. Ownership of Content{"\n\n"}
 You retain ownership of your recorded audio and generated text{"\n\n"}
-By using the App, you grant Rekapo a limited license to process your data solely for providing the App’s features (transcription, translation, and summarization){"\n\n"}
+By using the App, you grant Rekapo a limited license to process your data solely for providing the App's features (transcription, translation, and summarization){"\n\n"}
+Optionally, you may consent to allow Rekapo to use anonymized data to improve AI models. This setting can be managed in Privacy Settings and does not affect core functionality{"\n\n"}
 4. Acceptable Use{"\n\n"}
 You agree not to use Rekapo to:{"\n\n"}
 Violate privacy or consent laws{"\n\n"}
@@ -52,7 +53,7 @@ We may modify, suspend, or discontinue any part of the App at any time without p
 These Terms may be updated from time to time. Continued use of the App means you accept the revised Terms.{"\n\n"}
 9. Contact Information{"\n\n"}
 For questions or concerns, please contact us at:{"\n"}
-📧 micheal04@gmail.com
+📧 michaelildefonso8@gmail.com
               </Text>
             </ScrollView>
 
