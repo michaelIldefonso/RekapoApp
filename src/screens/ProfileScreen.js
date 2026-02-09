@@ -164,29 +164,36 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
 
         <View style={ProfileScreenStyles.optionsContainer}>
           {profileOptions.map((option, index) => (
-            <View
-              key={index} 
-              style={optionCardStyle}
-            >
-              <View>
-                <Text style={optionTitleStyle}>{option.title}</Text>
-                <Text style={optionSubtitleStyle}>{option.subtitle}</Text>
-              </View>
-              {option.title === 'Display Mode' ? (
+            option.title === 'Display Mode' ? (
+              <View
+                key={index} 
+                style={optionCardStyle}
+              >
+                <View>
+                  <Text style={optionTitleStyle}>{option.title}</Text>
+                  <Text style={optionSubtitleStyle}>{option.subtitle}</Text>
+                </View>
                 <Switch
                   value={isDarkMode}
                   onValueChange={onToggleDarkMode}
                   trackColor={{ false: '#bdc3c7', true: '#95a5a6' }}
                   thumbColor={isDarkMode ? '#34495e' : '#ecf0f1'}
                 />
-              ) : (
-                <TouchableOpacity
-                  onPress={() => handleOptionPress(option.title)}
-                >
-                  <Text style={optionArrowStyle}>›</Text>
-                </TouchableOpacity>
-              )}
-            </View>
+              </View>
+            ) : (
+              <TouchableOpacity
+                key={index}
+                style={optionCardStyle}
+                onPress={() => handleOptionPress(option.title)}
+                activeOpacity={0.7}
+              >
+                <View>
+                  <Text style={optionTitleStyle}>{option.title}</Text>
+                  <Text style={optionSubtitleStyle}>{option.subtitle}</Text>
+                </View>
+                <Text style={optionArrowStyle}>›</Text>
+              </TouchableOpacity>
+            )
           ))}
         </View>
 
