@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from 'jwt-decode';
 import config from '../config/app.config';
+import logger from '../utils/logger';
 
 // Configure Google Sign-In
 // Web Client ID is used for backend verification
@@ -71,12 +72,14 @@ export const signInWithGoogle = async () => {
       throw new Error('Failed to get authentication token from Google');
     }
     
+    logger.log('User signed in with Google successfully');
     return {
       success: true,
       user: user,
       idToken: tokens.idToken, // Send this to your backend for verification
     };
   } catch (error) {
+    logger.error('Google Sign-In failed:', error.code || error.message);
     console.error('❌ Google Sign-In Error:', error);
     console.error('Error code:', error.code);
     console.error('Error message:', error.message);
@@ -174,6 +177,7 @@ export const verifyWithBackend = async (idToken) => {
       await AsyncStorage.setItem(config.USER_DATA_KEY, JSON.stringify(publicUserData));
       
       console.log('✅ User data stored successfully');
+      logger.log('User authenticated successfully with backend');
       
       return {
         success: true,
@@ -181,6 +185,7 @@ export const verifyWithBackend = async (idToken) => {
         user: publicUserData,
       };
     } else {
+      logger.error('Backend authentication failed: ' + (data.detail || data.message || 'Unknown error'));
       console.error('❌ Backend error:', response.status, data);
       return {
         success: false,
@@ -189,6 +194,7 @@ export const verifyWithBackend = async (idToken) => {
     }
   } catch (error) {
     const elapsed = Date.now() - startTime;
+    logger.error('Backend verification connection error: ' + error.message);
     console.error(`❌ Backend verification error after ${elapsed}ms:`, error);
     
     let errorMessage = 'Unable to connect to server';
@@ -245,6 +251,7 @@ export const handleGoogleLogin = async () => {
 // Sign out
 export const signOut = async () => {
   try {
+    logger.log('User signed out');
     await GoogleSignin.signOut();
     // Clear encrypted JWT token
     await SecureStore.deleteItemAsync(config.JWT_TOKEN_KEY);

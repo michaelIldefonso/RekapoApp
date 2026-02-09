@@ -18,6 +18,7 @@ import StartRecordStyles from '../styles/StartRecordStyles';
 import MessagePopup from '../components/popup/MessagePopup';
 import SummariesPopup from '../components/popup/SummariesPopup';
 import { createMeetingSession, updateMeetingSession, connectTranscriptionWebSocket } from '../services/apiService';
+import logger from '../utils/logger';
 
 const StartRecord = (props) => {
   const { isDarkMode, onToggleDarkMode, route, navigation } = props;
@@ -97,6 +98,7 @@ const StartRecord = (props) => {
       // Request permissions
       const { granted } = await AudioModule.requestRecordingPermissionsAsync();
       if (!granted) {
+        logger.error('Audio recording permission denied');
         setIsProcessing(false);
         setMessagePopup({ 
           visible: true, 
@@ -423,6 +425,7 @@ const StartRecord = (props) => {
   };
 
   const handleWebSocketError = (error) => {
+    logger.error('WebSocket error: ' + (error.message || 'Connection error'));
     console.error('❌ WebSocket error in screen:', error);
     setCurrentStatus('Connection error');
     

@@ -13,6 +13,7 @@ import {
 import ProfileScreenStyles from '../styles/ProfileScreenStyles';
 import LogoutPopup from '../components/popup/LogoutPopup';
 import { getStoredUser, signOut } from '../services/authService';
+import logger from '../utils/logger';
 
 const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) => {
   const [userInfo, setUserInfo] = useState(null);
@@ -28,6 +29,7 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
     try {
       const user = await getStoredUser();
       if (user) {
+        logger.log('Profile screen viewed');
         setUserInfo(user);
         console.log('📱 Loaded user data:', user);
       } else {

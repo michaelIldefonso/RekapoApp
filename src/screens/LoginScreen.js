@@ -16,6 +16,7 @@ import PrivacyPopup from '../components/popup/PrivacyPopup';
 import { 
   handleGoogleLogin as googleLoginService 
 } from '../services/authService';
+import logger from '../utils/logger';
 
 const LoginScreen = ({ onLogin, isDarkMode, onToggleDarkMode }) => {
   const [isLoading, setIsLoading] = useState(false);

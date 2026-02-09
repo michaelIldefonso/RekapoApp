@@ -1,6 +1,7 @@
 // API Utility for making authenticated requests to backend
 import { getStoredToken } from './authService';
 import config from '../config/app.config';
+import logger from '../utils/logger';
 
 /**
  * Make an authenticated API request
@@ -40,6 +41,7 @@ export const apiRequest = async (endpoint, method = 'GET', body = null) => {
     if (!response.ok) {
       // Try to get detailed error message from backend
       const errorMsg = data.detail || data.message || JSON.stringify(data) || 'API request failed';
+      logger.error(`API Error: ${method} ${endpoint} - ${errorMsg}`);
       console.error('API Error Response:', data);
       throw new Error(errorMsg);
     }
@@ -49,6 +51,7 @@ export const apiRequest = async (endpoint, method = 'GET', body = null) => {
       data,
     };
   } catch (error) {
+    logger.error(`API Request Failed: ${method} ${endpoint} - ${error.message}`);
     console.error('API Request Error:', error);
     return {
       success: false,
@@ -114,11 +117,13 @@ export const uploadProfilePhoto = async (imageUri) => {
       throw new Error(data.detail || 'Failed to upload photo');
     }
 
+    logger.log('Profile photo uploaded successfully');
     return {
       success: true,
       data,
     };
   } catch (error) {
+    logger.error('Photo upload failed: ' + error.message);
     console.error('Photo Upload Error:', error);
     return {
       success: false,
@@ -128,7 +133,11 @@ export const uploadProfilePhoto = async (imageUri) => {
 };
 
 export const deleteProfilePhoto = async () => {
-  return await apiRequest('/users/me/photo', 'DELETE');
+  const result = await apiRequest('/users/me/photo', 'DELETE');
+  if (result.success) {
+    logger.log('Profile photo deleted');
+  }
+  return result;
 };
 
 // Legacy function - keeping for backward compatibility
@@ -146,9 +155,13 @@ export const updateUserProfile = async (profileData) => {
 // Session Management APIs
 export const createMeetingSession = async (sessionData) => {
   // Backend expects: { session_title?: string }
-  return await apiRequest('/sessions', 'POST', {
+  const result = await apiRequest('/sessions', 'POST', {
     session_title: sessionData.title || sessionData.session_title || 'Untitled Meeting'
   });
+  if (result.success) {
+    logger.log('Session created');
+  }
+  return result;
 };
 
 export const getMeetingSessions = async (skip = 0, limit = 50) => {
@@ -165,7 +178,11 @@ export const updateMeetingSession = async (sessionId, updateData) => {
 };
 
 export const deleteMeetingSession = async (sessionId) => {
-  return await apiRequest(`/sessions/${sessionId}`, 'DELETE');
+  const result = await apiRequest(`/sessions/${sessionId}`, 'DELETE');
+  if (result.success) {
+    logger.log('Session deleted', { sessionId });
+  }
+  return result;
 };
 
 export const updateUserConsent = async (dataUsageConsent) => {
