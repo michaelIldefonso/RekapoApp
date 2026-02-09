@@ -12,8 +12,11 @@ The logger utility sends logs to your backend which stores them in **Cloudflare 
 **Production/Preview:**
 - Buffers logs and sends to backend every 10 seconds
 - Errors are sent immediately (not buffered)
+- **Automatically flushes logs when app goes to background or closes**
 - Backend uploads logs to Cloudflare R2
 - Logs organized by date: `logs/2026/02/09/user_123.json`
+
+This ensures logs are never lost, even if the user closes the app before the 10-second interval!
 
 ---
 
@@ -392,9 +395,11 @@ Each file contains:
 
 **Performance:**
 - Logs buffered (up to 20 logs or 10 seconds)
+- **Automatically flushed when app goes to background or closes**
 - Errors sent immediately for quick debugging
 - Failed log submissions don't affect app performance
 - No server disk space used
+- No logs lost even if user closes app quickly
 
 **Storage & Cost:**
 - **R2 Free Tier:** 10GB forever

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, AppState } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { isAuthenticated, getStoredUser, getStoredToken, configureGoogleSignIn } from './src/services/authService';
 import { fetchDynamicConfig } from './src/config/app.config';
+import logger from './src/utils/logger';
 
 // Import screens
 import LoginScreen from './src/screens/LoginScreen';
@@ -28,6 +29,20 @@ export default function App() {
   const [jwtToken, setJwtToken] = useState(null); // Store JWT token
   const [isCheckingAuth, setIsCheckingAuth] = useState(true); // Check auth state on app load
   const [navigationParams, setNavigationParams] = useState({}); // Store navigation parameters
+
+  // Flush logs when app goes to background or closes
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'background' || nextAppState === 'inactive') {
+        // App is going to background - flush any pending logs
+        logger.flush().catch(err => console.log('Log flush error:', err));
+      }
+    });
+
+    return () => {
+      subscription?.remove();
+    };
+  }, []);
 
   // Check authentication status on app startup
   useEffect(() => {

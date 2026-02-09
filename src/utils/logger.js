@@ -10,6 +10,12 @@
  *   logger.error('Error occurred:', error);
  *   logger.warn('Warning message');
  * 
+ * Flushing:
+ *   - Buffered logs are sent every 10 seconds
+ *   - Errors are sent immediately (not buffered)
+ *   - Logs are automatically flushed when app goes to background/closes
+ *   - Manual flush: await logger.flush()
+ * 
  * Backend logs can be viewed at: /api/logs/app (admin only)
  */
 
