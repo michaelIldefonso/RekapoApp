@@ -18,7 +18,7 @@ import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import StartRecordStyles from '../styles/StartRecordStyles';
 import MessagePopup from '../components/popup/MessagePopup';
 import SummariesPopup from '../components/popup/SummariesPopup';
-import { createMeetingSession, updateMeetingSession, connectTranscriptionWebSocket } from '../services/apiService';
+import { updateMeetingSession, connectTranscriptionWebSocket } from '../services/apiService';
 import logger from '../utils/logger';
 
 const StartRecord = (props) => {
@@ -29,7 +29,6 @@ const StartRecord = (props) => {
   const [messagePopup, setMessagePopup] = useState({ visible: false, title: '', message: '' });
   const [showSummariesPopup, setShowSummariesPopup] = useState(false);
   const [flippedSegments, setFlippedSegments] = useState({});
-  const [individualSessionId, setIndividualSessionId] = useState(null);
   const [isStopping, setIsStopping] = useState(false);
   
   // Transcription states
@@ -37,6 +36,13 @@ const StartRecord = (props) => {
   const [currentStatus, setCurrentStatus] = useState('Ready to record');
   const [isProcessing, setIsProcessing] = useState(false);
   const [summaries, setSummaries] = useState([]);
+
+  const showPopup = (title, message, level = 'info') => {
+    setMessagePopup({ visible: true, title, message });
+    if (level === 'error') {
+      logger.error('UI error popup shown', { screen: 'StartRecord', title, message, sessionId });
+    }
+  };
   
   // Refs
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
@@ -100,8 +106,21 @@ const StartRecord = (props) => {
 
   // Auto-start recording when component mounts
   useEffect(() => {
+    if (!sessionId) {
+      logger.error('Missing sessionId in StartRecord route params');
+      setMessagePopup({
+        visible: true,
+        title: 'Missing Session',
+        message: 'No session ID was provided. Returning to the previous screen.'
+      });
+      setTimeout(() => {
+        navigation.goBack();
+      }, 1500);
+      return;
+    }
+
     handleStartRecording();
-  }, []);
+  }, [sessionId, navigation]);
 
   const handleStartRecording = async () => {
     try {
@@ -113,11 +132,7 @@ const StartRecord = (props) => {
       if (!granted) {
         logger.error('Audio recording permission denied');
         setIsProcessing(false);
-        setMessagePopup({ 
-          visible: true, 
-          title: 'Permission Denied', 
-          message: 'Microphone permission is required for recording' 
-        });
+        showPopup('Permission Denied', 'Microphone permission is required for recording', 'error');
         return;
       }
       console.log('✅ Audio permissions granted');
@@ -129,26 +144,11 @@ const StartRecord = (props) => {
       });
       console.log('✅ Audio mode configured');
 
-      // Create individual recording session for this user
-      setCurrentStatus('Creating your recording session...');
-      console.log('📝 Creating individual session for user');
-      const sessionResponse = await createMeetingSession({
-        session_title: meetingTitle || 'Untitled Meeting'
-      });
-
-      if (!sessionResponse.success) {
-        throw new Error(sessionResponse.error || 'Failed to create recording session');
-      }
-
-      const userSessionId = sessionResponse.data.id;
-      setIndividualSessionId(userSessionId);
-      console.log('✅ Individual session created:', userSessionId);
-
-      // Connect WebSocket with retry logic using INDIVIDUAL session ID
+      // Connect WebSocket with retry logic using the existing session ID
       setCurrentStatus('Connecting to transcription service...');
       try {
         const ws = await connectTranscriptionWebSocket(
-          userSessionId,
+          sessionId,
           handleWebSocketMessage,
           handleWebSocketError,
           handleWebSocketClose
@@ -176,8 +176,10 @@ const StartRecord = (props) => {
         });
         
         wsRef.current = ws;
+        logger.log('WebSocket connected', { sessionId });
         console.log('✅ WebSocket connected and ready');
       } catch (wsError) {
+        logger.error('WebSocket connection failed', { sessionId, message: wsError.message });
         throw new Error('Unable to connect to transcription service. Please check your internet connection and try again.');
       }
 
@@ -186,16 +188,14 @@ const StartRecord = (props) => {
       setIsRecording(true);
       isRecordingRef.current = true;
       setCurrentStatus('Recording...');
-      setMessagePopup({ 
-        visible: true, 
-        title: 'Recording Started', 
-        message: 'Your meeting is being transcribed in real-time' 
-      });
+      logger.log('Recording started', { sessionId });
+      showPopup('Recording Started', 'Your meeting is being transcribed in real-time');
 
       startRecordingChunks();
 
     } catch (error) {
       console.error('❌ Start recording error:', error);
+      logger.error('Recording start failed', { sessionId, message: error.message });
       
       setIsRecording(false);
       isRecordingRef.current = false;
@@ -210,11 +210,7 @@ const StartRecord = (props) => {
         wsRef.current = null;
       }
       
-      setMessagePopup({ 
-        visible: true, 
-        title: 'Recording Error', 
-        message: error.message || 'Unable to start recording. Please try again.' 
-      });
+      showPopup('Recording Error', error.message || 'Unable to start recording. Please try again.', 'error');
       setCurrentStatus('Ready to record');
     }
   };
@@ -343,14 +339,21 @@ const StartRecord = (props) => {
               try {
                 if (wsRef.current && wsRef.current.connection.readyState === WebSocket.OPEN) {
                   wsRef.current.sendAudioChunk(base64, null, 'small');
+                  logger.log('Audio chunk sent', { sessionId, durationSeconds: Number(duration.toFixed(1)) });
                   console.log('✅ Chunk sent (original, no frontend filter)');
                 } else {
+                  logger.error('Segment send failed: ws not open', {
+                    sessionId,
+                    readyState: wsRef.current?.connection?.readyState
+                  });
                   console.error('❌ WebSocket not open, readyState:', wsRef.current?.connection.readyState);
                 }
               } catch (sendErr) {
+                logger.error('Segment send failed', { sessionId, message: sendErr.message });
                 console.error('❌ Error sending chunk:', sendErr);
               }
             } catch (sendError) {
+              logger.error('Segment send failed', { sessionId, message: sendError.message });
               console.error('❌ Error sending chunk:', sendError);
             } finally {
               setIsProcessing(false);
@@ -373,14 +376,11 @@ const StartRecord = (props) => {
         const retryCount = (recordChunk.retryCount || 0) + 1;
         if (retryCount > 3) {
           console.error('❌ Max retries reached, stopping recording');
+          logger.error('Recording failed - max retries reached', { sessionId });
           setIsRecording(false);
           isRecordingRef.current = false;
           setCurrentStatus('Recording failed - too many errors');
-          setMessagePopup({
-            visible: true,
-            title: 'Recording Error',
-            message: 'Recording stopped due to repeated errors. Please try again.'
-          });
+          showPopup('Recording Error', 'Recording stopped due to repeated errors. Please try again.', 'error');
           return;
         }
         
@@ -429,11 +429,7 @@ const StartRecord = (props) => {
     } else if (data.status === 'error') {
       console.error('WebSocket error:', data.message);
       setCurrentStatus('Error occurred');
-      setMessagePopup({
-        visible: true,
-        title: 'Transcription Error',
-        message: data.message || 'An error occurred during transcription'
-      });
+      showPopup('Transcription Error', data.message || 'An error occurred during transcription', 'error');
     }
   };
 
@@ -443,11 +439,7 @@ const StartRecord = (props) => {
     setCurrentStatus('Connection error');
     
     if (isRecording) {
-      setMessagePopup({
-        visible: true,
-        title: 'Connection Error',
-        message: 'Lost connection to transcription service. Your recording will be stopped. Please check your internet connection and try again.'
-      });
+      showPopup('Connection Error', 'Lost connection to transcription service. Your recording will be stopped. Please check your internet connection and try again.', 'error');
       
       // Stop recording on connection error
       setIsRecording(false);
@@ -458,17 +450,14 @@ const StartRecord = (props) => {
 
   const handleWebSocketClose = (event) => {
     console.log('🔌 WebSocket closed in screen');
+    logger.log('WebSocket closed', { sessionId, code: event?.code, reason: event?.reason });
     if (event && event.code) {
       console.log('Close code:', event.code, 'Reason:', event.reason);
     }
     
     if (isRecording) {
       setCurrentStatus('Connection lost');
-      setMessagePopup({
-        visible: true,
-        title: 'Connection Lost',
-        message: 'Connection to transcription service was interrupted. Your recording has been stopped.'
-      });
+      showPopup('Connection Lost', 'Connection to transcription service was interrupted. Your recording has been stopped.', 'error');
       
       setIsRecording(false);
       isRecordingRef.current = false;
@@ -486,6 +475,7 @@ const StartRecord = (props) => {
     try {
       isStoppingRef.current = true;
       setIsStopping(true);
+      logger.log('Recording stop requested', { sessionId });
       setIsRecording(false);
       isRecordingRef.current = false;
       setCurrentStatus('Stopping and finalizing...');
@@ -515,22 +505,21 @@ const StartRecord = (props) => {
         wsRef.current = null;
       }
 
-      if (individualSessionId) {
+      if (sessionId) {
         try {
-          console.log('📤 Updating session status to completed for ID:', individualSessionId);
-          await updateMeetingSession(individualSessionId, { status: 'completed' });
+          console.log('📤 Updating session status to completed for ID:', sessionId);
+          await updateMeetingSession(sessionId, { status: 'completed' });
+          logger.log('Session marked completed', { sessionId });
           console.log('✅ Session marked as completed');
         } catch (error) {
           console.error('Failed to update session status:', error);
+          logger.error('Failed to update session status', { sessionId, message: error.message });
         }
       }
 
       setCurrentStatus('Recording stopped');
-      setMessagePopup({ 
-        visible: true, 
-        title: 'Recording Stopped', 
-        message: `Meeting saved with ${transcriptions.length} segments transcribed` 
-      });
+      logger.log('Recording stopped', { sessionId, segments: transcriptions.length });
+      showPopup('Recording Stopped', `Meeting saved with ${transcriptions.length} segments transcribed`);
 
       setTimeout(() => {
         navigation.goBack();
@@ -538,11 +527,8 @@ const StartRecord = (props) => {
 
     } catch (error) {
       console.error('Stop recording error:', error);
-      setMessagePopup({ 
-        visible: true, 
-        title: 'Error', 
-        message: 'Failed to stop recording properly' 
-      });
+      logger.error('Recording stop failed', { sessionId, message: error.message });
+      showPopup('Error', 'Failed to stop recording properly', 'error');
     } finally {
       setIsStopping(false);
     }

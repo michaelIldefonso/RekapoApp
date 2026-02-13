@@ -14,6 +14,7 @@ import {
 import SessionDetailsScreenStyles from '../styles/SessionDetailsScreenStyles';
 import { getSessionDetails, updateMeetingSession, rateSegment } from '../services/apiService';
 import MessagePopup from '../components/popup/MessagePopup';
+import logger from '../utils/logger';
 
 const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
   const { sessionId } = route.params;
@@ -28,6 +29,11 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
   const [expandedAISummaries, setExpandedAISummaries] = useState(false);
   const [flippedSegments, setFlippedSegments] = useState({});
   const [segmentRatings, setSegmentRatings] = useState({});
+
+  const showErrorAlert = (title, message) => {
+    logger.error('UI error alert shown', { screen: 'SessionDetails', title, message, sessionId });
+    Alert.alert(title, message);
+  };
 
   useEffect(() => {
     loadSessionDetails();
@@ -69,11 +75,11 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
         }
       } else {
         setError(result.error);
-        Alert.alert('Error', `Failed to load session details: ${result.error}`);
+        showErrorAlert('Error', `Failed to load session details: ${result.error}`);
       }
     } catch (err) {
       setError(err.message);
-      Alert.alert('Error', 'Failed to load session details');
+      showErrorAlert('Error', 'Failed to load session details');
     } finally {
       setLoading(false);
     }
@@ -81,7 +87,7 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
 
   const handleEditTitle = async () => {
     if (!newTitle.trim()) {
-      Alert.alert('Error', 'Title cannot be empty');
+      showErrorAlert('Error', 'Title cannot be empty');
       return;
     }
 
@@ -98,10 +104,10 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
           message: 'Session title updated successfully'
         });
       } else {
-        Alert.alert('Error', 'Failed to update session title');
+        showErrorAlert('Error', 'Failed to update session title');
       }
     } catch (err) {
-      Alert.alert('Error', err.message);
+      showErrorAlert('Error', err.message);
     } finally {
       setIsSaving(false);
     }
@@ -183,7 +189,7 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
             ...prev,
             [segmentId]: currentRating
           }));
-          Alert.alert('Error', 'Failed to save rating');
+          showErrorAlert('Error', 'Failed to save rating');
         }
       } catch (error) {
         // Revert on error
@@ -191,7 +197,7 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
           ...prev,
           [segmentId]: currentRating
         }));
-        Alert.alert('Error', `Failed to save rating: ${error.message}`);
+        showErrorAlert('Error', `Failed to save rating: ${error.message}`);
       }
     } else {
       // Just clear locally (no API call for clearing)

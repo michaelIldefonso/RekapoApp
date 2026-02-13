@@ -14,6 +14,7 @@ import SessionHistoryScreenStyles from '../styles/SessionHistoryScreenStyles';
 import DeleteSessionPopup from '../components/popup/DeleteSessionPopup';
 import MessagePopup from '../components/popup/MessagePopup';
 import { getSessionHistory, deleteMeetingSession } from '../services/apiService';
+import logger from '../utils/logger';
 
 const SessionHistoryScreen = ({ navigation, isDarkMode, onToggleDarkMode }) => {
   const [sessions, setSessions] = useState([]);
@@ -23,6 +24,18 @@ const SessionHistoryScreen = ({ navigation, isDarkMode, onToggleDarkMode }) => {
   const [deletePopupVisible, setDeletePopupVisible] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState(null);
   const [messagePopup, setMessagePopup] = useState({ visible: false, title: '', message: '' });
+
+  const showPopup = (title, message, level = 'info') => {
+    setMessagePopup({ visible: true, title, message });
+    if (level === 'error') {
+      logger.error('UI error popup shown', { screen: 'SessionHistory', title, message });
+    }
+  };
+
+  const showErrorAlert = (title, message) => {
+    logger.error('UI error alert shown', { screen: 'SessionHistory', title, message });
+    Alert.alert(title, message);
+  };
 
   // Fetch sessions on component mount
   useEffect(() => {
@@ -40,11 +53,11 @@ const SessionHistoryScreen = ({ navigation, isDarkMode, onToggleDarkMode }) => {
         setSessions(result.data);
       } else {
         setError(result.error);
-        Alert.alert('Error', `Failed to load sessions: ${result.error}`);
+        showErrorAlert('Error', `Failed to load sessions: ${result.error}`);
       }
     } catch (err) {
       setError(err.message);
-      Alert.alert('Error', 'Failed to load session history');
+      showErrorAlert('Error', 'Failed to load session history');
     } finally {
       setLoading(false);
     }
@@ -82,28 +95,16 @@ const SessionHistoryScreen = ({ navigation, isDarkMode, onToggleDarkMode }) => {
         );
         setDeletePopupVisible(false);
         setSessionToDelete(null);
-        setMessagePopup({ 
-          visible: true, 
-          title: 'Success', 
-          message: 'Session deleted successfully' 
-        });
+        showPopup('Success', 'Session deleted successfully');
       } else {
         setDeletePopupVisible(false);
         setSessionToDelete(null);
-        setMessagePopup({ 
-          visible: true, 
-          title: 'Error', 
-          message: `Failed to delete session: ${result.error}` 
-        });
+        showPopup('Error', `Failed to delete session: ${result.error}`, 'error');
       }
     } catch (err) {
       setDeletePopupVisible(false);
       setSessionToDelete(null);
-      setMessagePopup({ 
-        visible: true, 
-        title: 'Error', 
-        message: 'Failed to delete session' 
-      });
+      showPopup('Error', 'Failed to delete session', 'error');
     }
   };
 

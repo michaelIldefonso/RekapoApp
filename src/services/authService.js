@@ -109,6 +109,7 @@ export const verifyWithBackend = async (idToken) => {
   const startTime = Date.now();
   try {
     console.log('🌐 Connecting to backend:', config.BACKEND_URL);
+    logger.networkStart('POST', '/auth/google-mobile');
     
     // Create abort controller for timeout
     const controller = new AbortController();
@@ -139,6 +140,7 @@ export const verifyWithBackend = async (idToken) => {
     clearTimeout(timeoutId);
     const elapsed = Date.now() - startTime;
     console.log(`⏱️ Backend responded in ${elapsed}ms`);
+    logger.networkResponse('POST', '/auth/google-mobile', response.status, elapsed);
     
     const data = await response.json();
 
@@ -186,6 +188,7 @@ export const verifyWithBackend = async (idToken) => {
       };
     } else {
       logger.error('Backend authentication failed: ' + (data.detail || data.message || 'Unknown error'));
+      logger.networkError('POST', '/auth/google-mobile', data.detail || data.message || 'Backend authentication failed');
       console.error('❌ Backend error:', response.status, data);
       return {
         success: false,
@@ -200,8 +203,10 @@ export const verifyWithBackend = async (idToken) => {
     let errorMessage = 'Unable to connect to server';
     if (error.name === 'AbortError') {
       errorMessage = 'Connection timeout. Please check your internet connection';
+      logger.networkError('POST', '/auth/google-mobile', 'timeout');
     } else if (error.message) {
       errorMessage = error.message;
+      logger.networkError('POST', '/auth/google-mobile', error.message);
     }
     
     return {

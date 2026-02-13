@@ -11,6 +11,8 @@ import logger from '../utils/logger';
  * @returns {Promise} Response data
  */
 export const apiRequest = async (endpoint, method = 'GET', body = null) => {
+  const startTime = Date.now();
+  logger.networkStart(method, endpoint);
   try {
     const token = await getStoredToken();
     
@@ -36,12 +38,14 @@ export const apiRequest = async (endpoint, method = 'GET', body = null) => {
     }
 
     const response = await fetch(`${config.BACKEND_URL}/api${endpoint}`, options);
+    logger.networkResponse(method, endpoint, response.status, Date.now() - startTime);
     const data = await response.json();
 
     if (!response.ok) {
       // Try to get detailed error message from backend
       const errorMsg = data.detail || data.message || JSON.stringify(data) || 'API request failed';
       logger.error(`API Error: ${method} ${endpoint} - ${errorMsg}`);
+      logger.networkError(method, endpoint, errorMsg);
       console.error('API Error Response:', data);
       throw new Error(errorMsg);
     }
@@ -52,6 +56,7 @@ export const apiRequest = async (endpoint, method = 'GET', body = null) => {
     };
   } catch (error) {
     logger.error(`API Request Failed: ${method} ${endpoint} - ${error.message}`);
+    logger.networkError(method, endpoint, error.message);
     console.error('API Request Error:', error);
     return {
       success: false,
@@ -73,6 +78,8 @@ export const updateUsername = async (username) => {
 };
 
 export const uploadProfilePhoto = async (imageUri) => {
+  const startTime = Date.now();
+  logger.networkStart('PATCH', '/users/me/photo');
   try {
     const token = await getStoredToken();
     
@@ -109,11 +116,13 @@ export const uploadProfilePhoto = async (imageUri) => {
     });
 
     const data = await response.json();
+    logger.networkResponse('PATCH', '/users/me/photo', response.status, Date.now() - startTime);
     
     console.log('📥 Backend response status:', response.status);
     console.log('📥 Backend response data:', JSON.stringify(data, null, 2));
 
     if (!response.ok) {
+      logger.networkError('PATCH', '/users/me/photo', data.detail || 'Failed to upload photo');
       throw new Error(data.detail || 'Failed to upload photo');
     }
 
@@ -124,6 +133,7 @@ export const uploadProfilePhoto = async (imageUri) => {
     };
   } catch (error) {
     logger.error('Photo upload failed: ' + error.message);
+    logger.networkError('PATCH', '/users/me/photo', error.message);
     console.error('Photo Upload Error:', error);
     return {
       success: false,
@@ -250,7 +260,8 @@ export const connectTranscriptionWebSocket = async (sessionId, onMessage, onErro
   
   // Add session_id and token as query parameters
   const fullUrl = `${wsUrl}/api/ws/transcribe?session_id=${sessionId}&token=${encodeURIComponent(token)}`;
-  console.log('🔌 Connecting to WebSocket:', fullUrl.replace(token, 'TOKEN_HIDDEN'));
+  const safeUrl = fullUrl.replace(/token=[^&]+/i, 'token=[REDACTED]');
+  console.log('🔌 Connecting to WebSocket:', safeUrl);
   console.log('📋 Session ID:', sessionId);
   
   let ws;
@@ -260,6 +271,7 @@ export const connectTranscriptionWebSocket = async (sessionId, onMessage, onErro
     console.error('❌ WebSocket instantiation failed:', instantiationError);
     console.error('❌ Failed URL protocol:', wsProtocol);
     console.error('❌ Backend URL:', config.BACKEND_URL);
+    logger.networkError('WS', safeUrl, instantiationError.message);
     
     const error = new Error('Unable to connect to transcription service. Please check your network connection.');
     if (onError) onError(error);
@@ -270,6 +282,7 @@ export const connectTranscriptionWebSocket = async (sessionId, onMessage, onErro
   
   ws.onopen = () => {
     console.log('🔌 WebSocket connected successfully');
+    logger.wsConnect(safeUrl);
     console.log('📊 WebSocket state:', {
       readyState: ws.readyState,
       url: ws.url,
@@ -294,6 +307,7 @@ export const connectTranscriptionWebSocket = async (sessionId, onMessage, onErro
     console.error('❌ WebSocket readyState at error:', ws.readyState);
     console.error('❌ WebSocket URL:', ws.url);
     console.error('❌ Error details:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
+    logger.networkError('WS', safeUrl, error?.message || 'WebSocket error');
     
     // Provide more helpful error message
     if (ws.readyState === 3) {
@@ -314,6 +328,7 @@ export const connectTranscriptionWebSocket = async (sessionId, onMessage, onErro
       reason: event.reason,
       wasClean: event.wasClean
     });
+    logger.wsDisconnect(safeUrl, event.code, event.reason);
     
     // Log common close codes
     if (event.code === 1000) {

@@ -55,7 +55,11 @@ const LoginScreen = ({ onLogin, isDarkMode, onToggleDarkMode }) => {
           console.log('User cancelled sign in');
           return;
         }
-        
+        logger.error('UI error alert shown', {
+          screen: 'Login',
+          title: 'Login Failed',
+          message: result.error || 'Unable to sign in with Google. Please try again.'
+        });
         Alert.alert(
           'Login Failed',
           result.error || 'Unable to sign in with Google. Please try again.',
@@ -65,7 +69,11 @@ const LoginScreen = ({ onLogin, isDarkMode, onToggleDarkMode }) => {
     } catch (error) {
       // Always clear loading state on error
       setIsLoading(false);
-      
+      logger.error('UI error alert shown', {
+        screen: 'Login',
+        title: 'Error',
+        message: 'An unexpected error occurred. Please try again.'
+      });
       Alert.alert(
         'Error',
         'An unexpected error occurred. Please try again.',

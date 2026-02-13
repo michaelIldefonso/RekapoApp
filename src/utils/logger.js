@@ -131,6 +131,10 @@ const flushLogs = async () => {
   await sendLogsToBackend(logsToSend);
 };
 
+const formatNetworkMessage = (event, data) => {
+  return `${event} ${JSON.stringify(data)}`;
+};
+
 // Auto-flush logs every 10 seconds in production
 if (!__DEV__) {
   setInterval(flushLogs, FLUSH_INTERVAL);
@@ -245,6 +249,81 @@ const logger = {
         console.log('Data:', data);
       }
       console.groupEnd();
+    } else {
+      const message = formatNetworkMessage('response', {
+        method,
+        url,
+        status,
+        data,
+      });
+      bufferLog('network', message);
+    }
+  },
+
+  networkStart: (method, url) => {
+    const message = formatNetworkMessage('request_start', { method, url });
+    if (__DEV__) {
+      console.log('🌐 Request start:', message);
+    } else {
+      bufferLog('network', message);
+    }
+  },
+
+  networkResponse: (method, url, status, latencyMs) => {
+    const message = formatNetworkMessage('response', {
+      method,
+      url,
+      status,
+      latency_ms: latencyMs,
+    });
+    if (__DEV__) {
+      console.log('🌐 Response:', message);
+    } else {
+      bufferLog('network', message);
+    }
+  },
+
+  networkError: (method, url, errorMessage) => {
+    const message = formatNetworkMessage('error', {
+      method,
+      url,
+      message: errorMessage,
+    });
+    if (__DEV__) {
+      console.error('🌐 Network error:', message);
+    } else {
+      bufferLog('network', message);
+    }
+  },
+
+  networkRetry: (method, url, attempt) => {
+    const message = formatNetworkMessage('retry', { method, url, attempt });
+    if (__DEV__) {
+      console.warn('🌐 Retry:', message);
+    } else {
+      bufferLog('network', message);
+    }
+  },
+
+  wsConnect: (url) => {
+    const message = formatNetworkMessage('ws_connect', { url });
+    if (__DEV__) {
+      console.log('🌐 WebSocket connected:', message);
+    } else {
+      bufferLog('network', message);
+    }
+  },
+
+  wsDisconnect: (url, code, reason) => {
+    const message = formatNetworkMessage('ws_disconnect', {
+      url,
+      code,
+      reason,
+    });
+    if (__DEV__) {
+      console.log('🌐 WebSocket disconnected:', message);
+    } else {
+      bufferLog('network', message);
     }
   },
 };

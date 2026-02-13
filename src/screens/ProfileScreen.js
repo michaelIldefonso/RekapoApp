@@ -33,6 +33,11 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
         setUserInfo(user);
         console.log('📱 Loaded user data:', user);
       } else {
+        logger.error('UI error alert shown', {
+          screen: 'Profile',
+          title: 'Profile Error',
+          message: 'Unable to load your profile. Please try logging out and back in.'
+        });
         Alert.alert(
           'Profile Error',
           'Unable to load your profile. Please try logging out and back in.',
@@ -41,6 +46,11 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
       }
     } catch (error) {
       console.error('Error loading user data:', error);
+      logger.error('UI error alert shown', {
+        screen: 'Profile',
+        title: 'Error',
+        message: 'Failed to load profile data. Please restart the app.'
+      });
       Alert.alert(
         'Error',
         'Failed to load profile data. Please restart the app.',

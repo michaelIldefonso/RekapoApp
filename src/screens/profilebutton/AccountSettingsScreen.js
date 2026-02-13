@@ -15,6 +15,7 @@ import PhotoOptionsPopup from '../../components/popup/PhotoOptionsPopup';
 import DeletePhotoPopup from '../../components/popup/DeletePhotoPopup';
 import MessagePopup from '../../components/popup/MessagePopup';
 import { useAccountSettings } from '../../hooks/useAccountSettings';
+import logger from '../../utils/logger';
 
 const AccountSettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => {
   const [showPhotoOptions, setShowPhotoOptions] = useState(false);
@@ -46,7 +47,11 @@ const AccountSettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => 
     setShowPhotoOptionsCallback(() => () => setShowPhotoOptions(true));
     setShowDeletePhotoCallback(() => () => setShowDeletePhoto(true));
     setShowMessageCallback(() => (title, message) => {
+      const isError = /error|failed|unable|denied/i.test(title || '') || /error|failed|unable|denied/i.test(message || '');
       setMessagePopup({ visible: true, title, message });
+      if (isError) {
+        logger.error('UI error popup shown', { screen: 'AccountSettings', title, message });
+      }
     });
   }, [setShowPhotoOptionsCallback, setShowDeletePhotoCallback, setShowMessageCallback]);
 

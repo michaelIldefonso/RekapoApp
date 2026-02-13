@@ -11,21 +11,24 @@ import StartMeetingScreenStyles from '../styles/StartMeetingScreenStyles';
 import MessagePopup from '../components/popup/MessagePopup';
 import { createMeetingSession } from '../services/apiService';
 import { checkBackendConnection, getConnectionTroubleshootingMessage } from '../utils/connectionHelper';
+import logger from '../utils/logger';
 
 const StartMeetingScreen = (props) => {
   const { isDarkMode, onToggleDarkMode, navigation } = props;
   const [meetingTitle, setMeetingTitle] = useState('');
   const [messagePopup, setMessagePopup] = useState({ visible: false, title: '', message: '' });
 
+  const showPopup = (title, message, level = 'info') => {
+    setMessagePopup({ visible: true, title, message });
+    if (level === 'error') {
+      logger.error('UI error popup shown', { screen: 'StartMeeting', title, message });
+    }
+  };
 
 
   const handleStartRecording = async () => {
     if (!meetingTitle.trim()) {
-      setMessagePopup({
-        visible: true,
-        title: 'Title Required',
-        message: 'Please enter a meeting title before starting the recording.'
-      });
+      showPopup('Title Required', 'Please enter a meeting title before starting the recording.', 'error');
       return;
     }
 
@@ -38,11 +41,7 @@ const StartMeetingScreen = (props) => {
       
       if (!connectionCheck.success) {
         const troubleshooting = getConnectionTroubleshootingMessage();
-        setMessagePopup({ 
-          visible: true, 
-          title: '❌ Backend Connection Failed', 
-          message: `${connectionCheck.message}\n\n${troubleshooting}`
-        });
+        showPopup('❌ Backend Connection Failed', `${connectionCheck.message}\n\n${troubleshooting}`, 'error');
         return;
       }
       
@@ -69,11 +68,7 @@ const StartMeetingScreen = (props) => {
 
     } catch (error) {
       console.error('❌ Error:', error);
-      setMessagePopup({ 
-        visible: true, 
-        title: 'Error', 
-        message: error.message || 'Failed to create session' 
-      });
+      showPopup('Error', error.message || 'Failed to create session', 'error');
     }
   };
 
