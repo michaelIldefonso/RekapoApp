@@ -37,9 +37,7 @@ const SessionHistoryScreen = ({ navigation, isDarkMode, onToggleDarkMode }) => {
       const result = await getSessionHistory(0, 50);
       
       if (result.success) {
-        // Filter out sessions still in "recording" status to avoid duplicates
-        const filteredSessions = result.data.filter(s => s.status !== 'recording');
-        setSessions(filteredSessions);
+        setSessions(result.data);
       } else {
         setError(result.error);
         Alert.alert('Error', `Failed to load sessions: ${result.error}`);
