@@ -20,6 +20,15 @@ const StartMeetingScreen = (props) => {
 
 
   const handleStartRecording = async () => {
+    if (!meetingTitle.trim()) {
+      setMessagePopup({
+        visible: true,
+        title: 'Title Required',
+        message: 'Please enter a meeting title before starting the recording.'
+      });
+      return;
+    }
+
     try {
       console.log('🎙️ Starting session creation...');
       

@@ -14,6 +14,7 @@ import {
   setAudioModeAsync
 } from 'expo-audio';
 import * as FileSystem from 'expo-file-system/legacy';
+import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import StartRecordStyles from '../styles/StartRecordStyles';
 import MessagePopup from '../components/popup/MessagePopup';
 import SummariesPopup from '../components/popup/SummariesPopup';
@@ -45,6 +46,16 @@ const StartRecord = (props) => {
   const recordingStartTimeRef = useRef(null);
   const isRecordingRef = useRef(false);
   const isStoppingRef = useRef(false);
+
+  // Keep screen awake ONLY while actively recording
+  useEffect(() => {
+    if (isRecording) {
+      activateKeepAwakeAsync('recording');
+    } else {
+      deactivateKeepAwake('recording');
+    }
+    return () => deactivateKeepAwake('recording');
+  }, [isRecording]);
 
   // Cleanup on unmount
   useEffect(() => {
