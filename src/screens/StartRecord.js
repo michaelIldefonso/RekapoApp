@@ -29,6 +29,7 @@ const StartRecord = (props) => {
   const [showSummariesPopup, setShowSummariesPopup] = useState(false);
   const [flippedSegments, setFlippedSegments] = useState({});
   const [individualSessionId, setIndividualSessionId] = useState(null);
+  const [isStopping, setIsStopping] = useState(false);
   
   // Transcription states
   const [transcriptions, setTranscriptions] = useState([]);
@@ -43,6 +44,7 @@ const StartRecord = (props) => {
   const recordingTimeoutsRef = useRef([]);
   const recordingStartTimeRef = useRef(null);
   const isRecordingRef = useRef(false);
+  const isStoppingRef = useRef(false);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -464,10 +466,25 @@ const StartRecord = (props) => {
   };
 
   const handleStopRecording = async () => {
+    // Prevent multiple stop calls
+    if (isStoppingRef.current) {
+      console.log('⚠️ Stop already in progress, ignoring duplicate call');
+      return;
+    }
+
     try {
+      isStoppingRef.current = true;
+      setIsStopping(true);
       setIsRecording(false);
       isRecordingRef.current = false;
-      setCurrentStatus('Stopping...');
+      setCurrentStatus('Stopping and finalizing...');
+
+      // Clear all pending recording timeouts immediately
+      if (recordingTimeoutsRef.current.length > 0) {
+        console.log('🧹 Clearing', recordingTimeoutsRef.current.length, 'pending timeouts');
+        recordingTimeoutsRef.current.forEach(id => clearTimeout(id));
+        recordingTimeoutsRef.current = [];
+      }
 
       if (recorder.isRecording) {
         try {
@@ -489,6 +506,7 @@ const StartRecord = (props) => {
 
       if (individualSessionId) {
         try {
+          console.log('📤 Updating session status to completed for ID:', individualSessionId);
           await updateMeetingSession(individualSessionId, { status: 'completed' });
           console.log('✅ Session marked as completed');
         } catch (error) {
@@ -514,6 +532,8 @@ const StartRecord = (props) => {
         title: 'Error', 
         message: 'Failed to stop recording properly' 
       });
+    } finally {
+      setIsStopping(false);
     }
   };
 
@@ -608,10 +628,15 @@ const StartRecord = (props) => {
             <Text style={StartRecordStyles.buttonText}>📝</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[buttonStyle, stopButtonStyle]}
+            style={[buttonStyle, stopButtonStyle, isStopping && { opacity: 0.5 }]}
             onPress={handleStopRecording}
+            disabled={isStopping}
           >
-            <Text style={StartRecordStyles.buttonText}>Stop</Text>
+            {isStopping ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={StartRecordStyles.buttonText}>Stop</Text>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -668,6 +693,49 @@ const StartRecord = (props) => {
         isDarkMode={isDarkMode}
         onClose={() => setShowSummariesPopup(false)}
       />
+
+      {/* Stopping Overlay */}
+      {isStopping && (
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+        }}>
+          <View style={{
+            backgroundColor: isDarkMode ? '#333' : '#fff',
+            padding: 30,
+            borderRadius: 12,
+            alignItems: 'center',
+            gap: 15,
+          }}>
+            <ActivityIndicator
+              size="large"
+              color={isDarkMode ? '#4CAF50' : '#2196F3'}
+            />
+            <Text style={{
+              color: isDarkMode ? '#fff' : '#000',
+              fontSize: 16,
+              fontWeight: '600',
+              textAlign: 'center',
+            }}>
+              Finalizing Recording...
+            </Text>
+            <Text style={{
+              color: isDarkMode ? '#aaa' : '#666',
+              fontSize: 14,
+              textAlign: 'center',
+            }}>
+              Please wait while we save your session
+            </Text>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
