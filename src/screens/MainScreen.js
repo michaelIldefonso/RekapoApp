@@ -8,9 +8,11 @@ import {
 } from 'react-native';
 import MainScreenStyles from '../styles/MainScreenStyles';
 import { getStoredUser } from '../services/authService';
+import MessagePopup from '../components/popup/MessagePopup';
 
 const MainScreen = ({ onNavigate, isDarkMode, onToggleDarkMode }) => {
   const [userInfo, setUserInfo] = useState(null);
+  const [showTranslationInfo, setShowTranslationInfo] = useState(false);
 
   useEffect(() => {
     loadUserData();
@@ -152,16 +154,18 @@ const MainScreen = ({ onNavigate, isDarkMode, onToggleDarkMode }) => {
         </TouchableOpacity>
 
         {/* Feature 3 */}
-        <View style={[featureBoxStyle, { marginBottom: 24 }]}>
-          <Text style={MainScreenStyles.featureIcon}>🔄</Text>
-          <View style={MainScreenStyles.featureContent}>
-            <Text style={featureTextStyle}>Auto-Translate</Text>
-            <Text style={featureSubtextStyle}>
-              Get English translations instantly
-            </Text>
+        <TouchableOpacity onPress={() => setShowTranslationInfo(true)} activeOpacity={0.7}>
+          <View style={[featureBoxStyle, { marginBottom: 24 }]}>
+            <Text style={MainScreenStyles.featureIcon}>🔄</Text>
+            <View style={MainScreenStyles.featureContent}>
+              <Text style={featureTextStyle}>Auto-Translate</Text>
+              <Text style={featureSubtextStyle}>
+                Tap to learn how it works
+              </Text>
+            </View>
+            <Text style={featureArrowStyle}>›</Text>
           </View>
-          <Text style={featureArrowStyle}>✓</Text>
-        </View>
+        </TouchableOpacity>
 
         {/* Info Section */}
         <View style={infoCardStyle}>
@@ -171,6 +175,14 @@ const MainScreen = ({ onNavigate, isDarkMode, onToggleDarkMode }) => {
           </Text>
         </View>
       </ScrollView>
+
+      <MessagePopup
+        visible={showTranslationInfo}
+        title="Auto-Translate"
+        message="Translation is automatic. Each segment card shows English by default. Tap a segment to flip and see the original transcription."
+        onClose={() => setShowTranslationInfo(false)}
+        isDarkMode={isDarkMode}
+      />
     </SafeAreaView>
   );
 };
