@@ -328,7 +328,7 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
     try {
       const lines = [];
       lines.push(`Session: ${sessionData.session_title}`);
-      lines.push(`Date: ${formatDateOnly(sessionData.start_time)} ${formatTimeOnly(sessionData.start_time)}`);
+      lines.push(`Date: ${formatDateTime(sessionData.start_time)}`);
       lines.push(`Duration: ${calculateDuration(sessionData.start_time, sessionData.end_time)}`);
       lines.push('');
       lines.push('FINAL SUMMARY:');
@@ -347,12 +347,9 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
 
       if (sessionData.recording_segments && sessionData.recording_segments.length > 0) {
         lines.push('TRANSCRIPT:');
-        sessionData.recording_segments.forEach((seg) => {
-          const start = seg.start_time || sessionData.start_time;
-          const end = seg.end_time || sessionData.end_time;
-          const timeLabel = `${formatTimeOnly(start)} - ${formatTimeOnly(end)}`;
+        sessionData.recording_segments.forEach((seg, i) => {
           const text = seg.english_translation || seg.transcript_text || '';
-          lines.push(`[${timeLabel}] ${text}`);
+          lines.push(`Segment ${i + 1}: ${text}`);
         });
       }
 
@@ -381,7 +378,7 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
       const buildSummaryHtml = () => {
         const esc = (s) => (s ? String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '');
         let html = `<h1>${esc(sessionData.session_title)}</h1>`;
-        html += `<p><strong>Date:</strong> ${esc(formatDateOnly(sessionData.start_time))} ${esc(formatTimeOnly(sessionData.start_time))}</p>`;
+        html += `<p><strong>Date:</strong> ${esc(formatDateTime(sessionData.start_time))}</p>`;
         html += `<p><strong>Duration:</strong> ${esc(calculateDuration(sessionData.start_time, sessionData.end_time))}</p>`;
         html += `<h2>Final Summary</h2><p>${esc(finalSummaryText || 'No final summary available')}</p>`;
 
@@ -396,12 +393,9 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
 
         if (sessionData.recording_segments && sessionData.recording_segments.length > 0) {
           html += `<h2>Transcript</h2>`;
-          sessionData.recording_segments.forEach((seg) => {
-            const start = seg.start_time || sessionData.start_time;
-            const end = seg.end_time || sessionData.end_time;
-            const timeLabel = `${formatTimeOnly(start)} - ${formatTimeOnly(end)}`;
+          sessionData.recording_segments.forEach((seg, i) => {
             const text = seg.english_translation || seg.transcript_text || '';
-            html += `<p><em>[${esc(timeLabel)}]</em> ${esc(text)}</p>`;
+            html += `<p><strong>Segment ${i + 1}:</strong> ${esc(text)}</p>`;
           });
         }
 
