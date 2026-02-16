@@ -306,6 +306,19 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
     ? [SessionDetailsScreenStyles.infoValue, SessionDetailsScreenStyles.infoValueDark]
     : SessionDetailsScreenStyles.infoValue;
 
+  const isFinalSummary = (value) => {
+    if (value === true || value === 1) return true;
+    if (typeof value === 'string') return value.toLowerCase() === 'true';
+    return false;
+  };
+
+  const finalSummaries = sessionData?.summaries
+    ? sessionData.summaries.filter(summary => isFinalSummary(summary.is_final_summary))
+    : [];
+  const finalSummaryText = finalSummaries.length > 0
+    ? finalSummaries[finalSummaries.length - 1].summary_text
+    : null;
+
   if (loading) {
     return (
       <SafeAreaView style={containerStyle}>
@@ -384,9 +397,9 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
           <Text style={[sectionTitleStyle, SessionDetailsScreenStyles.summaryHeaderTitle]}>📋 Session Summary</Text>
           
           <View style={SessionDetailsScreenStyles.summaryContentContainer}>
-            {sessionData.summaries && sessionData.summaries.length > 0 ? (
+            {finalSummaryText ? (
               <Text style={[summaryTextStyle, isDarkMode && SessionDetailsScreenStyles.summaryContentContainerDark]}>
-                {sessionData.summaries.map(s => s.summary_text).join('\n\n')}
+                {finalSummaryText}
               </Text>
             ) : (
               <Text style={[summaryTextStyle, SessionDetailsScreenStyles.summaryTextItalic]}>
@@ -411,10 +424,10 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
             
             {expandedAISummaries && (
               <View style={SessionDetailsScreenStyles.summaryContentContainer}>
-                {sessionData.summaries && sessionData.summaries.filter(s => !s.is_final_summary).length > 0 ? (
+                {sessionData.summaries && sessionData.summaries.filter(s => !isFinalSummary(s.is_final_summary)).length > 0 ? (
                   <View>
                     {sessionData.summaries
-                      .filter(summary => !summary.is_final_summary)
+                      .filter(summary => !isFinalSummary(summary.is_final_summary))
                       .map((summary, index) => (
                       <View key={summary.id} style={[summaryCardStyle, { marginTop: 12 }]}>
                         <Text style={[labelStyle, SessionDetailsScreenStyles.labelWithMargin]}>
