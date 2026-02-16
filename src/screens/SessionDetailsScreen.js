@@ -15,6 +15,9 @@ import SessionDetailsScreenStyles from '../styles/SessionDetailsScreenStyles';
 import { getSessionDetails, updateMeetingSession, rateSegment } from '../services/apiService';
 import MessagePopup from '../components/popup/MessagePopup';
 import logger from '../utils/logger';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import * as Print from 'expo-print';
 
 const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
   const { sessionId } = route.params;
@@ -319,6 +322,108 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
     ? finalSummaries[finalSummaries.length - 1].summary_text
     : null;
 
+  const exportSessionAsTxt = async () => {
+    if (!sessionData) return showErrorAlert('Export error', 'No session data to export');
+
+    try {
+      const lines = [];
+      lines.push(`Session: ${sessionData.session_title}`);
+      lines.push(`Date: ${formatDateOnly(sessionData.start_time)} ${formatTimeOnly(sessionData.start_time)}`);
+      lines.push(`Duration: ${calculateDuration(sessionData.start_time, sessionData.end_time)}`);
+      lines.push('');
+      lines.push('FINAL SUMMARY:');
+      lines.push(finalSummaryText || 'No final summary available');
+      lines.push('');
+
+      const aiSummaries = sessionData.summaries ? sessionData.summaries.filter(s => !isFinalSummary(s.is_final_summary)) : [];
+      if (aiSummaries.length > 0) {
+        lines.push('AI Summaries:');
+        aiSummaries.forEach((s, i) => {
+          lines.push(`Summary ${i + 1} (Segments ${s.chunk_range_start}-${s.chunk_range_end}):`);
+          lines.push(s.summary_text || '');
+          lines.push('');
+        });
+      }
+
+      if (sessionData.recording_segments && sessionData.recording_segments.length > 0) {
+        lines.push('TRANSCRIPT:');
+        sessionData.recording_segments.forEach((seg) => {
+          const start = seg.start_time || sessionData.start_time;
+          const end = seg.end_time || sessionData.end_time;
+          const timeLabel = `${formatTimeOnly(start)} - ${formatTimeOnly(end)}`;
+          const text = seg.english_translation || seg.transcript_text || '';
+          lines.push(`[${timeLabel}] ${text}`);
+        });
+      }
+
+      const filename = `session_${sessionId}_${Date.now()}.txt`;
+      const fileUri = FileSystem.cacheDirectory + filename;
+
+      await FileSystem.writeAsStringAsync(fileUri, lines.join('\n\n'), { encoding: FileSystem.EncodingType.UTF8 });
+
+      const available = await Sharing.isAvailableAsync();
+      if (available) {
+        await Sharing.shareAsync(fileUri, { mimeType: 'text/plain' });
+        setSuccessPopup({ visible: true, title: 'Exported', message: 'Session exported and share sheet opened.' });
+      } else {
+        setSuccessPopup({ visible: true, title: 'Export saved', message: `Export saved to ${fileUri}` });
+      }
+    } catch (err) {
+      console.error('Export error', err);
+      showErrorAlert('Export failed', err.message || 'Unknown error while exporting');
+    }
+  };
+
+  const exportSessionAsPdf = async () => {
+    if (!sessionData) return showErrorAlert('Export error', 'No session data to export');
+
+    try {
+      const buildSummaryHtml = () => {
+        const esc = (s) => (s ? String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '');
+        let html = `<h1>${esc(sessionData.session_title)}</h1>`;
+        html += `<p><strong>Date:</strong> ${esc(formatDateOnly(sessionData.start_time))} ${esc(formatTimeOnly(sessionData.start_time))}</p>`;
+        html += `<p><strong>Duration:</strong> ${esc(calculateDuration(sessionData.start_time, sessionData.end_time))}</p>`;
+        html += `<h2>Final Summary</h2><p>${esc(finalSummaryText || 'No final summary available')}</p>`;
+
+        const aiSummaries = sessionData.summaries ? sessionData.summaries.filter(s => !isFinalSummary(s.is_final_summary)) : [];
+        if (aiSummaries.length > 0) {
+          html += `<h2>AI Summaries</h2>`;
+          aiSummaries.forEach((s, i) => {
+            html += `<h3>Summary ${i + 1} (Segments ${esc(s.chunk_range_start)}-${esc(s.chunk_range_end)})</h3>`;
+            html += `<p>${esc(s.summary_text)}</p>`;
+          });
+        }
+
+        if (sessionData.recording_segments && sessionData.recording_segments.length > 0) {
+          html += `<h2>Transcript</h2>`;
+          sessionData.recording_segments.forEach((seg) => {
+            const start = seg.start_time || sessionData.start_time;
+            const end = seg.end_time || sessionData.end_time;
+            const timeLabel = `${formatTimeOnly(start)} - ${formatTimeOnly(end)}`;
+            const text = seg.english_translation || seg.transcript_text || '';
+            html += `<p><em>[${esc(timeLabel)}]</em> ${esc(text)}</p>`;
+          });
+        }
+
+        return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial; padding:20px; color:#222} h1{color:#1565C0} h2{color:#2196F3}</style></head><body>${html}</body></html>`;
+      };
+
+      const html = buildSummaryHtml();
+      const { uri } = await Print.printToFileAsync({ html });
+
+      const available = await Sharing.isAvailableAsync();
+      if (available) {
+        await Sharing.shareAsync(uri, { mimeType: 'application/pdf' });
+        setSuccessPopup({ visible: true, title: 'Exported', message: 'PDF exported and share sheet opened.' });
+      } else {
+        setSuccessPopup({ visible: true, title: 'Export saved', message: `PDF saved to ${uri}` });
+      }
+    } catch (err) {
+      console.error('PDF export error', err);
+      showErrorAlert('Export failed', err.message || 'Unknown error while exporting PDF');
+    }
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={containerStyle}>
@@ -387,6 +492,12 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
                 {sessionData.total_segments}
               </Text>
             </View>
+            <TouchableOpacity
+              style={[backButtonStyle, { marginTop: 8 }]}
+              onPress={exportSessionAsPdf}
+            >
+              <Text style={backButtonTextStyle}>Export PDF</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
