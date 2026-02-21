@@ -351,19 +351,16 @@ export const connectTranscriptionWebSocket = async (sessionId, onMessage, onErro
   return {
     connection: ws,
     sendAudioChunk: (audioBase64, language = null, model = 'small') => {
-      segmentNumber++;
+      // No segment number or filename sent; backend will handle naming
       const message = {
         session_id: sessionId,
-        segment_number: segmentNumber,
         audio: audioBase64,
-        filename: `segment_${segmentNumber}.wav`,
         language: language,
         model: model
       };
-      
       if (ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify(message));
-        console.log(`📤 Sent segment ${segmentNumber}`);
+        console.log('📤 Sent audio segment (no number)');
       } else {
         console.error('WebSocket is not open. ReadyState:', ws.readyState);
       }
