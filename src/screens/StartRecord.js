@@ -53,6 +53,7 @@ const StartRecord = (props) => {
   const recordingStartTimeRef = useRef(null);
   const isRecordingRef = useRef(false);
   const isStoppingRef = useRef(false);
+  const hasAutoStartedRef = useRef(false);
 
   // Keep screen awake ONLY while actively recording
   useEffect(() => {
@@ -122,8 +123,14 @@ const StartRecord = (props) => {
       return;
     }
 
+    if (hasAutoStartedRef.current) {
+      return;
+    }
+
+    hasAutoStartedRef.current = true;
+
     handleStartRecording();
-  }, [sessionId, navigation]);
+  }, [sessionId]);
 
   const handleStartRecording = async () => {
     try {
