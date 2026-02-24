@@ -555,7 +555,7 @@ const StartRecord = (props) => {
   useEffect(() => {
     const shouldLockNavigation = isRecording || isWebSocketConnected;
     onSetNavigationLock?.(shouldLockNavigation);
-  }, [isRecording, isWebSocketConnected, onSetNavigationLock]);
+  }, [isRecording, isWebSocketConnected]);
 
   // Dynamic styles for dark mode
   const containerStyle = [
