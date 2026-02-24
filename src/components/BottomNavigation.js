@@ -2,7 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import BottomNavigationStyles from '../styles/componentstyles/BottomNavigationStyles';
 
-const BottomNavigation = ({ activeScreen, onNavigate, isDarkMode }) => {
+const BottomNavigation = ({ activeScreen, onNavigate, isDarkMode, navigationLocked = false, lockedScreen = null }) => {
   const navItems = [
     { key: 'Main', label: 'Home', icon: '🏠' },
     { key: 'SessionHistory', label: 'History', icon: '📋' },
@@ -42,14 +42,18 @@ const BottomNavigation = ({ activeScreen, onNavigate, isDarkMode }) => {
 
   return (
     <View style={containerStyle}>
-      {navItems.map((item) => (
+      {navItems.map((item) => {
+        const isLockedOut = navigationLocked && lockedScreen && lockedScreen !== item.key;
+        return (
         <TouchableOpacity
           key={item.key}
           style={[
             navItemStyle,
             activeScreen === item.key && activeNavItemStyle,
+            isLockedOut && { opacity: 0.45 },
           ]}
           onPress={() => onNavigate(item.key)}
+          disabled={isLockedOut}
         >
           <Text style={[
             iconStyle,
@@ -64,7 +68,8 @@ const BottomNavigation = ({ activeScreen, onNavigate, isDarkMode }) => {
             {item.label}
           </Text>
         </TouchableOpacity>
-      ))}
+        );
+      })}
     </View>
   );
 };

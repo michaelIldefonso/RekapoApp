@@ -24,6 +24,7 @@ import BottomNavigation from './src/components/BottomNavigation';
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeScreen, setActiveScreen] = useState('Main');
+  const [navigationLock, setNavigationLock] = useState({ isLocked: false, screen: null });
   const [isDarkMode, setIsDarkMode] = useState(false); // App-level dark mode persists across screens
   const [userData, setUserData] = useState(null); // Store user data
   const [jwtToken, setJwtToken] = useState(null); // Store JWT token
@@ -112,8 +113,34 @@ export default function App() {
   };
 
   const handleNavigate = (screen, params = {}) => {
+    if (
+      navigationLock.isLocked &&
+      navigationLock.screen &&
+      screen !== navigationLock.screen
+    ) {
+      logger.log('Navigation blocked by active lock', {
+        lockedScreen: navigationLock.screen,
+        attemptedScreen: screen,
+      });
+      return;
+    }
+
     setActiveScreen(screen);
     setNavigationParams(params);
+  };
+
+  const handleSetNavigationLock = (screen, isLocked) => {
+    setNavigationLock((prev) => {
+      if (isLocked) {
+        return { isLocked: true, screen };
+      }
+
+      if (prev.screen === screen || !screen) {
+        return { isLocked: false, screen: null };
+      }
+
+      return prev;
+    });
   };
 
   // Handler to update dark mode from any screen
@@ -158,7 +185,15 @@ export default function App() {
       case 'StartMeeting':
         return <StartMeetingScreen isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} navigation={navigation} />;
       case 'StartRecord':
-        return <StartRecord isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} route={{ params: navigationParams }} navigation={navigation} />;
+        return (
+          <StartRecord
+            isDarkMode={isDarkMode}
+            onToggleDarkMode={handleToggleDarkMode}
+            route={{ params: navigationParams }}
+            navigation={navigation}
+            onSetNavigationLock={(isLocked) => handleSetNavigationLock('StartRecord', isLocked)}
+          />
+        );
       case 'Profile':
         return <ProfileScreen onLogout={handleLogout} isDarkMode={isDarkMode} onToggleDarkMode={handleToggleDarkMode} onNavigate={handleNavigate} />;
       case 'AccountSettings':
@@ -186,6 +221,8 @@ export default function App() {
         activeScreen={activeScreen} 
         onNavigate={handleNavigate} 
         isDarkMode={isDarkMode}
+        navigationLocked={navigationLock.isLocked}
+        lockedScreen={navigationLock.screen}
       />
     </View>
   );

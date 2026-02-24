@@ -22,7 +22,7 @@ import { updateMeetingSession, connectTranscriptionWebSocket } from '../services
 import logger from '../utils/logger';
 
 const StartRecord = (props) => {
-  const { isDarkMode, onToggleDarkMode, route, navigation } = props;
+  const { isDarkMode, onToggleDarkMode, route, navigation, onSetNavigationLock } = props;
   const { sessionId, meetingTitle } = route.params;
 
   const [isRecording, setIsRecording] = useState(false);
@@ -36,6 +36,7 @@ const StartRecord = (props) => {
   const [currentStatus, setCurrentStatus] = useState('Ready to record');
   const [isProcessing, setIsProcessing] = useState(false);
   const [summaries, setSummaries] = useState([]);
+  const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
 
   const showPopup = (title, message, level = 'info') => {
     setMessagePopup({ visible: true, title, message });
@@ -67,6 +68,8 @@ const StartRecord = (props) => {
   useEffect(() => {
     return () => {
       console.log('🧹 Cleanup: StartRecord component unmounting');
+      onSetNavigationLock?.(false);
+      setIsWebSocketConnected(false);
       
       isRecordingRef.current = false;
 
@@ -176,6 +179,7 @@ const StartRecord = (props) => {
         });
         
         wsRef.current = ws;
+        setIsWebSocketConnected(true);
         logger.log('WebSocket connected', { sessionId });
         console.log('✅ WebSocket connected and ready');
       } catch (wsError) {
@@ -209,6 +213,7 @@ const StartRecord = (props) => {
         }
         wsRef.current = null;
       }
+      setIsWebSocketConnected(false);
       
       showPopup('Recording Error', error.message || 'Unable to start recording. Please try again.', 'error');
       setCurrentStatus('Ready to record');
@@ -446,6 +451,8 @@ const StartRecord = (props) => {
       isRecordingRef.current = false;
       setIsProcessing(false);
     }
+
+    setIsWebSocketConnected(false);
   };
 
   const handleWebSocketClose = (event) => {
@@ -463,6 +470,8 @@ const StartRecord = (props) => {
       isRecordingRef.current = false;
       setIsProcessing(false);
     }
+
+    setIsWebSocketConnected(false);
   };
 
   const handleStopRecording = async () => {
@@ -504,6 +513,7 @@ const StartRecord = (props) => {
         wsRef.current.close();
         wsRef.current = null;
       }
+      setIsWebSocketConnected(false);
 
       if (sessionId) {
         try {
@@ -522,6 +532,7 @@ const StartRecord = (props) => {
       showPopup('Recording Stopped', `Meeting saved with ${transcriptions.length} segments transcribed`);
 
       setTimeout(() => {
+        onSetNavigationLock?.(false);
         navigation.goBack();
       }, 2000);
 
@@ -533,6 +544,11 @@ const StartRecord = (props) => {
       setIsStopping(false);
     }
   };
+
+  useEffect(() => {
+    const shouldLockNavigation = isRecording || isWebSocketConnected;
+    onSetNavigationLock?.(shouldLockNavigation);
+  }, [isRecording, isWebSocketConnected, onSetNavigationLock]);
 
   // Dynamic styles for dark mode
   const containerStyle = [
