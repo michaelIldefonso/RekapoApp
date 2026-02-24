@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, ActivityIndicator, AppState } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, AppState, Alert } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { isAuthenticated, getStoredUser, getStoredToken, configureGoogleSignIn } from './src/services/authService';
 import { fetchDynamicConfig } from './src/config/app.config';
@@ -122,6 +122,10 @@ export default function App() {
         lockedScreen: navigationLock.screen,
         attemptedScreen: screen,
       });
+      Alert.alert(
+        'Recording in Progress',
+        'Stop recording before leaving this screen.'
+      );
       return;
     }
 

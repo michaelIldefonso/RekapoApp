@@ -53,7 +53,6 @@ const BottomNavigation = ({ activeScreen, onNavigate, isDarkMode, navigationLock
             isLockedOut && { opacity: 0.45 },
           ]}
           onPress={() => onNavigate(item.key)}
-          disabled={isLockedOut}
         >
           <Text style={[
             iconStyle,
