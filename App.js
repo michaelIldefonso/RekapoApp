@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, ActivityIndicator, AppState, Alert } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, AppState, Alert, Modal, TouchableOpacity, Text } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { isAuthenticated, getStoredUser, getStoredToken, configureGoogleSignIn } from './src/services/authService';
 import { fetchDynamicConfig } from './src/config/app.config';
@@ -25,11 +25,12 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeScreen, setActiveScreen] = useState('Main');
   const [navigationLock, setNavigationLock] = useState({ isLocked: false, screen: null });
-  const [isDarkMode, setIsDarkMode] = useState(false); // App-level dark mode persists across screens
-  const [userData, setUserData] = useState(null); // Store user data
-  const [jwtToken, setJwtToken] = useState(null); // Store JWT token
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true); // Check auth state on app load
-  const [navigationParams, setNavigationParams] = useState({}); // Store navigation parameters
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [jwtToken, setJwtToken] = useState(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [navigationParams, setNavigationParams] = useState({});
+  const [showNavLockAlert, setShowNavLockAlert] = useState(false);
 
   // Flush logs when app goes to background or closes
   useEffect(() => {
@@ -122,10 +123,7 @@ export default function App() {
         lockedScreen: navigationLock.screen,
         attemptedScreen: screen,
       });
-      Alert.alert(
-        'Recording in Progress',
-        'Stop recording before leaving this screen.'
-      );
+      setShowNavLockAlert(true);
       return;
     }
 
@@ -196,6 +194,10 @@ export default function App() {
             route={{ params: navigationParams }}
             navigation={navigation}
             onSetNavigationLock={(isLocked) => handleSetNavigationLock('StartRecord', isLocked)}
+            onForceNavigate={(screen) => {
+              setNavigationLock({ isLocked: false, screen: null });
+              setActiveScreen(screen);
+            }}
           />
         );
       case 'Profile':
@@ -228,6 +230,66 @@ export default function App() {
         navigationLocked={navigationLock.isLocked}
         lockedScreen={navigationLock.screen}
       />
+
+      {/* Themed Navigation Lock Alert */}
+      <Modal
+        transparent
+        visible={showNavLockAlert}
+        animationType="fade"
+        onRequestClose={() => setShowNavLockAlert(false)}
+      >
+        <TouchableOpacity
+          style={[
+            styles.alertOverlay,
+            isDarkMode && { backgroundColor: 'rgba(0, 0, 0, 0.7)' },
+          ]}
+          activeOpacity={1}
+          onPress={() => setShowNavLockAlert(false)}
+        >
+          <View
+            style={[
+              styles.alertBox,
+              isDarkMode && {
+                backgroundColor: '#333',
+                borderColor: '#555',
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.alertTitle,
+                isDarkMode && { color: '#fff' },
+              ]}
+            >
+              🎙️ Recording in Progress
+            </Text>
+            <Text
+              style={[
+                styles.alertMessage,
+                isDarkMode && { color: '#bbb' },
+              ]}
+            >
+              Stop recording before leaving this screen.
+            </Text>
+            <TouchableOpacity
+              style={[
+                styles.alertButton,
+                isDarkMode && { backgroundColor: '#0066CC' },
+              ]}
+              onPress={() => setShowNavLockAlert(false)}
+            >
+              <Text
+                style={[
+                  styles.alertButtonText,
+                  isDarkMode && { color: '#fff' },
+                ]}
+              >
+                Got it
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -239,5 +301,46 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  alertOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  alertBox: {
+    width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    alignItems: 'center',
+    gap: 12,
+  },
+  alertTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000',
+    textAlign: 'center',
+  },
+  alertMessage: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  alertButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  alertButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });

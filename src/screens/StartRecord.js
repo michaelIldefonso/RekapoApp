@@ -22,7 +22,7 @@ import { updateMeetingSession, connectTranscriptionWebSocket } from '../services
 import logger from '../utils/logger';
 
 const StartRecord = (props) => {
-  const { isDarkMode, onToggleDarkMode, route, navigation, onSetNavigationLock } = props;
+  const { isDarkMode, onToggleDarkMode, route, navigation, onSetNavigationLock, onForceNavigate } = props;
   const { sessionId, meetingTitle } = route.params;
 
   const [isRecording, setIsRecording] = useState(false);
@@ -481,79 +481,87 @@ const StartRecord = (props) => {
     setIsWebSocketConnected(false);
   };
 
-  const handleStopRecording = async () => {
+  const handleStopRecording = () => {
     // Prevent multiple stop calls
     if (isStoppingRef.current) {
       console.log('⚠️ Stop already in progress, ignoring duplicate call');
       return;
     }
 
-    try {
-      isStoppingRef.current = true;
-      setIsStopping(true);
-      logger.log('Recording stop requested', { sessionId });
-      setIsRecording(false);
-      isRecordingRef.current = false;
-      setCurrentStatus('Stopping and finalizing...');
+    console.log('🛑 IMMEDIATE STOP - ONE CLICK ONLY!');
+    
+    // SET EVERYTHING TO STOPPED STATE IMMEDIATELY
+    isStoppingRef.current = true;
+    setIsRecording(false);
+    isRecordingRef.current = false;
+    setIsWebSocketConnected(false);
+    setIsProcessing(false);
+    setCurrentStatus('Stopped');
+    
+    // FORCE NAVIGATE - bypasses navigation lock entirely
+    console.log('📤 Force navigating to StartMeeting NOW!');
+    onForceNavigate?.('StartMeeting');
+    
+    // Background cleanup (after navigation)
+    setTimeout(() => {
+      try {
+        logger.log('Recording stop requested', { sessionId });
+        
+        // Clear timeouts
+        if (recordingTimeoutsRef.current?.length > 0) {
+          recordingTimeoutsRef.current.forEach(id => clearTimeout(id));
+          recordingTimeoutsRef.current = [];
+        }
 
-      // Clear all pending recording timeouts immediately
-      if (recordingTimeoutsRef.current.length > 0) {
-        console.log('🧹 Clearing', recordingTimeoutsRef.current.length, 'pending timeouts');
-        recordingTimeoutsRef.current.forEach(id => clearTimeout(id));
-        recordingTimeoutsRef.current = [];
-      }
-
-      if (recorder.isRecording) {
+        // Stop recorder safely
         try {
-          await recorder.stop();
+          if (recorder && recorder.isRecording) {
+            recorder.stop();
+          }
         } catch (e) {
-          console.log('Recorder already stopped');
+          console.log('Recorder stop error (ignored):', e?.message);
         }
-      }
 
-      if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current);
-        recordingIntervalRef.current = null;
-      }
-
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
-      setIsWebSocketConnected(false);
-
-      if (sessionId) {
-        try {
-          console.log('📤 Updating session status to completed for ID:', sessionId);
-          await updateMeetingSession(sessionId, { status: 'completed' });
-          logger.log('Session marked completed', { sessionId });
-          console.log('✅ Session marked as completed');
-        } catch (error) {
-          console.error('Failed to update session status:', error);
-          logger.error('Failed to update session status', { sessionId, message: error.message });
+        // Clear interval
+        if (recordingIntervalRef.current) {
+          clearInterval(recordingIntervalRef.current);
+          recordingIntervalRef.current = null;
         }
+
+        // Close WebSocket
+        if (wsRef.current) {
+          try {
+            wsRef.current.close();
+          } catch (e) {
+            console.log('WebSocket close error (ignored):', e?.message);
+          }
+          wsRef.current = null;
+        }
+
+        // Update session (fire and forget)
+        if (sessionId) {
+          updateMeetingSession(sessionId, { status: 'completed' })
+            .then(() => logger.log('Session marked completed', { sessionId }))
+            .catch(error => logger.error('Failed to update session status', { sessionId, message: error?.message }));
+        }
+
+        logger.log('Recording stopped', { sessionId, segments: transcriptions.length });
+      } catch (error) {
+        console.log('Background cleanup error (ignored):', error?.message);
+      } finally {
+        isStoppingRef.current = false;
       }
-
-      setCurrentStatus('Recording stopped');
-      logger.log('Recording stopped', { sessionId, segments: transcriptions.length });
-      showPopup('Recording Stopped', `Meeting saved with ${transcriptions.length} segments transcribed`);
-
-      setTimeout(() => {
-        onSetNavigationLock?.(false);
-        navigation.goBack();
-      }, 2000);
-
-    } catch (error) {
-      console.error('Stop recording error:', error);
-      logger.error('Recording stop failed', { sessionId, message: error.message });
-      showPopup('Error', 'Failed to stop recording properly', 'error');
-    } finally {
-      setIsStopping(false);
-    }
+    }, 200);
   };
 
   useEffect(() => {
-    const shouldLockNavigation = isRecording || isWebSocketConnected;
+    // Don't lock navigation if we're stopping
+    if (isStoppingRef.current) {
+      onSetNavigationLock?.(false);
+      return;
+    }
+    
+    const shouldLockNavigation = isRecording && !isStoppingRef.current;
     onSetNavigationLock?.(shouldLockNavigation);
   }, [isRecording, isWebSocketConnected]);
 
@@ -713,49 +721,6 @@ const StartRecord = (props) => {
         isDarkMode={isDarkMode}
         onClose={() => setShowSummariesPopup(false)}
       />
-
-      {/* Stopping Overlay */}
-      {isStopping && (
-        <View style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 1000,
-        }}>
-          <View style={{
-            backgroundColor: isDarkMode ? '#333' : '#fff',
-            padding: 30,
-            borderRadius: 12,
-            alignItems: 'center',
-            gap: 15,
-          }}>
-            <ActivityIndicator
-              size="large"
-              color={isDarkMode ? '#4CAF50' : '#2196F3'}
-            />
-            <Text style={{
-              color: isDarkMode ? '#fff' : '#000',
-              fontSize: 16,
-              fontWeight: '600',
-              textAlign: 'center',
-            }}>
-              Finalizing Recording...
-            </Text>
-            <Text style={{
-              color: isDarkMode ? '#aaa' : '#666',
-              fontSize: 14,
-              textAlign: 'center',
-            }}>
-              Please wait while we save your session
-            </Text>
-          </View>
-        </View>
-      )}
     </SafeAreaView>
   );
 };
