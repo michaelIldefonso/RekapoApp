@@ -54,6 +54,80 @@ const StartRecord = (props) => {
   const isRecordingRef = useRef(false);
   const isStoppingRef = useRef(false);
   const hasAutoStartedRef = useRef(false);
+  const pendingSegmentTasksRef = useRef(new Set());
+  const pendingSegmentCountRef = useRef(0);
+
+  const trackPendingSegmentTask = (promise) => {
+    pendingSegmentCountRef.current += 1;
+    setIsProcessing(true);
+    pendingSegmentTasksRef.current.add(promise);
+
+    promise.finally(() => {
+      pendingSegmentTasksRef.current.delete(promise);
+      pendingSegmentCountRef.current = Math.max(0, pendingSegmentCountRef.current - 1);
+      if (pendingSegmentCountRef.current === 0 && !isRecordingRef.current) {
+        setIsProcessing(false);
+      }
+    });
+  };
+
+  const sendChunkToBackend = async (uri, duration, chunkTag = 'chunk') => {
+    if (!uri || duration <= 0.5) {
+      console.log(`⏭️ Skipping ${chunkTag} - too short or no audio`);
+      return;
+    }
+
+    const ws = wsRef.current;
+    if (!ws || ws.connection.readyState !== WebSocket.OPEN) {
+      logger.error('Segment send failed: ws not open', {
+        sessionId,
+        readyState: ws?.connection?.readyState,
+        chunkTag,
+      });
+      return;
+    }
+
+    const task = (async () => {
+      setCurrentStatus(isStoppingRef.current ? 'Finalizing last segment...' : 'Processing audio...');
+      console.log(`📤 Sending ${chunkTag}: ${duration.toFixed(1)}s`);
+
+      const base64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: 'base64',
+      });
+
+      console.log(`✅ Base64 length: ${base64.length} characters`);
+      console.log(`📦 Estimated size: ${(base64.length / 1024).toFixed(2)} KB`);
+
+      ws.sendAudioChunk(base64, null, 'small');
+      logger.log('Audio chunk sent', {
+        sessionId,
+        durationSeconds: Number(duration.toFixed(1)),
+        chunkTag,
+      });
+      console.log(`✅ ${chunkTag} sent`);
+    })().catch((sendError) => {
+      logger.error('Segment send failed', { sessionId, message: sendError.message, chunkTag });
+      console.error(`❌ Error sending ${chunkTag}:`, sendError);
+    });
+
+    trackPendingSegmentTask(task);
+    return task;
+  };
+
+  const waitForPendingSegments = async (maxWaitMs = 30000) => {
+    const startWait = Date.now();
+    while (pendingSegmentTasksRef.current.size > 0 && (Date.now() - startWait) < maxWaitMs) {
+      const pendingNow = Array.from(pendingSegmentTasksRef.current);
+      await Promise.race([
+        Promise.allSettled(pendingNow),
+        new Promise(resolve => setTimeout(resolve, 500)),
+      ]);
+    }
+
+    if (pendingSegmentTasksRef.current.size > 0) {
+      console.log(`⚠️ Pending segment tasks timeout, remaining: ${pendingSegmentTasksRef.current.size}`);
+    }
+  };
 
   // Keep screen awake ONLY while actively recording
   useEffect(() => {
@@ -294,8 +368,10 @@ const StartRecord = (props) => {
           } catch (stopError) {
             console.log('⚠️ Stop failed during flag check (ignored):', stopError.message);
           }
-          setIsProcessing(false);
-          setCurrentStatus('Recording stopped');
+          if (!isStoppingRef.current && pendingSegmentCountRef.current === 0) {
+            setIsProcessing(false);
+            setCurrentStatus('Recording stopped');
+          }
           return;
         }
 
@@ -333,47 +409,7 @@ const StartRecord = (props) => {
         }
 
         // Process previous chunk in parallel (non-blocking)
-        if (uri && wsRef.current && duration > 0.5) {
-          // Fire-and-forget: don't await, let it run in background
-          (async () => {
-            try {
-              setIsProcessing(true);
-              setCurrentStatus('Processing audio...');
-              console.log(`📤 Sending chunk: ${duration.toFixed(1)}s`);
-              
-              const base64 = await FileSystem.readAsStringAsync(uri, {
-                encoding: 'base64',
-              });
-              
-              console.log(`✅ Base64 length: ${base64.length} characters`);
-              console.log(`📦 Estimated size: ${(base64.length / 1024).toFixed(2)} KB`);
-
-              try {
-                if (wsRef.current && wsRef.current.connection.readyState === WebSocket.OPEN) {
-                  wsRef.current.sendAudioChunk(base64, null, 'small');
-                  logger.log('Audio chunk sent', { sessionId, durationSeconds: Number(duration.toFixed(1)) });
-                  console.log('✅ Chunk sent (original, no frontend filter)');
-                } else {
-                  logger.error('Segment send failed: ws not open', {
-                    sessionId,
-                    readyState: wsRef.current?.connection?.readyState
-                  });
-                  console.error('❌ WebSocket not open, readyState:', wsRef.current?.connection.readyState);
-                }
-              } catch (sendErr) {
-                logger.error('Segment send failed', { sessionId, message: sendErr.message });
-                console.error('❌ Error sending chunk:', sendErr);
-              }
-            } catch (sendError) {
-              logger.error('Segment send failed', { sessionId, message: sendError.message });
-              console.error('❌ Error sending chunk:', sendError);
-            } finally {
-              setIsProcessing(false);
-            }
-          })();
-        } else {
-          console.log('⏭️ Skipping chunk - too short or no audio');
-        }
+        await sendChunkToBackend(uri, duration);
 
       } catch (error) {
         console.error('❌ Recording chunk error:', error);
@@ -408,6 +444,7 @@ const StartRecord = (props) => {
 
     console.log('🚀 Starting first recording chunk, isRecordingRef:', isRecordingRef.current);
     await recordChunk();
+
   };
 
   const handleWebSocketMessage = (data) => {
@@ -416,8 +453,10 @@ const StartRecord = (props) => {
     if (data.status === 'processing') {
       setCurrentStatus('Processing segment...');
     } else if (data.status === 'success') {
-      setIsProcessing(false);
-      setCurrentStatus('Recording...');
+      if (pendingSegmentCountRef.current === 0) {
+        setIsProcessing(false);
+      }
+      setCurrentStatus(isStoppingRef.current ? 'Finalizing session...' : 'Recording...');
       
       setTranscriptions(prev => [...prev, {
         segment: data.segment_number,
@@ -442,6 +481,11 @@ const StartRecord = (props) => {
       console.error('WebSocket error:', data.message);
       setCurrentStatus('Error occurred');
       showPopup('Transcription Error', data.message || 'An error occurred during transcription', 'error');
+    } else if (data.status === 'finalizing') {
+      setCurrentStatus('Backend finalizing...');
+    } else if (data.status === 'finalized') {
+      setIsProcessing(false);
+      setCurrentStatus('Finalization complete');
     }
   };
 
@@ -481,77 +525,125 @@ const StartRecord = (props) => {
     setIsWebSocketConnected(false);
   };
 
-  const handleStopRecording = () => {
+  const handleStopRecording = async () => {
     // Prevent multiple stop calls
     if (isStoppingRef.current) {
       console.log('⚠️ Stop already in progress, ignoring duplicate call');
       return;
     }
 
-    console.log('🛑 IMMEDIATE STOP - ONE CLICK ONLY!');
+    console.log('🛑 Stopping recording and waiting for backend...');
     
-    // SET EVERYTHING TO STOPPED STATE IMMEDIATELY
+    // SET STOPPING STATE - stop recording immediately
     isStoppingRef.current = true;
+    setIsStopping(true);
     setIsRecording(false);
     isRecordingRef.current = false;
-    setIsWebSocketConnected(false);
-    setIsProcessing(false);
-    setCurrentStatus('Stopped');
+    setCurrentStatus('Stopping recorder...');
     
-    // FORCE NAVIGATE - bypasses navigation lock entirely
-    console.log('📤 Force navigating to StartMeeting NOW!');
-    onForceNavigate?.('StartMeeting');
-    
-    // Background cleanup (after navigation)
-    setTimeout(() => {
-      try {
-        logger.log('Recording stop requested', { sessionId });
-        
-        // Clear timeouts
-        if (recordingTimeoutsRef.current?.length > 0) {
-          recordingTimeoutsRef.current.forEach(id => clearTimeout(id));
-          recordingTimeoutsRef.current = [];
-        }
-
-        // Stop recorder safely
-        try {
-          if (recorder && recorder.isRecording) {
-            recorder.stop();
-          }
-        } catch (e) {
-          console.log('Recorder stop error (ignored):', e?.message);
-        }
-
-        // Clear interval
-        if (recordingIntervalRef.current) {
-          clearInterval(recordingIntervalRef.current);
-          recordingIntervalRef.current = null;
-        }
-
-        // Close WebSocket
-        if (wsRef.current) {
-          try {
-            wsRef.current.close();
-          } catch (e) {
-            console.log('WebSocket close error (ignored):', e?.message);
-          }
-          wsRef.current = null;
-        }
-
-        // Update session (fire and forget)
-        if (sessionId) {
-          updateMeetingSession(sessionId, { status: 'completed' })
-            .then(() => logger.log('Session marked completed', { sessionId }))
-            .catch(error => logger.error('Failed to update session status', { sessionId, message: error?.message }));
-        }
-
-        logger.log('Recording stopped', { sessionId, segments: transcriptions.length });
-      } catch (error) {
-        console.log('Background cleanup error (ignored):', error?.message);
-      } finally {
-        isStoppingRef.current = false;
+    try {
+      logger.log('Recording stop requested', { sessionId });
+      
+      // 1. Stop new audio chunks immediately
+      if (recordingTimeoutsRef.current?.length > 0) {
+        console.log('🛑 Clearing pending timeouts to prevent new chunks');
+        recordingTimeoutsRef.current.forEach(id => clearTimeout(id));
+        recordingTimeoutsRef.current = [];
       }
-    }, 200);
+
+      // Stop recorder safely
+      let finalChunkUri = null;
+      let finalChunkDuration = 0;
+      try {
+        if (recorder && recorder.isRecording) {
+          finalChunkDuration = recordingStartTimeRef.current
+            ? (Date.now() - recordingStartTimeRef.current) / 1000
+            : 0;
+          await recorder.stop();
+          finalChunkUri = recorder.uri;
+          console.log('✅ Recorder stopped');
+        }
+      } catch (e) {
+        console.log('Recorder stop error (ignored):', e?.message);
+      }
+
+      // Clear interval
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+        recordingIntervalRef.current = null;
+      }
+
+      // 2. Flush the currently recording partial chunk before finalization
+      if (finalChunkUri && finalChunkDuration > 0.5) {
+        setCurrentStatus('Sending final audio segment...');
+        console.log(`📤 Flushing final chunk (${finalChunkDuration.toFixed(1)}s) before finalize`);
+        await sendChunkToBackend(finalChunkUri, finalChunkDuration, 'final_chunk');
+      }
+
+      // 3. Wait for all pending segments to upload before finalize
+      setCurrentStatus('Waiting for pending audio uploads...');
+      await waitForPendingSegments(45000);
+
+      // 4. Send finalize signal to backend and wait for backend completion
+      if (wsRef.current && wsRef.current.connection.readyState === WebSocket.OPEN) {
+        setCurrentStatus('Sending finalize signal...');
+        console.log('📤 Sending finalize signal to backend');
+        const finalizeResult = await wsRef.current.sendFinalizeAndWait?.(45000);
+        if (!finalizeResult) {
+          console.log('⚠️ Did not receive finalize acknowledgment before timeout, proceeding to close');
+        }
+      }
+
+      // 5. Close WebSocket gracefully
+      if (wsRef.current) {
+        try {
+          console.log('🔌 Closing WebSocket connection');
+          wsRef.current.close();
+          wsRef.current = null;
+          setIsWebSocketConnected(false);
+        } catch (e) {
+          console.log('WebSocket close error (ignored):', e?.message);
+        }
+      }
+
+      // 6. Update session status and WAIT for backend confirmation
+      if (sessionId) {
+        setCurrentStatus('Saving session...');
+        console.log('📤 Updating session status in backend...');
+        try {
+          await updateMeetingSession(sessionId, { status: 'completed' });
+          logger.log('Session marked completed', { sessionId });
+          console.log('✅ Backend confirmed session update');
+        } catch (error) {
+          logger.error('Failed to update session status', { sessionId, message: error?.message });
+          console.error('❌ Backend update failed:', error?.message);
+          // Continue anyway - don't block navigation on backend errors
+        }
+      }
+
+      logger.log('Recording stopped', { sessionId, segments: transcriptions.length });
+      setCurrentStatus('Stopped');
+      
+      // Small delay to ensure state updates are visible
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // 7. NOW navigate after everything is complete
+      console.log('📤 Navigating to StartMeeting after full cleanup');
+      onForceNavigate?.('StartMeeting');
+      
+    } catch (error) {
+      console.error('❌ Stop recording error:', error?.message);
+      logger.error('Stop recording failed', { sessionId, message: error?.message });
+      
+      // Navigate anyway on error
+      setCurrentStatus('Stopped with errors');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      onForceNavigate?.('StartMeeting');
+    } finally {
+      isStoppingRef.current = false;
+      setIsStopping(false);
+      setIsProcessing(false);
+    }
   };
 
   useEffect(() => {

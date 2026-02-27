@@ -279,6 +279,8 @@ export const connectTranscriptionWebSocket = async (sessionId, onMessage, onErro
   }
   
   let segmentNumber = 0;
+  let finalizeResolver = null;
+  let finalizeRejecter = null;
   
   ws.onopen = () => {
     console.log('🔌 WebSocket connected successfully');
@@ -295,6 +297,13 @@ export const connectTranscriptionWebSocket = async (sessionId, onMessage, onErro
       console.log('📨 Raw message:', event.data);
       const data = JSON.parse(event.data);
       console.log('📨 Received:', data.status || data);
+
+      if (data.status === 'finalized' && finalizeResolver) {
+        finalizeResolver(true);
+        finalizeResolver = null;
+        finalizeRejecter = null;
+      }
+
       if (onMessage) onMessage(data);
     } catch (error) {
       console.error('Failed to parse WebSocket message:', error);
@@ -318,6 +327,12 @@ export const connectTranscriptionWebSocket = async (sessionId, onMessage, onErro
       console.error('   4. Authentication token may be invalid');
     }
     
+    if (finalizeRejecter) {
+      finalizeRejecter(error);
+      finalizeResolver = null;
+      finalizeRejecter = null;
+    }
+
     if (onError) onError(error);
   };
   
@@ -345,6 +360,17 @@ export const connectTranscriptionWebSocket = async (sessionId, onMessage, onErro
       console.error('⚠️ Server error');
     }
     
+    if (finalizeResolver) {
+      // If server closed after finalization, treat as success.
+      if (event.code === 1000) {
+        finalizeResolver(true);
+      } else if (finalizeRejecter) {
+        finalizeRejecter(new Error(`WebSocket closed before finalization (${event.code})`));
+      }
+      finalizeResolver = null;
+      finalizeRejecter = null;
+    }
+
     if (onClose) onClose(event);
   };
   
@@ -364,6 +390,70 @@ export const connectTranscriptionWebSocket = async (sessionId, onMessage, onErro
       } else {
         console.error('WebSocket is not open. ReadyState:', ws.readyState);
       }
+    },
+    sendFinalize: () => {
+      // Send a finalize message to tell backend to complete processing
+      const message = {
+        session_id: sessionId,
+        action: 'finalize'
+      };
+      if (ws.readyState === WebSocket.OPEN) {
+        try {
+          ws.send(JSON.stringify(message));
+          console.log('📤 Sent finalize signal to backend');
+          return true;
+        } catch (error) {
+          console.error('❌ Failed to send finalize message:', error);
+          return false;
+        }
+      } else {
+        console.warn('⚠️ WebSocket not open, cannot send finalize message');
+        return false;
+      }
+    },
+    sendFinalizeAndWait: (timeoutMs = 45000) => {
+      if (ws.readyState !== WebSocket.OPEN) {
+        console.warn('⚠️ WebSocket not open, cannot finalize and wait');
+        return Promise.resolve(false);
+      }
+
+      return new Promise((resolve) => {
+        const timer = setTimeout(() => {
+          finalizeResolver = null;
+          finalizeRejecter = null;
+          console.warn('⚠️ Finalize wait timed out');
+          resolve(false);
+        }, timeoutMs);
+
+        finalizeResolver = () => {
+          clearTimeout(timer);
+          resolve(true);
+        };
+
+        finalizeRejecter = (error) => {
+          clearTimeout(timer);
+          console.error('❌ Finalize wait failed:', error?.message || error);
+          resolve(false);
+        };
+
+        const sent = ws.readyState === WebSocket.OPEN ? (() => {
+          try {
+            ws.send(JSON.stringify({ session_id: sessionId, action: 'finalize' }));
+            console.log('📤 Sent finalize signal to backend (wait mode)');
+            return true;
+          } catch (error) {
+            finalizeRejecter(error);
+            return false;
+          }
+        })() : false;
+
+        if (!sent) {
+          clearTimeout(timer);
+          finalizeResolver = null;
+          finalizeRejecter = null;
+          resolve(false);
+        }
+      });
     },
     close: () => {
       if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
