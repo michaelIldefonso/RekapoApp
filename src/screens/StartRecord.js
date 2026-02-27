@@ -813,6 +813,26 @@ const StartRecord = (props) => {
         isDarkMode={isDarkMode}
         onClose={() => setShowSummariesPopup(false)}
       />
+
+      {/* Stopping overlay */}
+      {isStopping && (
+        <View style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.75)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 999,
+        }}>
+          <ActivityIndicator size="large" color="#fff" />
+          <Text style={{ color: '#fff', marginTop: 20, fontSize: 17, fontWeight: '600', textAlign: 'center', paddingHorizontal: 36 }}>
+            {currentStatus}
+          </Text>
+          <Text style={{ color: '#aaa', marginTop: 8, fontSize: 13, textAlign: 'center', paddingHorizontal: 36 }}>
+            Please wait, saving your recording...
+          </Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
