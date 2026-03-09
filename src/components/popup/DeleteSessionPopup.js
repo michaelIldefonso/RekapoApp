@@ -1,4 +1,12 @@
+/**
+ * DeleteSessionPopup.js — Delete Session Confirmation Modal
+ *
+ * Asks the user to confirm deletion of a recording session.
+ * Shows the session title in red. On confirm, calls the delete API.
+ * This action is irreversible — the session and all its data are permanently removed.
+ */
 import React from 'react';
+
 import { Modal, View, Text, TouchableOpacity } from 'react-native';
 import DeleteSessionPopupStyles from '../../styles/popupstyles/DeleteSessionPopupStyles';
 

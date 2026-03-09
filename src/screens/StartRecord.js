@@ -1,3 +1,29 @@
+/**
+ * StartRecord.js — Live Recording & Real-Time Transcription Screen
+ *
+ * This is the core screen of the app. It handles:
+ *   - Audio recording using expo-audio (20-second chunks)
+ *   - WebSocket connection to the backend transcription service
+ *   - Sending audio chunks as base64 to the backend via WebSocket
+ *   - Receiving real-time transcription results and AI summaries
+ *   - Displaying live transcription feed (tap to flip between original/translated)
+ *   - Navigation lock to prevent accidental screen exits during recording
+ *   - Keep-awake to prevent the screen from sleeping during recording
+ *   - Graceful stop: flush final chunk → wait for pending uploads → send finalize → close WS
+ *
+ * Recording Flow:
+ *   1. Auto-starts on mount (requests mic permission, connects WebSocket)
+ *   2. Records in 20-second chunks continuously
+ *   3. Each chunk is sent to backend via WebSocket as base64
+ *   4. Backend processes: VAD → Whisper ASR → Translation → returns result
+ *   5. On stop: sends final chunk, waits for pending segments, sends finalize signal
+ *
+ * Architecture:
+ *   - Uses refs (isRecordingRef, isStoppingRef) for real-time state that
+ *     doesn’t trigger re-renders, since the recording loop runs asynchronously.
+ *   - Parallel chunk processing: starts next recording immediately while
+ *     previous chunk is being uploaded (eliminates audio gaps).
+ */
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -14,29 +40,30 @@ import {
   setAudioModeAsync
 } from 'expo-audio';
 import * as FileSystem from 'expo-file-system/legacy';
-import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
+import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake'; // Keeps screen on during recording
 import StartRecordStyles from '../styles/StartRecordStyles';
 import MessagePopup from '../components/popup/MessagePopup';
-import SummariesPopup from '../components/popup/SummariesPopup';
+import SummariesPopup from '../components/popup/SummariesPopup'; // Shows all generated summaries in a popup
 import { updateMeetingSession, connectTranscriptionWebSocket } from '../services/apiService';
 import logger from '../utils/logger';
 
 const StartRecord = (props) => {
   const { isDarkMode, onToggleDarkMode, route, navigation, onSetNavigationLock, onForceNavigate } = props;
-  const { sessionId, meetingTitle } = route.params;
+  const { sessionId, meetingTitle } = route.params; // Passed from StartMeetingScreen
 
-  const [isRecording, setIsRecording] = useState(false);
+  // ── UI State ─────────────────────────────────────────────────────────
+  const [isRecording, setIsRecording] = useState(false);       // Whether actively recording audio
   const [messagePopup, setMessagePopup] = useState({ visible: false, title: '', message: '' });
-  const [showSummariesPopup, setShowSummariesPopup] = useState(false);
-  const [flippedSegments, setFlippedSegments] = useState({});
-  const [isStopping, setIsStopping] = useState(false);
+  const [showSummariesPopup, setShowSummariesPopup] = useState(false); // Summaries popup visibility
+  const [flippedSegments, setFlippedSegments] = useState({});  // Tracks flipped transcript cards
+  const [isStopping, setIsStopping] = useState(false);         // Shows full-screen "stopping" overlay
   
-  // Transcription states
-  const [transcriptions, setTranscriptions] = useState([]);
-  const [currentStatus, setCurrentStatus] = useState('Ready to record');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [summaries, setSummaries] = useState([]);
-  const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
+  // ── Transcription State ─────────────────────────────────────────────
+  const [transcriptions, setTranscriptions] = useState([]);    // Array of transcription results from backend
+  const [currentStatus, setCurrentStatus] = useState('Ready to record'); // Status text shown in UI
+  const [isProcessing, setIsProcessing] = useState(false);     // Shows spinner when processing audio
+  const [summaries, setSummaries] = useState([]);              // AI summaries generated every ~10 segments
+  const [isWebSocketConnected, setIsWebSocketConnected] = useState(false); // WebSocket connection status
 
   const showPopup = (title, message, level = 'info') => {
     setMessagePopup({ visible: true, title, message });
@@ -45,18 +72,22 @@ const StartRecord = (props) => {
     }
   };
   
-  // Refs
-  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
-  const wsRef = useRef(null);
-  const recordingIntervalRef = useRef(null);
-  const recordingTimeoutsRef = useRef([]);
-  const recordingStartTimeRef = useRef(null);
-  const isRecordingRef = useRef(false);
-  const isStoppingRef = useRef(false);
-  const hasAutoStartedRef = useRef(false);
-  const pendingSegmentTasksRef = useRef(new Set());
-  const pendingSegmentCountRef = useRef(0);
+  // ── Refs (mutable values that don’t trigger re-renders) ─────────────────
+  // Using refs because the recording loop runs async and needs immediate
+  // access to the latest state without waiting for React re-renders.
+  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY); // expo-audio recorder instance
+  const wsRef = useRef(null);                           // WebSocket connection reference
+  const recordingIntervalRef = useRef(null);            // Interval timer ref (cleanup)
+  const recordingTimeoutsRef = useRef([]);              // Track setTimeout IDs so we can clear them on stop
+  const recordingStartTimeRef = useRef(null);           // Timestamp when current chunk started recording
+  const isRecordingRef = useRef(false);                 // Immediate-access recording flag (no re-render delay)
+  const isStoppingRef = useRef(false);                  // Prevents duplicate stop calls
+  const hasAutoStartedRef = useRef(false);              // Ensures auto-start only fires once
+  const pendingSegmentTasksRef = useRef(new Set());     // Tracks in-flight upload promises
+  const pendingSegmentCountRef = useRef(0);             // Count of pending uploads (for UI spinner)
 
+  // Track a pending segment upload — increments counter, adds promise to set,
+  // and decrements/removes when done. Used to know when all uploads are finished.
   const trackPendingSegmentTask = (promise) => {
     pendingSegmentCountRef.current += 1;
     setIsProcessing(true);
@@ -71,6 +102,8 @@ const StartRecord = (props) => {
     });
   };
 
+  // Reads the audio file as base64 and sends it to backend via WebSocket.
+  // Skips chunks shorter than 0.5s (likely silence/noise).
   const sendChunkToBackend = async (uri, duration, chunkTag = 'chunk') => {
     if (!uri || duration <= 0.5) {
       console.log(`⏭️ Skipping ${chunkTag} - too short or no audio`);
@@ -114,6 +147,8 @@ const StartRecord = (props) => {
     return task;
   };
 
+  // Waits for all pending segment uploads to complete before proceeding.
+  // Used during stop to ensure all audio is uploaded before finalize.
   const waitForPendingSegments = async (maxWaitMs = 30000) => {
     const startWait = Date.now();
     while (pendingSegmentTasksRef.current.size > 0 && (Date.now() - startWait) < maxWaitMs) {
@@ -129,7 +164,7 @@ const StartRecord = (props) => {
     }
   };
 
-  // Keep screen awake ONLY while actively recording
+  // Keep screen awake ONLY while actively recording (saves battery when not recording)
   useEffect(() => {
     if (isRecording) {
       activateKeepAwakeAsync('recording');
@@ -139,7 +174,8 @@ const StartRecord = (props) => {
     return () => deactivateKeepAwake('recording');
   }, [isRecording]);
 
-  // Cleanup on unmount
+  // Cleanup on unmount — release all resources (recorder, WebSocket, timers)
+  // This prevents memory leaks and orphaned connections
   useEffect(() => {
     return () => {
       console.log('🧹 Cleanup: StartRecord component unmounting');
@@ -182,7 +218,8 @@ const StartRecord = (props) => {
     };
   }, [recorder]);
 
-  // Auto-start recording when component mounts
+  // Auto-start recording when component mounts (only once via hasAutoStartedRef)
+  // If no sessionId was provided, shows error and navigates back
   useEffect(() => {
     if (!sessionId) {
       logger.error('Missing sessionId in StartRecord route params');
@@ -206,6 +243,11 @@ const StartRecord = (props) => {
     handleStartRecording();
   }, [sessionId]);
 
+  // Main recording setup:
+  // 1. Request microphone permission
+  // 2. Configure audio mode for recording
+  // 3. Connect WebSocket to transcription service
+  // 4. Start the recording chunk loop
   const handleStartRecording = async () => {
     try {
       console.log('🎙️ Starting recording process...');
@@ -301,8 +343,13 @@ const StartRecord = (props) => {
     }
   };
 
+  // Core recording loop — records audio in 20-second chunks continuously.
+  // After each chunk finishes:
+  //   1. Starts the next recording IMMEDIATELY (zero-gap parallel processing)
+  //   2. Sends the previous chunk to backend (non-blocking)
+  //   3. Repeats until isRecordingRef becomes false
   const startRecordingChunks = async () => {
-    const HARD_LIMIT_MS = 20000; // 20 seconds hard limit
+    const HARD_LIMIT_MS = 20000; // 20 seconds per chunk — max duration before splitting
     
     const recordChunk = async () => {
       try {
@@ -447,6 +494,8 @@ const StartRecord = (props) => {
 
   };
 
+  // Handle incoming WebSocket messages from the transcription backend.
+  // Message types: processing, success (transcription), summary, error, finalizing, finalized
   const handleWebSocketMessage = (data) => {
     console.log('📨 WebSocket message:', data.status);
     
@@ -489,6 +538,7 @@ const StartRecord = (props) => {
     }
   };
 
+  // Handle WebSocket errors — stops recording and alerts the user
   const handleWebSocketError = (error) => {
     logger.error('WebSocket error: ' + (error.message || 'Connection error'));
     console.error('❌ WebSocket error in screen:', error);
@@ -506,6 +556,7 @@ const StartRecord = (props) => {
     setIsWebSocketConnected(false);
   };
 
+  // Handle WebSocket close — if recording was active, alert user about connection loss
   const handleWebSocketClose = (event) => {
     console.log('🔌 WebSocket closed in screen');
     logger.log('WebSocket closed', { sessionId, code: event?.code, reason: event?.reason });
@@ -525,6 +576,15 @@ const StartRecord = (props) => {
     setIsWebSocketConnected(false);
   };
 
+  // Graceful stop recording sequence:
+  // 1. Stop new audio chunks immediately (clear timeouts)
+  // 2. Stop the active recorder and get the final partial chunk
+  // 3. Send the final chunk to backend
+  // 4. Wait for all pending segment uploads to complete
+  // 5. Send "finalize" signal to backend (triggers final summary generation)
+  // 6. Close WebSocket connection
+  // 7. Update session status to "completed" via REST API
+  // 8. Navigate back to StartMeeting screen
   const handleStopRecording = async () => {
     // Prevent multiple stop calls
     if (isStoppingRef.current) {

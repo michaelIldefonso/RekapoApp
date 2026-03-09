@@ -1,4 +1,19 @@
+/**
+ * PrivacySettingsScreen.js — Privacy & Data Consent Settings
+ *
+ * Allows the user to control the "Training Data Consent" toggle.
+ * When enabled, anonymized transcription data may be used to improve AI models.
+ * When disabled, data is only used for the immediate transcription service.
+ *
+ * The consent value is:
+ *   - Loaded from local storage on mount
+ *   - Updated via PATCH /api/users/me/consent when toggled
+ *   - Reverted locally if the API call fails (optimistic UI pattern)
+ *
+ * This toggle is OPTIONAL and does not affect core app functionality.
+ */
 import React, { useEffect, useState } from 'react';
+
 import {
   View,
   Text,

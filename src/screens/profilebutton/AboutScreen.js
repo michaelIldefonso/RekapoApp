@@ -1,4 +1,17 @@
+/**
+ * AboutScreen.js — App Information & Credits
+ *
+ * Displays:
+ *   - App logo and name (Rekapo)
+ *   - Description: Near real-time meeting summarization with ML
+ *   - Current version (0.1 Beta)
+ *   - Developer credits (Ildefonso, Bataller, Orlina, Mollasgo)
+ *   - Institution (ACLC College of Taytay — 2026)
+ *   - Copyright notice
+ *   - Test application disclaimer
+ */
 import React, { useEffect } from 'react';
+
 import {
   View,
   Text,

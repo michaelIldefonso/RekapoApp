@@ -1,4 +1,16 @@
+/**
+ * PhotoOptionsPopup.js — Profile Photo Action Sheet
+ *
+ * Presents options for changing the profile photo:
+ *   - Take Photo (opens device camera)
+ *   - Choose from Gallery (opens image picker)
+ *   - Delete Photo (removes current photo)
+ *   - Cancel
+ *
+ * Uses expo-image-picker for camera and gallery access.
+ */
 import React from 'react';
+
 import { Modal, View, Text, TouchableOpacity } from 'react-native';
 import PhotoOptionsPopupStyles from '../../styles/popupstyles/PhotoOptionsPopupStyles';
 

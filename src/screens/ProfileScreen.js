@@ -1,3 +1,17 @@
+/**
+ * ProfileScreen.js — User Profile & Settings Hub
+ *
+ * Displays the user’s profile information (photo, name, email, join date)
+ * and provides navigation to:
+ *   - Display Mode toggle (light/dark theme)
+ *   - Account Settings (username, profile photo)
+ *   - Privacy Settings (training data consent)
+ *   - About (app version, credits)
+ *   - Logout (with confirmation popup)
+ *
+ * User data is loaded from AsyncStorage (stored during login).
+ * The profile picture comes from Google or a custom upload.
+ */
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -16,11 +30,11 @@ import { getStoredUser, signOut } from '../services/authService';
 import logger from '../utils/logger';
 
 const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) => {
-  const [userInfo, setUserInfo] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);            // User profile data from storage
+  const [isLoading, setIsLoading] = useState(true);          // Loading state while fetching user data
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false); // Controls logout confirmation modal
 
-  // Load user data from storage
+  // Load user data from AsyncStorage when the screen mounts
   useEffect(() => {
     loadUserData();
   }, []);
@@ -61,10 +75,12 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
     }
   };
 
+  // Shows the logout confirmation popup
   const handleLogout = async () => {
     setShowLogoutPopup(true);
   };
 
+  // Called when user confirms logout — signs out from Google & clears stored tokens
   const confirmLogout = async () => {
     setShowLogoutPopup(false);
     await signOut();
@@ -75,6 +91,7 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
     setShowLogoutPopup(false);
   };
 
+  // Navigate to sub-screens based on which option was tapped
   const handleOptionPress = (title) => {
     switch (title) {
       case 'Account Settings':
@@ -91,6 +108,7 @@ const ProfileScreen = ({ onLogout, isDarkMode, onToggleDarkMode, onNavigate }) =
     }
   };
 
+  // Menu items shown on the profile screen — each becomes a tappable card
   const profileOptions = [
     { title: 'Display Mode', subtitle: isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode' },
     { title: 'Account Settings', subtitle: 'Manage your account preferences' },

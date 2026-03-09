@@ -1,8 +1,30 @@
+/**
+ * BottomNavigation.js — Bottom Tab Bar Component
+ *
+ * Renders a persistent bottom navigation bar with 4 tabs:
+ *   Home (🏠), History (📋), Record (🎤️), Profile (👤)
+ *
+ * Features:
+ *   - Highlights the currently active tab
+ *   - Supports dark mode theming
+ *   - Respects navigation lock: when recording is active, other tabs
+ *     appear dimmed (opacity 0.45) and tapping them triggers a lock alert
+ *     in App.js instead of navigating
+ *
+ * Props:
+ *   - activeScreen: which tab is currently active
+ *   - onNavigate: function to change screens (goes through App.js handleNavigate)
+ *   - isDarkMode: current theme
+ *   - navigationLocked: whether navigation is locked (recording in progress)
+ *   - lockedScreen: which screen holds the lock (e.g., 'StartRecord')
+ */
 import React from 'react';
+
 import { View, TouchableOpacity, Text } from 'react-native';
 import BottomNavigationStyles from '../styles/componentstyles/BottomNavigationStyles';
 
 const BottomNavigation = ({ activeScreen, onNavigate, isDarkMode, navigationLocked = false, lockedScreen = null }) => {
+  // Define the 4 navigation tabs and their display labels/icons
   const navItems = [
     { key: 'Main', label: 'Home', icon: '🏠' },
     { key: 'SessionHistory', label: 'History', icon: '📋' },

@@ -1,4 +1,11 @@
+/**
+ * DeletePhotoPopup.js — Delete Profile Photo Confirmation Modal
+ *
+ * Asks the user to confirm deletion of their profile photo.
+ * On confirm, calls DELETE /api/users/me/photo to remove the photo from the backend.
+ */
 import React from 'react';
+
 import { Modal, View, Text, TouchableOpacity } from 'react-native';
 import DeletePhotoPopupStyles from '../../styles/popupstyles/DeletePhotoPopupStyles';
 

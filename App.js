@@ -1,42 +1,58 @@
+/**
+ * App.js — Root Component of the Rekapo Application
+ *
+ * This is the main entry point of the app. It manages:
+ *   - Authentication state (login/logout with Google OAuth + JWT)
+ *   - Screen navigation (custom screen-switcher instead of React Navigation)
+ *   - Dark mode theme toggling (persisted in SecureStore)
+ *   - Navigation lock (prevents leaving the recording screen mid-recording)
+ *   - Log flushing when the app goes to background
+ *
+ * The app uses a simple state-driven navigation approach:
+ *   activeScreen state determines which screen component is rendered.
+ *   BottomNavigation provides tab-based navigation at the bottom.
+ */
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, ActivityIndicator, AppState, Alert, Modal, TouchableOpacity, Text } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from 'expo-secure-store'; // Encrypted storage for sensitive data (dark mode pref)
 import { isAuthenticated, getStoredUser, getStoredToken, configureGoogleSignIn } from './src/services/authService';
-import { fetchDynamicConfig } from './src/config/app.config';
-import logger from './src/utils/logger';
+import { fetchDynamicConfig } from './src/config/app.config'; // Fetches backend URL from Firebase Remote Config
+import logger from './src/utils/logger'; // Custom logger that sends logs to backend in production
 
-// Import screens
+// Import all app screens — each screen is a standalone component
 import LoginScreen from './src/screens/LoginScreen';
-import MainScreen from './src/screens/MainScreen';
-import SessionHistoryScreen from './src/screens/SessionHistoryScreen';
-import SessionDetailsScreen from './src/screens/SessionDetailsScreen';
-import StartMeetingScreen from './src/screens/StartMeetingScreen';
-import StartRecord from './src/screens/StartRecord';
-import ProfileScreen from './src/screens/ProfileScreen';
-import AccountSettingsScreen from './src/screens/profilebutton/AccountSettingsScreen';
-import PrivacySettingsScreen from './src/screens/profilebutton/PrivacySettingsScreen';
-import AboutScreen from './src/screens/profilebutton/AboutScreen';
+import MainScreen from './src/screens/MainScreen';             // Dashboard / home screen
+import SessionHistoryScreen from './src/screens/SessionHistoryScreen'; // List of past recordings
+import SessionDetailsScreen from './src/screens/SessionDetailsScreen'; // View transcript, summary, export
+import StartMeetingScreen from './src/screens/StartMeetingScreen';     // Set meeting title before recording
+import StartRecord from './src/screens/StartRecord';                   // Live recording + real-time transcription
+import ProfileScreen from './src/screens/ProfileScreen';               // User profile + settings menu
+import AccountSettingsScreen from './src/screens/profilebutton/AccountSettingsScreen'; // Change username/photo
+import PrivacySettingsScreen from './src/screens/profilebutton/PrivacySettingsScreen'; // Training data consent toggle
+import AboutScreen from './src/screens/profilebutton/AboutScreen';     // App info and credits
 
-// Import components
+// Bottom tab bar component
 import BottomNavigation from './src/components/BottomNavigation';
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [activeScreen, setActiveScreen] = useState('Main');
-  const [navigationLock, setNavigationLock] = useState({ isLocked: false, screen: null });
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [userData, setUserData] = useState(null);
-  const [jwtToken, setJwtToken] = useState(null);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [navigationParams, setNavigationParams] = useState({});
-  const [showNavLockAlert, setShowNavLockAlert] = useState(false);
+  // ── Core App State ──────────────────────────────────────────────────────
+  const [isLoggedIn, setIsLoggedIn] = useState(false);        // Whether user is authenticated
+  const [activeScreen, setActiveScreen] = useState('Main');   // Currently displayed screen name
+  const [navigationLock, setNavigationLock] = useState({ isLocked: false, screen: null }); // Prevents nav during recording
+  const [isDarkMode, setIsDarkMode] = useState(false);        // Theme toggle state
+  const [userData, setUserData] = useState(null);             // Logged-in user info (name, email, etc.)
+  const [jwtToken, setJwtToken] = useState(null);             // JWT token for API authentication
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true); // Shows loading spinner while verifying auth
+  const [navigationParams, setNavigationParams] = useState({}); // Params passed between screens (e.g., sessionId)
+  const [showNavLockAlert, setShowNavLockAlert] = useState(false); // Controls "recording in progress" alert modal
 
-  // Flush logs when app goes to background or closes
+  // ── Effect: Flush buffered logs when app goes to background ─────────
+  // In production, logs are batched and sent every 10s. This ensures
+  // any remaining buffered logs get sent before the OS suspends the app.
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState) => {
       if (nextAppState === 'background' || nextAppState === 'inactive') {
-        // App is going to background - flush any pending logs
         logger.flush().catch(err => console.log('Log flush error:', err));
       }
     });
@@ -46,10 +62,14 @@ export default function App() {
     };
   }, []);
 
-  // Check authentication status on app startup
+  // ── Effect: App Initialization (runs once on mount) ─────────────────
+  // 1. Load persisted dark mode preference from encrypted storage
+  // 2. Configure Google Sign-In SDK with our OAuth Web Client ID
+  // 3. Fetch the latest backend URL from Firebase Remote Config
+  // 4. Verify if the stored JWT token is still valid (auto-login)
   useEffect(() => {
     const initApp = async () => {
-      // Load dark mode preference from storage
+      // Restore theme preference
       try {
         const storedDarkMode = await SecureStore.getItemAsync('dark_mode');
         if (storedDarkMode === 'true') {
@@ -70,6 +90,8 @@ export default function App() {
     initApp();
   }, []);
 
+  // Checks if the user has a valid (non-expired) JWT token stored.
+  // If yes, auto-logs them in. If no, they'll see LoginScreen.
   const checkAuthStatus = async () => {
     try {
       const authenticated = await isAuthenticated();
@@ -100,12 +122,14 @@ export default function App() {
     }
   };
 
+  // Called after successful Google login + backend JWT verification
   const handleLogin = (user, token) => {
     setUserData(user);
     setJwtToken(token);
     setIsLoggedIn(true);
   };
 
+  // Called when user confirms logout — clears all auth state and returns to login
   const handleLogout = () => {
     setUserData(null);
     setJwtToken(null);
@@ -113,6 +137,9 @@ export default function App() {
     setActiveScreen('Main');
   };
 
+  // Central navigation handler — all screen changes go through here.
+  // If recording is active (navigation locked), it blocks navigation
+  // and shows an alert telling the user to stop recording first.
   const handleNavigate = (screen, params = {}) => {
     if (
       navigationLock.isLocked &&
@@ -131,6 +158,7 @@ export default function App() {
     setNavigationParams(params);
   };
 
+  // Lock/unlock navigation — used by StartRecord to prevent accidental exits during recording
   const handleSetNavigationLock = (screen, isLocked) => {
     setNavigationLock((prev) => {
       if (isLocked) {
@@ -145,20 +173,20 @@ export default function App() {
     });
   };
 
-  // Handler to update dark mode from any screen
+  // Explicitly set dark mode to a specific value and persist to storage
   const handleDarkModeChange = async (value) => {
     setIsDarkMode(value);
     await SecureStore.setItemAsync('dark_mode', value ? 'true' : 'false');
   };
 
-  // Handler to toggle dark mode
+  // Toggle dark mode on/off and persist the preference to SecureStore
   const handleToggleDarkMode = async () => {
     const newValue = !isDarkMode;
     setIsDarkMode(newValue);
     await SecureStore.setItemAsync('dark_mode', newValue ? 'true' : 'false');
   };
 
-  // Show loading screen while checking authentication
+  // ── Loading State: Show spinner while verifying stored JWT on startup ──
   if (isCheckingAuth) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -167,9 +195,10 @@ export default function App() {
     );
   }
 
-  // This function determines which screen component to render based on the current activeScreen state.
-  // It also passes global props (like isDarkMode, onToggleDarkMode, and navigation handlers) to each screen.
-  // This centralizes navigation and shared state management in the app.
+  // ── Screen Router ────────────────────────────────────────────────────
+  // This acts as a simple screen router (instead of React Navigation library).
+  // Based on the activeScreen state value, it renders the corresponding screen
+  // component and passes shared props (dark mode, navigation handlers, etc.).
   const renderScreen = () => {
     // Create navigation object similar to React Navigation
     const navigation = {
@@ -231,7 +260,7 @@ export default function App() {
         lockedScreen={navigationLock.screen}
       />
 
-      {/* Themed Navigation Lock Alert */}
+      {/* Modal alert that appears when user tries to navigate away during an active recording */}
       <Modal
         transparent
         visible={showNavLockAlert}

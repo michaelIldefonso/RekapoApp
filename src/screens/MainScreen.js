@@ -1,3 +1,17 @@
+/**
+ * MainScreen.js — Dashboard / Home Screen
+ *
+ * This is the main landing screen after login. It shows:
+ *   - A welcome greeting with the user’s name
+ *   - A hero card describing the app’s purpose (intelligent meeting recorder)
+ *   - Quick-access feature cards:
+ *     1. Start Recording  → navigates to StartMeetingScreen
+ *     2. View History     → navigates to SessionHistoryScreen
+ *     3. Auto-Translate   → shows an info popup explaining translation
+ *   - A “Pro Tip” info card about automatic saving
+ *
+ * This screen is mostly informational and serves as the navigation hub.
+ */
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -11,9 +25,10 @@ import { getStoredUser } from '../services/authService';
 import MessagePopup from '../components/popup/MessagePopup';
 
 const MainScreen = ({ onNavigate, isDarkMode, onToggleDarkMode }) => {
-  const [userInfo, setUserInfo] = useState(null);
-  const [showTranslationInfo, setShowTranslationInfo] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);              // Stores current user data for greeting
+  const [showTranslationInfo, setShowTranslationInfo] = useState(false); // Controls translation info popup
 
+  // Load user data from AsyncStorage on mount to display welcome message
   useEffect(() => {
     loadUserData();
   }, []);
@@ -37,12 +52,8 @@ const MainScreen = ({ onNavigate, isDarkMode, onToggleDarkMode }) => {
     onToggleDarkMode(); // Use the app-level toggle handler
   };
 
-  // Dynamic styles for dark mode
+  // Dynamic styles: merge base styles with dark mode overrides when isDarkMode is true
   const containerStyle = [
-    MainScreenStyles.container,
-    isDarkMode && MainScreenStyles.containerDark,
-  ];
-  const titleStyle = [
     MainScreenStyles.title,
     isDarkMode && MainScreenStyles.titleDark,
   ];

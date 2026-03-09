@@ -1,4 +1,14 @@
+/**
+ * MessagePopup.js — Generic Reusable Message Modal
+ *
+ * A simple popup that displays a title + message with an OK button.
+ * Used throughout the app for success messages, error alerts,
+ * info messages, and status updates.
+ *
+ * Props: visible, title, message, onClose, isDarkMode
+ */
 import React from 'react';
+
 import { Modal, View, Text, TouchableOpacity } from 'react-native';
 import MessagePopupStyles from '../../styles/popupstyles/MessagePopupStyles';
 

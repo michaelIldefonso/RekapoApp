@@ -1,8 +1,13 @@
 /**
- * File-Based Logger (No Database Required)
- * 
- * Sends logs to backend which saves them as JSON files
- * Perfect for thesis projects - no database schema changes needed!
+ * fileLogger.js — File-Based Logger (Alternative to DB-based logging)
+ *
+ * Identical API to logger.js but sends logs to a different backend endpoint
+ * that saves them as JSON files instead of database records.
+ *
+ * This was created as a simpler alternative that doesn't require
+ * database schema changes — useful for thesis projects and rapid prototyping.
+ *
+ * Backend endpoint: POST /api/logs/write (saves to JSON files)
  */
 
 import config from '../config/app.config';

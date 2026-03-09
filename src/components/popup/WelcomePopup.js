@@ -1,4 +1,12 @@
+/**
+ * WelcomePopup.js — Post-Login Welcome Modal
+ *
+ * Shown immediately after a successful Google login.
+ * Displays "Welcome {userName}!" with an OK button.
+ * On close, triggers the onLogin callback to enter the app.
+ */
 import React from 'react';
+
 import { Modal, View, Text, TouchableOpacity } from 'react-native';
 import WelcomePopupStyles from '../../styles/popupstyles/WelcomePopupStyles';
 

@@ -1,3 +1,16 @@
+/**
+ * SessionHistoryScreen.js — List of Past Recording Sessions
+ *
+ * Fetches and displays all the user’s recorded meeting sessions from the backend.
+ * Features:
+ *   - Pull-to-refresh to reload sessions
+ *   - Tap a session card to view full details (SessionDetailsScreen)
+ *   - Swipe/tap trash icon to delete a session (with confirmation popup)
+ *   - Shows loading spinner, empty state, and error states
+ *   - Formats date and calculates duration for display
+ *
+ * Data is fetched from: GET /api/sessions (paginated, default 50)
+ */
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -17,14 +30,15 @@ import { getSessionHistory, deleteMeetingSession } from '../services/apiService'
 import logger from '../utils/logger';
 
 const SessionHistoryScreen = ({ navigation, isDarkMode, onToggleDarkMode }) => {
-  const [sessions, setSessions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(null);
-  const [deletePopupVisible, setDeletePopupVisible] = useState(false);
-  const [sessionToDelete, setSessionToDelete] = useState(null);
-  const [messagePopup, setMessagePopup] = useState({ visible: false, title: '', message: '' });
+  const [sessions, setSessions] = useState([]);                 // Array of session objects from the API
+  const [loading, setLoading] = useState(true);                 // Shows spinner on initial load
+  const [refreshing, setRefreshing] = useState(false);          // Pull-to-refresh indicator
+  const [error, setError] = useState(null);                     // Error message if API call fails
+  const [deletePopupVisible, setDeletePopupVisible] = useState(false); // Controls delete confirmation popup
+  const [sessionToDelete, setSessionToDelete] = useState(null); // Stores session being deleted
+  const [messagePopup, setMessagePopup] = useState({ visible: false, title: '', message: '' }); // General popup
 
+  // Helper to show a popup message and optionally log errors
   const showPopup = (title, message, level = 'info') => {
     setMessagePopup({ visible: true, title, message });
     if (level === 'error') {
@@ -42,7 +56,8 @@ const SessionHistoryScreen = ({ navigation, isDarkMode, onToggleDarkMode }) => {
     loadSessions();
   }, []);
 
-  // Load session history from API
+  // Load session history from backend API (GET /api/sessions)
+  // Called on mount and on pull-to-refresh
   const loadSessions = async () => {
     try {
       setLoading(true);
@@ -70,18 +85,19 @@ const SessionHistoryScreen = ({ navigation, isDarkMode, onToggleDarkMode }) => {
     setRefreshing(false);
   };
 
-  // Handle session click - navigate to details screen
+  // Navigate to session details when user taps a session card
   const handleSessionPress = (sessionId) => {
     navigation.navigate('SessionDetails', { sessionId });
   };
 
-  // Handle session deletion with confirmation
+  // Show delete confirmation popup before actually deleting
   const handleDeleteSession = (sessionId, sessionTitle) => {
     setSessionToDelete({ id: sessionId, title: sessionTitle });
     setDeletePopupVisible(true);
   };
 
-  // Confirm deletion
+  // Confirm and execute deletion via API (DELETE /api/sessions/:id)
+  // On success, removes the session from local state without re-fetching
   const confirmDelete = async () => {
     if (!sessionToDelete) return;
 
@@ -114,7 +130,7 @@ const SessionHistoryScreen = ({ navigation, isDarkMode, onToggleDarkMode }) => {
     setSessionToDelete(null);
   };
 
-  // Format date for display
+  // Format ISO date string to readable format (e.g., "Mar 9, 2026")
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
@@ -124,7 +140,7 @@ const SessionHistoryScreen = ({ navigation, isDarkMode, onToggleDarkMode }) => {
     });
   };
 
-  // Calculate duration between start and end time
+  // Calculate and format the session duration from start/end timestamps
   const formatDuration = (startTime, endTime) => {
     if (!endTime) return 'In progress';
     
@@ -176,6 +192,7 @@ const SessionHistoryScreen = ({ navigation, isDarkMode, onToggleDarkMode }) => {
     isDarkMode && { backgroundColor: '#333333' },
   ];
 
+  // Renders a single session card with title, date, duration, status, and delete button
   const renderSessionItem = ({ item }) => (
     <View style={sessionCardStyle}>
       <TouchableOpacity 

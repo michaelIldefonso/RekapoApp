@@ -1,6 +1,15 @@
 /**
- * Connection Helper Utilities
- * Provides functions to check backend server connectivity
+ * connectionHelper.js — Backend Connectivity Utilities
+ *
+ * Provides helper functions to verify the backend server is reachable
+ * before starting a recording session. This prevents the user from
+ * starting a recording when the server is down.
+ *
+ * Functions:
+ *   - checkBackendConnection(): Pings GET /health with a 5s timeout
+ *   - getConnectionTroubleshootingMessage(): Returns helpful debug tips
+ *     based on the current backend URL format (local IP, emulator, etc.)
+ *   - isValidWebSocketUrl(): Validates ws:// or wss:// protocol
  */
 import config from '../config/app.config';
 

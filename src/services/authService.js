@@ -1,6 +1,21 @@
-// Authentication Service
-// Handles Google Sign-In and backend JWT token management
-// Security: JWT stored in encrypted storage, user data in regular storage
+/**
+ * authService.js — Authentication Service
+ *
+ * Handles the complete authentication flow:
+ *   1. Google Sign-In (via @react-native-google-signin/google-signin)
+ *   2. Backend verification (sends Google ID token to our API)
+ *   3. JWT token storage (encrypted via expo-secure-store)
+ *   4. User data storage (non-sensitive data via AsyncStorage)
+ *   5. Token expiration checking (using jwt-decode)
+ *   6. Sign-out (clears Google session + local storage)
+ *
+ * Security architecture:
+ *   - JWT token is stored in ENCRYPTED storage (SecureStore) — not AsyncStorage
+ *   - Only non-sensitive user profile data is in AsyncStorage (for fast access)
+ *   - Token expiration is checked with a 5-minute buffer
+ *   - Google ID token is sent to backend, which verifies it with Google’s servers
+ *     and issues our own JWT
+ */
 
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -9,9 +24,7 @@ import { jwtDecode } from 'jwt-decode';
 import config from '../config/app.config';
 import logger from '../utils/logger';
 
-// Configure Google Sign-In
-// Web Client ID is used for backend verification
-// Note: Backend uses long-lived JWT tokens (not Google refresh tokens)
+// Configure Google Sign-In SDK with our Web Client ID from Google Cloud Console
 export const configureGoogleSignIn = () => {
   console.log('⚙️ Configuring Google Sign-In...');
   console.log('🔑 Web Client ID:', config.GOOGLE_WEB_CLIENT_ID ? 'Present' : 'MISSING!');
@@ -34,7 +47,7 @@ export const configureGoogleSignIn = () => {
   }
 };
 
-// Sign in with Google
+// Step 1 of login: Authenticate with Google and get an ID token
 export const signInWithGoogle = async () => {
   try {
     console.log('🔍 Checking Google Play Services...');
@@ -104,7 +117,8 @@ export const signInWithGoogle = async () => {
   }
 };
 
-// Send ID token to backend and get JWT
+// Step 2 of login: Send the Google ID token to our backend for verification.
+// Backend verifies the token with Google, creates/finds the user, and returns a JWT.
 export const verifyWithBackend = async (idToken) => {
   const startTime = Date.now();
   try {
@@ -216,7 +230,7 @@ export const verifyWithBackend = async (idToken) => {
   }
 };
 
-// Complete Google login flow
+// Complete login flow: Google Sign-In → Backend verification → Store JWT + user data
 export const handleGoogleLogin = async () => {
   try {
     console.log('🔐 Starting Google login flow...');
@@ -253,7 +267,7 @@ export const handleGoogleLogin = async () => {
   }
 };
 
-// Sign out
+// Sign out: clear Google session, encrypted JWT, and all AsyncStorage data
 export const signOut = async () => {
   try {
     logger.log('User signed out');
@@ -271,7 +285,7 @@ export const signOut = async () => {
   }
 };
 
-// Get stored JWT token (from encrypted storage)
+// Retrieve JWT token from encrypted SecureStore
 export const getStoredToken = async () => {
   try {
     const token = await SecureStore.getItemAsync(config.JWT_TOKEN_KEY);
@@ -282,7 +296,7 @@ export const getStoredToken = async () => {
   }
 };
 
-// Get stored user data (from regular storage)
+// Retrieve cached user profile data from AsyncStorage
 export const getStoredUser = async () => {
   try {
     const userData = await AsyncStorage.getItem(config.USER_DATA_KEY);
@@ -293,7 +307,7 @@ export const getStoredUser = async () => {
   }
 };
 
-// Check if JWT token is expired
+// Check if the stored JWT is expired (with 5-minute safety buffer)
 export const isTokenExpired = async () => {
   try {
     const token = await getStoredToken();
@@ -310,7 +324,7 @@ export const isTokenExpired = async () => {
   }
 };
 
-// Check if user is authenticated and token is valid
+// Returns true if the user has a valid, non-expired JWT token
 export const isAuthenticated = async () => {
   try {
     const token = await getStoredToken();

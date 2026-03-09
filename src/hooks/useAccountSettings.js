@@ -1,3 +1,17 @@
+/**
+ * useAccountSettings.js — Custom Hook for Account Settings Logic
+ *
+ * Separates business logic from the AccountSettingsScreen UI.
+ * Handles:
+ *   - Loading user data from storage
+ *   - Username editing with validation (3-50 chars, alphanumeric + _ -)
+ *   - Profile photo upload (camera or gallery via expo-image-picker)
+ *   - Profile photo deletion
+ *   - Optimistic UI updates (show changes immediately, revert on API failure)
+ *   - Popup callback system (hook communicates with screen's popup components)
+ *
+ * This hook returns state and handlers that the AccountSettingsScreen consumes.
+ */
 import { useState, useEffect } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';

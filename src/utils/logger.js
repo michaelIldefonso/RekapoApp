@@ -1,22 +1,27 @@
 /**
- * Logger Utility with Backend Logging
- * 
- * - Development: Shows logs in console
- * - Production/Preview: Sends logs to backend for remote viewing by devs
- * 
- * Usage:
- *   import logger from '../utils/logger';
- *   logger.log('Info message');
- *   logger.error('Error occurred:', error);
- *   logger.warn('Warning message');
- * 
- * Flushing:
- *   - Buffered logs are sent every 10 seconds
- *   - Errors are sent immediately (not buffered)
- *   - Logs are automatically flushed when app goes to background/closes
- *   - Manual flush: await logger.flush()
- * 
- * Backend logs can be viewed at: /api/logs/app (admin only)
+ * logger.js — Centralized Logging Utility with Backend Integration
+ *
+ * Provides a unified logging interface for the entire app:
+ *
+ * In Development (__DEV__ = true):
+ *   - All logs go to the console (standard console.log/error/warn behavior)
+ *
+ * In Production/Preview (__DEV__ = false):
+ *   - Logs are buffered and sent to the backend every 10 seconds
+ *   - Errors are sent IMMEDIATELY (not buffered) for faster debugging
+ *   - Logs are automatically flushed when the app goes to background
+ *   - Sensitive data (tokens, passwords, etc.) is automatically redacted
+ *
+ * Available methods:
+ *   - logger.log()    → General info (buffered)
+ *   - logger.error()  → Errors (sent immediately)
+ *   - logger.warn()   → Warnings (buffered)
+ *   - logger.debug()  → Dev-only (never sent to backend)
+ *   - logger.network() / networkStart / networkResponse / networkError → API call tracking
+ *   - logger.wsConnect() / wsDisconnect() → WebSocket lifecycle tracking
+ *   - logger.flush()  → Manually send all buffered logs now
+ *
+ * Backend endpoint: POST /api/logs/app (admin viewable)
  */
 
 import config from '../config/app.config';

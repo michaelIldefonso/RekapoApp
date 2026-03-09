@@ -1,4 +1,12 @@
+/**
+ * PrivacyPopup.js — Privacy Policy Modal
+ *
+ * Displays the full Privacy Policy text in a scrollable modal.
+ * Shown from the LoginScreen when the user taps "Privacy Policy".
+ * Covers data collection, usage, training consent, and user rights.
+ */
 import React from 'react';
+
 import { Modal, View, Text, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
 
 const PrivacyPopup = ({ visible, onClose, isDarkMode }) => {

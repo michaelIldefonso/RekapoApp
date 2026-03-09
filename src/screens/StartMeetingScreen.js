@@ -1,3 +1,16 @@
+/**
+ * StartMeetingScreen.js — Pre-Recording Setup Screen
+ *
+ * This screen lets the user enter a meeting title before starting a recording.
+ * When "Start Recording" is tapped:
+ *   1. Validates that a title was entered
+ *   2. Checks backend connectivity (GET /health)
+ *   3. Creates a new session via POST /api/sessions
+ *   4. Navigates to StartRecord screen with the new session ID
+ *
+ * This ensures the backend session exists before recording begins,
+ * so audio segments can be associated with the correct session.
+ */
 import React, { useState } from 'react';
 import {
   View,
@@ -26,6 +39,7 @@ const StartMeetingScreen = (props) => {
   };
 
 
+  // Validates input, checks backend health, creates session, and navigates to recording screen
   const handleStartRecording = async () => {
     if (!meetingTitle.trim()) {
       showPopup('Title Required', 'Please enter a meeting title before starting the recording.', 'error');

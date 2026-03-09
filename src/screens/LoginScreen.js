@@ -1,3 +1,17 @@
+/**
+ * LoginScreen.js — Google OAuth Login Screen
+ *
+ * This is the first screen users see when not authenticated.
+ * It handles:
+ *   - Google Sign-In via the @react-native-google-signin library
+ *   - Sends the Google ID token to our backend for JWT verification
+ *   - Displays a welcome popup on successful login
+ *   - Shows Terms of Service and Privacy Policy popups
+ *   - Supports light/dark mode theming
+ *
+ * Flow: User taps "Continue with Google" → Google Auth popup →
+ *       Backend verifies token → JWT issued → Welcome popup → Main app
+ */
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -19,15 +33,15 @@ import {
 import logger from '../utils/logger';
 
 const LoginScreen = ({ onLogin, isDarkMode, onToggleDarkMode }) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
-  const [showTermsPopup, setShowTermsPopup] = useState(false);
-  const [showPrivacyPopup, setShowPrivacyPopup] = useState(false);
-  const [loginResult, setLoginResult] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);           // Shows spinner on Google button during auth
+  const [showWelcomePopup, setShowWelcomePopup] = useState(false); // Controls welcome modal after login
+  const [showTermsPopup, setShowTermsPopup] = useState(false);     // Controls Terms of Service modal
+  const [showPrivacyPopup, setShowPrivacyPopup] = useState(false); // Controls Privacy Policy modal
+  const [loginResult, setLoginResult] = useState(null);            // Stores login result (user + token) temporarily
 
   // Google Sign-In is now configured in App.js before this component loads
 
-  // Handler for Google login button
+  // Handler for Google login button — triggers the full Google → Backend auth flow
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
@@ -83,7 +97,7 @@ const LoginScreen = ({ onLogin, isDarkMode, onToggleDarkMode }) => {
     }
   };
 
-  // Choose styles for dark mode
+  // Dynamic styles: merge base styles with dark mode overrides
   const containerStyle = [
     LoginScreenStyles.container,
     isDarkMode && { backgroundColor: '#222' }, //css for darkmode, background color oh yiea

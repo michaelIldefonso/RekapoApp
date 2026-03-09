@@ -1,5 +1,16 @@
-// App Configuration
-// Loads configuration from .env file and Firebase Remote Config
+/**
+ * app.config.js — App Configuration
+ *
+ * Manages all configuration values for the app:
+ *   - BACKEND_URL: The API server URL (can be updated dynamically from Firebase)
+ *   - BYPASS_TUNNEL_IP: Header for localtunnel bypassing (fetched from Firebase)
+ *   - GOOGLE_WEB_CLIENT_ID: OAuth client ID for Google Sign-In
+ *   - JWT_TOKEN_KEY / USER_DATA_KEY: Storage keys for auth data
+ *
+ * On startup, fetchDynamicConfig() is called to get the latest backend URL
+ * from Firebase Remote Config. This allows changing the backend URL without
+ * rebuilding the app (useful for switching between local and cloud servers).
+ */
 import { GOOGLE_WEB_CLIENT_ID, BACKEND_API_URL, FIREBASE_CONFIG_URL } from '@env';
 
 // Debug logging to verify .env values are loaded

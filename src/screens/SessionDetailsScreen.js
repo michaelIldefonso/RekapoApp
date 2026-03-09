@@ -1,4 +1,19 @@
+/**
+ * SessionDetailsScreen.js — View Full Session Details
+ *
+ * Displays complete information about a recorded meeting session:
+ *   - Session title (editable via modal)
+ *   - Date, time, duration, status, segment count
+ *   - Final AI-generated summary of the entire session
+ *   - Expandable list of chunk-based AI summaries (generated every ~10 segments)
+ *   - Full transcript with English translation (tap to flip between original and translation)
+ *   - Star rating system for individual transcript segments (feedback for AI quality)
+ *   - Export to TXT or PDF (uses expo-sharing and expo-print)
+ *
+ * Data is fetched from: GET /api/sessions/:id/details
+ */
 import React, { useState, useEffect } from 'react';
+
 import {
   View,
   Text,
@@ -15,33 +30,37 @@ import SessionDetailsScreenStyles from '../styles/SessionDetailsScreenStyles';
 import { getSessionDetails, updateMeetingSession, rateSegment } from '../services/apiService';
 import MessagePopup from '../components/popup/MessagePopup';
 import logger from '../utils/logger';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
-import * as Print from 'expo-print';
+import * as FileSystem from 'expo-file-system';   // For writing export files to device cache
+import * as Sharing from 'expo-sharing';           // For opening the OS share sheet
+import * as Print from 'expo-print';               // For generating PDF from HTML
 
 const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
-  const { sessionId } = route.params;
-  const [sessionData, setSessionData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [editingTitle, setEditingTitle] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
+  const { sessionId } = route.params; // Session ID passed from SessionHistoryScreen
+
+  // ── State ─────────────────────────────────────────────────────────────
+  const [sessionData, setSessionData] = useState(null);        // Full session object from API
+  const [loading, setLoading] = useState(true);                // Loading spinner
+  const [error, setError] = useState(null);                    // Error message
+  const [editingTitle, setEditingTitle] = useState(false);     // Controls title edit modal
+  const [newTitle, setNewTitle] = useState('');                 // Text input for new title
+  const [isSaving, setIsSaving] = useState(false);             // Saving state for title update
   const [successPopup, setSuccessPopup] = useState({ visible: false, title: '', message: '' });
-  const [expandedSummary, setExpandedSummary] = useState(false);
-  const [expandedAISummaries, setExpandedAISummaries] = useState(false);
-  const [flippedSegments, setFlippedSegments] = useState({});
-  const [segmentRatings, setSegmentRatings] = useState({});
+  const [expandedSummary, setExpandedSummary] = useState(false);       // Toggle for summary section
+  const [expandedAISummaries, setExpandedAISummaries] = useState(false); // Toggle for AI summaries accordion
+  const [flippedSegments, setFlippedSegments] = useState({});  // Tracks which segments show original vs translation
+  const [segmentRatings, setSegmentRatings] = useState({});    // Maps segment ID → star rating (1-5)
 
   const showErrorAlert = (title, message) => {
     logger.error('UI error alert shown', { screen: 'SessionDetails', title, message, sessionId });
     Alert.alert(title, message);
   };
 
+  // Fetch session details when sessionId changes
   useEffect(() => {
     loadSessionDetails();
   }, [sessionId]);
-// Handle hardware back button
+
+  // Handle Android hardware back button — go back to session history instead of default
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       navigation.navigate('SessionHistory');
@@ -51,7 +70,7 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
     return () => backHandler.remove();
   }, [navigation]);
 
-  
+  // Fetch complete session details from backend (segments, summaries, etc.)
   const loadSessionDetails = async () => {
     try {
       setLoading(true);
@@ -88,6 +107,7 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
     }
   };
 
+  // Save edited session title to backend via PATCH /api/sessions/:id
   const handleEditTitle = async () => {
     if (!newTitle.trim()) {
       showErrorAlert('Error', 'Title cannot be empty');
@@ -161,6 +181,7 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
     }
   };
 
+  // Toggle a transcript segment between showing English translation and original text
   const toggleSegmentFlip = (segmentId) => {
     setFlippedSegments(prev => ({
       ...prev,
@@ -168,6 +189,8 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
     }));
   };
 
+  // Handle star rating for a transcript segment — sends rating to backend
+  // Uses optimistic UI update: updates the rating immediately, reverts on API failure
   const handleSegmentRating = async (segmentId, rating) => {
     const currentRating = segmentRatings[segmentId];
     const newRating = currentRating === rating ? 0 : rating;
@@ -211,6 +234,7 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
     }
   };
 
+  // Renders either a "Rated" badge or interactive stars for a segment
   const renderRatingOrBadge = (segmentId) => {
     const rating = segmentRatings[segmentId] || 0;
     
@@ -309,12 +333,14 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
     ? [SessionDetailsScreenStyles.infoValue, SessionDetailsScreenStyles.infoValueDark]
     : SessionDetailsScreenStyles.infoValue;
 
+  // Check if a summary is the "final" summary (generated at end of session)
   const isFinalSummary = (value) => {
     if (value === true || value === 1) return true;
     if (typeof value === 'string') return value.toLowerCase() === 'true';
     return false;
   };
 
+  // Extract the final summary text (last one marked as final) for display at the top
   const finalSummaries = sessionData?.summaries
     ? sessionData.summaries.filter(summary => isFinalSummary(summary.is_final_summary))
     : [];
@@ -322,6 +348,7 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
     ? finalSummaries[finalSummaries.length - 1].summary_text
     : null;
 
+  // Export session as plain text file and open the OS share sheet
   const exportSessionAsTxt = async () => {
     if (!sessionData) return showErrorAlert('Export error', 'No session data to export');
 
@@ -371,6 +398,7 @@ const SessionDetailsScreen = ({ route, navigation, isDarkMode }) => {
     }
   };
 
+  // Export session as PDF by generating HTML and using expo-print
   const exportSessionAsPdf = async () => {
     if (!sessionData) return showErrorAlert('Export error', 'No session data to export');
 

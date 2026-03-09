@@ -1,4 +1,12 @@
+/**
+ * SummariesPopup.js — View All AI-Generated Summaries
+ *
+ * A full-screen modal that lists all summaries generated during a live recording.
+ * Summaries are created by the backend every ~10 segments using an AI model.
+ * Users can open this during recording to review progress without stopping.
+ */
 import React from 'react';
+
 import {
   Modal,
   View,

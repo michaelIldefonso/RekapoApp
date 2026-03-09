@@ -1,4 +1,11 @@
+/**
+ * LogoutPopup.js — Logout Confirmation Modal
+ *
+ * Asks "Are you sure you want to logout?" with Cancel and Logout buttons.
+ * On confirm: signs out of Google, clears stored JWT & user data.
+ */
 import React from 'react';
+
 import { Modal, View, Text, TouchableOpacity } from 'react-native';
 import LogoutPopupStyles from '../../styles/popupstyles/LogoutPopupStyles';
 

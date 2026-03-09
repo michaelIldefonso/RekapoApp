@@ -1,14 +1,39 @@
+/**
+ * apiService.js — Backend API Communication Layer
+ *
+ * Provides all REST API and WebSocket functions for the app:
+ *
+ * REST API (via apiRequest helper):
+ *   - getUserProfile()       → GET /api/auth/me
+ *   - updateUsername()       → PATCH /api/users/me/username
+ *   - uploadProfilePhoto()   → PATCH /api/users/me/photo (multipart FormData)
+ *   - deleteProfilePhoto()   → DELETE /api/users/me/photo
+ *   - createMeetingSession() → POST /api/sessions
+ *   - getSessionHistory()    → GET /api/sessions (paginated)
+ *   - getSessionDetails()    → GET /api/sessions/:id/details
+ *   - updateMeetingSession() → PATCH /api/sessions/:id
+ *   - deleteMeetingSession() → DELETE /api/sessions/:id
+ *   - updateUserConsent()    → PATCH /api/users/me/consent
+ *   - rateSegment()          → PATCH /api/sessions/:id/segments/:id/rate
+ *
+ * WebSocket:
+ *   - connectTranscriptionWebSocket() → ws://.../api/ws/transcribe
+ *     Opens a persistent WebSocket for real-time audio streaming.
+ *     Returns helper methods: sendAudioChunk(), sendFinalize(), sendFinalizeAndWait(), close()
+ *
+ * All REST requests include:
+ *   - Bearer JWT token in Authorization header
+ *   - Optional Bypass-Tunnel-Reminder header (for localtunnel)
+ *   - Network logging via logger utility
+ */
 // API Utility for making authenticated requests to backend
 import { getStoredToken } from './authService';
 import config from '../config/app.config';
 import logger from '../utils/logger';
 
 /**
- * Make an authenticated API request
- * @param {string} endpoint - API endpoint (e.g., '/users/profile')
- * @param {string} method - HTTP method (GET, POST, PUT, DELETE)
- * @param {object} body - Request body for POST/PUT requests
- * @returns {Promise} Response data
+ * Core API request helper — attaches JWT token, handles errors, logs network activity.
+ * All other API functions use this as their base.
  */
 export const apiRequest = async (endpoint, method = 'GET', body = null) => {
   const startTime = Date.now();
@@ -77,6 +102,7 @@ export const updateUsername = async (username) => {
   return await apiRequest('/users/me/username', 'PATCH', { username });
 };
 
+// Upload profile photo as multipart form data (separate from apiRequest because of FormData)
 export const uploadProfilePhoto = async (imageUri) => {
   const startTime = Date.now();
   logger.networkStart('PATCH', '/users/me/photo');
@@ -162,7 +188,10 @@ export const updateUserProfile = async (profileData) => {
   throw new Error('No valid profile data provided');
 };
 
-// Session Management APIs
+// ── Session Management APIs ────────────────────────────────────────────
+// These functions create, read, update, and delete meeting sessions.
+
+// Create a new meeting session — called before recording starts
 export const createMeetingSession = async (sessionData) => {
   // Backend expects: { session_title?: string }
   const result = await apiRequest('/sessions', 'POST', {
@@ -245,6 +274,18 @@ export const rateSegment = async (sessionId, segmentId, rating) => {
   );
 };
 
+/**
+ * WebSocket connection for real-time meeting transcription.
+ *
+ * Opens a WebSocket to ws://.../api/ws/transcribe with session_id and JWT token.
+ * The backend processes audio through: VAD → Whisper ASR → Translation → Summarization.
+ *
+ * Returns an object with helper methods:
+ *   - sendAudioChunk(base64Audio)  → sends encoded audio to backend
+ *   - sendFinalize()               → tells backend to generate final summary
+ *   - sendFinalizeAndWait(timeout)  → sendFinalize + waits for "finalized" response
+ *   - close()                       → gracefully closes the WebSocket
+ */
 export const connectTranscriptionWebSocket = async (sessionId, onMessage, onError, onClose) => {
   const token = await getStoredToken();
   

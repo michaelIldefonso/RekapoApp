@@ -1,4 +1,12 @@
+/**
+ * TermsPopup.js — Terms of Service Modal
+ *
+ * Displays the full Terms of Service text in a scrollable modal.
+ * Shown from the LoginScreen when the user taps "Terms of Service".
+ * Contains legal content about usage, liability, and acceptable use.
+ */
 import React from 'react';
+
 import { Modal, View, Text, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
 
 const TermsPopup = ({ visible, onClose, isDarkMode }) => {

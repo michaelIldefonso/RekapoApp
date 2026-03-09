@@ -1,4 +1,17 @@
+/**
+ * AccountSettingsScreen.js — Account Settings Page
+ *
+ * Allows the user to manage their account:
+ *   - Change profile photo (take photo / choose from gallery / delete)
+ *   - Edit username (with validation: 3-50 chars, alphanumeric)
+ *   - View email (read-only, linked to Google account)
+ *   - View connected account type (Google)
+ *
+ * Uses the useAccountSettings custom hook for all business logic.
+ * All user actions go through the backend API for persistence.
+ */
 import React, { useEffect, useState } from 'react';
+
 import {
   View,
   Text,
@@ -14,7 +27,7 @@ import AccountSettingsScreenStyles from '../../styles/profilebuttonstyles/Accoun
 import PhotoOptionsPopup from '../../components/popup/PhotoOptionsPopup';
 import DeletePhotoPopup from '../../components/popup/DeletePhotoPopup';
 import MessagePopup from '../../components/popup/MessagePopup';
-import { useAccountSettings } from '../../hooks/useAccountSettings';
+import { useAccountSettings } from '../../hooks/useAccountSettings'; // Custom hook for account logic
 import logger from '../../utils/logger';
 
 const AccountSettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => {
