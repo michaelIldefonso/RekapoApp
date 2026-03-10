@@ -24,7 +24,7 @@ import {
 } from 'react-native';
 import PrivacySettingsScreenStyles from '../../styles/profilebuttonstyles/PrivacySettingsScreenStyles';
 import { BackHandler } from 'react-native';
-import { updateUserConsent, getUserProfile } from '../../services/apiService';
+import { updateUserConsent, getUserProfile } from '../../services/apiService'; // NOTE: getUserProfile is unused, kept for potential future use
 import { getStoredUser } from '../../services/authService';
 
 const PrivacySettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => {

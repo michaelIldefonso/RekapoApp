@@ -25,7 +25,9 @@
       "edgeToEdgeEnabled": true,
       "permissions": [
         "RECORD_AUDIO"
-      ]
+      ],
+      "minSdkVersion": 26,
+      "targetSdkVersion": 34
     },
     "web": {
       "favicon": "./assets/favicon.png"
