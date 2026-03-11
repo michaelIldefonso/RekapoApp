@@ -54,6 +54,10 @@ const MainScreen = ({ onNavigate, isDarkMode, onToggleDarkMode }) => {
 
   // Dynamic styles: merge base styles with dark mode overrides when isDarkMode is true
   const containerStyle = [
+    MainScreenStyles.container,
+    isDarkMode && MainScreenStyles.containerDark,
+  ];
+  const titleStyle = [
     MainScreenStyles.title,
     isDarkMode && MainScreenStyles.titleDark,
   ];
