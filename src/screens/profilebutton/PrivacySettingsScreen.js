@@ -24,6 +24,7 @@ import {
 } from 'react-native';
 import PrivacySettingsScreenStyles from '../../styles/profilebuttonstyles/PrivacySettingsScreenStyles';
 import { BackHandler } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { updateUserConsent, getUserProfile } from '../../services/apiService'; // NOTE: getUserProfile is unused, kept for potential future use
 import { getStoredUser } from '../../services/authService';
 
@@ -79,6 +80,14 @@ const PrivacySettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => 
         // Revert on failure
         setTrainingConsent(!value);
         console.error('Failed to update consent:', result.error);
+      } else {
+        // Persist updated consent to AsyncStorage so the next load reflects the change
+        const stored = await AsyncStorage.getItem('user_data');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          parsed.data_usage_consent = value;
+          await AsyncStorage.setItem('user_data', JSON.stringify(parsed));
+        }
       }
     } catch (error) {
       // Revert on error
