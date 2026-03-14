@@ -100,21 +100,6 @@ const SummariesPopup = ({ visible, summaries, isDarkMode, onClose }) => {
             )}
           </ScrollView>
 
-          {/* Footer */}
-          <View style={[
-            SummariesPopupStyles.footer,
-            isDarkMode && { backgroundColor: '#444', borderTopColor: '#555' }
-          ]}>
-            <TouchableOpacity 
-              style={[
-                SummariesPopupStyles.closeButton,
-                { flex: 1, marginTop: 0 }
-              ]}
-              onPress={onClose}
-            >
-              <Text style={closeButtonTextStyle}>Close</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </View>
     </Modal>
