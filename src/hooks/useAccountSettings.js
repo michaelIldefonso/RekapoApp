@@ -16,7 +16,7 @@ import { useState, useEffect } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getStoredUser } from '../services/authService';
-import { updateUsername, uploadProfilePhoto, deleteProfilePhoto } from '../services/apiService';
+import { getUserProfile, updateUsername, uploadProfilePhoto, deleteProfilePhoto } from '../services/apiService';
 import config from '../config/app.config';
 
 export const useAccountSettings = () => {
@@ -37,6 +37,13 @@ export const useAccountSettings = () => {
     requestPermissions();
   }, []);
 
+  const normalizeProfilePath = (path) => {
+    if (path && path.includes('8000uploads')) {
+      return path.replace('8000uploads', '8000/uploads');
+    }
+    return path;
+  };
+
   const requestPermissions = async () => {
     // Request camera and media library permissions
     const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
@@ -49,16 +56,24 @@ export const useAccountSettings = () => {
 
   const loadUserData = async () => {
     try {
-      const user = await getStoredUser();
-      if (user) {
-        // Fix malformed photo URLs in stored data
-        if (user.profile_picture_path && user.profile_picture_path.includes('8000uploads')) {
-          console.log('🔧 Fixing malformed URL in stored data');
-          user.profile_picture_path = user.profile_picture_path.replace('8000uploads', '8000/uploads');
-          await AsyncStorage.setItem('user_data', JSON.stringify(user));
-        }
-        setUserInfo(user);
-        setUsername(user.username || user.name || '');
+      const storedUser = await getStoredUser();
+      if (storedUser) {
+        storedUser.profile_picture_path = normalizeProfilePath(storedUser.profile_picture_path);
+        setUserInfo(storedUser);
+        setUsername(storedUser.username || storedUser.name || '');
+      }
+
+      // Always try to refresh from backend to get a fresh signed URL.
+      const profileResult = await getUserProfile();
+      if (profileResult.success && profileResult.data) {
+        const freshUser = {
+          ...storedUser,
+          ...profileResult.data,
+          profile_picture_path: normalizeProfilePath(profileResult.data.profile_picture_path),
+        };
+        await AsyncStorage.setItem('user_data', JSON.stringify(freshUser));
+        setUserInfo(freshUser);
+        setUsername(freshUser.username || freshUser.name || '');
       }
     } catch (error) {
       console.error('Error loading user data:', error);

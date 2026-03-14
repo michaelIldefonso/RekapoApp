@@ -92,10 +92,8 @@ export const apiRequest = async (endpoint, method = 'GET', body = null) => {
 
 // Example API calls
 
-// UNUSED - Old code kept for reference. Currently uses getStoredUser() from authService instead.
-// If needed in future, backend endpoint is GET /api/users/me (not /auth/me)
 export const getUserProfile = async () => {
-  return await apiRequest('/auth/me', 'GET');
+  return await apiRequest('/users/me', 'GET');
 };
 
 export const updateUsername = async (username) => {

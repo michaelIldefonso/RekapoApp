@@ -10,7 +10,7 @@
  * Uses the useAccountSettings custom hook for all business logic.
  * All user actions go through the backend API for persistence.
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import {
   View,
@@ -30,7 +30,7 @@ import MessagePopup from '../../components/popup/MessagePopup';
 import { useAccountSettings } from '../../hooks/useAccountSettings'; // Custom hook for account logic
 import logger from '../../utils/logger';
 
-const AccountSettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => {
+const AccountSettingsScreen = ({ isDarkMode, onToggleDarkMode: _onToggleDarkMode, onNavigate }) => {
   const [showPhotoOptions, setShowPhotoOptions] = useState(false);
   const [showDeletePhoto, setShowDeletePhoto] = useState(false);
   const [messagePopup, setMessagePopup] = useState({ visible: false, title: '', message: '' });
@@ -127,6 +127,21 @@ const AccountSettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => 
     isDarkMode && { color: '#888' },
   ];
 
+  const profileImageUri = useMemo(() => {
+    if (!userInfo?.profile_picture_path) return null;
+    const isPresignedUrl =
+      userInfo.profile_picture_path.includes('X-Amz-Signature=') ||
+      userInfo.profile_picture_path.includes('X-Amz-Algorithm=');
+
+    // Presigned URLs must not be modified, or signature validation will fail.
+    if (isPresignedUrl) {
+      return userInfo.profile_picture_path;
+    }
+
+    const separator = userInfo.profile_picture_path.includes('?') ? '&' : '?';
+    return `${userInfo.profile_picture_path}${separator}t=${imageRefreshKey}`;
+  }, [userInfo?.profile_picture_path, imageRefreshKey]);
+
   if (isLoading) {
     return (
       <SafeAreaView style={containerStyle}>
@@ -153,12 +168,12 @@ const AccountSettingsScreen = ({ isDarkMode, onToggleDarkMode, onNavigate }) => 
                 <Image
                   key={`${userInfo.profile_picture_path}-${imageRefreshKey}`}
                   source={{ 
-                    uri: `${userInfo.profile_picture_path}?t=${imageRefreshKey}`,
+                    uri: profileImageUri,
                   }}
                   style={AccountSettingsScreenStyles.profileImage}
                   onError={(error) => {
                     console.error('❌ Image load error:', error.nativeEvent.error);
-                    console.error('❌ Failed URI:', userInfo.profile_picture_path);
+                    console.error('❌ Failed URI:', profileImageUri);
                   }}
                   onLoad={() => {
                     console.log('✅ Image loaded successfully!');
