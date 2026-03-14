@@ -13,6 +13,23 @@
  */
 import { GOOGLE_WEB_CLIENT_ID, BACKEND_API_URL, FIREBASE_CONFIG_URL } from '@env';
 
+const normalizeBackendUrl = (rawUrl, fallback = 'http://192.168.100.2:8000') => {
+  const input = String(rawUrl || '').trim();
+  const fallbackUrl = String(fallback || '').trim();
+  let normalized = input || fallbackUrl;
+
+  if (!/^https?:\/\//i.test(normalized)) {
+    const localHostPattern = /^(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[0-1])\.\d+\.\d+)(:\d+)?$/i;
+    const protocol = localHostPattern.test(normalized) ? 'http' : 'https';
+    normalized = `${protocol}://${normalized}`;
+  }
+
+  normalized = normalized.replace(/\/+$/, '');
+  normalized = normalized.replace(/\/api$/i, '');
+
+  return normalized;
+};
+
 // Debug logging to verify .env values are loaded
 console.log('🔧 Config Debug:');
 console.log('  BACKEND_API_URL from .env:', BACKEND_API_URL || 'NOT SET');
@@ -20,7 +37,7 @@ console.log('  GOOGLE_WEB_CLIENT_ID from .env:', GOOGLE_WEB_CLIENT_ID ? 'SET' : 
 console.log('  FIREBASE_CONFIG_URL from .env:', FIREBASE_CONFIG_URL || 'NOT SET');
 
 // Remove trailing slash from BACKEND_API_URL if present
-const sanitizedBackendUrl = (BACKEND_API_URL || 'http://192.168.100.2:8000').replace(/\/$/, '');
+const sanitizedBackendUrl = normalizeBackendUrl(BACKEND_API_URL, 'http://192.168.100.2:8000');
 
 // In-memory config that can be updated dynamically
 let dynamicBackendUrl = sanitizedBackendUrl;
@@ -42,11 +59,37 @@ export const config = {
   USER_DATA_KEY: 'user_data',
 };
 
+export const getBackendUrlCandidates = () => {
+  const baseCandidates = [
+    normalizeBackendUrl(dynamicBackendUrl, sanitizedBackendUrl),
+    normalizeBackendUrl(sanitizedBackendUrl, sanitizedBackendUrl),
+  ];
+
+  const candidates = [];
+  baseCandidates.forEach((url) => {
+    if (!url) return;
+    candidates.push(url);
+
+    // Add protocol fallback for transport-layer failures.
+    if (url.startsWith('https://')) {
+      candidates.push(url.replace(/^https:\/\//i, 'http://'));
+    } else if (url.startsWith('http://')) {
+      candidates.push(url.replace(/^http:\/\//i, 'https://'));
+    }
+  });
+
+  return [...new Set(candidates)];
+};
+
 /**
  * Fetch dynamic config from Firebase
  * Call this on app startup to get the latest backend URL
  */
 export const fetchDynamicConfig = async () => {
+  if (!FIREBASE_CONFIG_URL) {
+    console.log('ℹ️ FIREBASE_CONFIG_URL not set, skipping remote config fetch.');
+    return { success: false, error: 'FIREBASE_CONFIG_URL not configured' };
+  }
   try {
     console.log('🌐 Fetching dynamic config from Firebase...');
     const response = await fetch(FIREBASE_CONFIG_URL, {
@@ -60,7 +103,7 @@ export const fetchDynamicConfig = async () => {
     const remoteConfig = await response.json();
     
     if (remoteConfig.backendUrl) {
-      dynamicBackendUrl = remoteConfig.backendUrl.replace(/\/$/, '');
+      dynamicBackendUrl = normalizeBackendUrl(remoteConfig.backendUrl, sanitizedBackendUrl);
       console.log('✅ Updated BACKEND_URL from Firebase:', dynamicBackendUrl);
     }
     
